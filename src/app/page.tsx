@@ -1,23 +1,25 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Play, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut } from "lucide-react";
+import { Play, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import SubirVideoForm from "../subir";
-import AuthModal, { UsuarioRUTF } from "../auth";
+import AuthModal from "../auth";
+import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-type Video = { id: string; titulo: string; descripcion?: string; etiquetas?: string; hashtags?: string; creador: string; nivel: string; tipo: "largo" | "vertical"; video_url: string; vistas: number; likes: number; dislikes?: number; };
+type Video = { id: string; titulo: string; descripcion?: string; etiquetas?: string; hashtags?: string; creador: string; nivel: string; tipo: "largo" | "vertical"; video_url: string; vistas: number; likes: number; dislikes?: number; creado_en?: string; };
 type Comentario = { id: string; usuario: string; texto: string; creado_en: string; };
 
 export default function Home() {
   const [tab, setTab] = useState("inicio");
   const [lista, setLista] = useState<Video[]>([]);
   const [busqueda, setBusqueda] = useState("");
-  const [usuario, setUsuario] = useState<UsuarioRUTF | null>(null);
+  const [usuario, setUsuario] = useState<PerfilCanal | null>(null);
   const [mostrarAuth, setMostrarAuth] = useState(false);
+  const [videoCompartir, setVideoCompartir] = useState<Video | null>(null);
   const [votos, setVotos] = useState<Record<string, "like" | "dislike">>({});
   const [suscritos, setSuscritos] = useState<Record<string, boolean>>({});
   const [notifCreador, setNotifCreador] = useState<Record<string, "todas" | "ninguna">>({});
@@ -65,15 +67,15 @@ export default function Home() {
       const { data: authData } = await supabase.auth.getUser();
       if (authData?.user?.email) {
         const emailGoogle = authData.user.email.toLowerCase();
-        const { data: existente } = await supabase.from("usuarios_rutf").select("id, username, email, es_fundador").eq("email", emailGoogle).maybeSingle();
+        const { data: existente } = await supabase.from("usuarios_rutf").select("*").eq("email", emailGoogle).maybeSingle();
         if (existente) {
           localStorage.setItem("rutf_sesion", JSON.stringify(existente));
           setUsuario(existente);
           cargarActividadUsuario(existente.id);
           return;
         } else {
-          const base = emailGoogle.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
-          let handle = `@${base || "Talento"}`;
+          const base = emailGoogle.split("@").at(0)?.replace(/[^a-zA-Z0-9_]/g, "") || "Talento";
+          let handle = `@${base}`;
           if (handle.toLowerCase() === "@rutf_talentico") handle = `@${base}_rd`;
           const { data: creado } = await supabase.from("usuarios_rutf").insert([{
             username: handle,
@@ -81,7 +83,7 @@ export default function Home() {
             email: emailGoogle,
             password_hash: "google_oauth",
             es_fundador: false,
-          }]).select("id, username, email, es_fundador").single();
+          }]).select("*").single();
           if (creado) {
             localStorage.setItem("rutf_sesion", JSON.stringify(creado));
             setUsuario(creado);
@@ -105,7 +107,7 @@ export default function Home() {
     setUsuario(null);
     setSuscritos({});
     setVotos({});
-    if (tab === "subir") setTab("inicio");
+    if (tab === "subir" || tab === "canal") setTab("inicio");
   };
 
   const abrirSubir = () => {
@@ -179,11 +181,6 @@ export default function Home() {
     cargarDatos();
   };
 
-  const compartirVideo = (v: Video) => {
-    navigator.clipboard?.writeText(`${v.titulo} — Mira este talento en RUTF Talentico: ${v.video_url}`);
-    alert("¡Enlace copiado! Ya puedes pegarlo y compartirlo.");
-  };
-
   const enviarComentario = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!usuario) return setMostrarAuth(true);
@@ -202,11 +199,20 @@ export default function Home() {
 
   const esMiCanal = (creador: string) => !!usuario && usuario.username.toLowerCase() === creador.toLowerCase();
 
-  const filtrados = lista.filter((v) => {
-    const q = busqueda.toLowerCase().trim();
-    if (!q) return true;
-    return [v.titulo, v.creador, v.etiquetas, v.hashtags, v.descripcion].some((c) => c?.toLowerCase().includes(q));
-  });
+  const puntajeAlgoritmo = (v: Video) => {
+    const horas = v.creado_en ? (Date.now() - new Date(v.creado_en).getTime()) / 3600000 : 72;
+    const impulsoNuevo = horas < 48 ? 25 : 0;
+    const suscriptoresCanal = conteoSeguidores[v.creador] || 0;
+    return (v.vistas || 0) * 2 + (v.likes || 0) * 5 + suscriptoresCanal * 3 - (v.dislikes || 0) * 2 + impulsoNuevo;
+  };
+
+  const recomendados = [...lista]
+    .filter((v) => {
+      const q = busqueda.toLowerCase().trim();
+      if (!q) return true;
+      return [v.titulo, v.creador, v.etiquetas, v.hashtags, v.descripcion].some((c) => c?.toLowerCase().includes(q));
+    })
+    .sort((a, b) => puntajeAlgoritmo(b) - puntajeAlgoritmo(a));
 
   const vistasTotales = lista.reduce((a, b) => a + (b.vistas || 0), 0);
   const seguidoresTotales = Object.values(conteoSeguidores).reduce((a, b) => a + (b || 0), 0);
@@ -218,6 +224,10 @@ export default function Home() {
           onLogin={(u) => { setUsuario(u); setMostrarAuth(false); cargarActividadUsuario(u.id); }}
           onCerrar={() => setMostrarAuth(false)}
         />
+      )}
+
+      {videoCompartir && (
+        <ModalCompartir titulo={videoCompartir.titulo} videoId={videoCompartir.id} onCerrar={() => setVideoCompartir(null)} />
       )}
 
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3">
@@ -239,8 +249,10 @@ export default function Home() {
             <button onClick={() => setTab("monetizar")} className="hidden sm:flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer"><DollarSign className="w-3.5 h-3.5" /> $0.00</button>
             <button onClick={abrirSubir} className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-orange-500 text-white px-3.5 py-2 rounded-full text-xs font-bold shadow-sm cursor-pointer"><PlusCircle className="w-4 h-4" /> Subir Video</button>
             {usuario ? (
-              <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full text-xs">
-                {renderCreador(usuario.username)}
+              <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-full text-xs">
+                <button onClick={() => { setTab("canal"); setVideoActivo(null); }} className="flex items-center gap-1 font-extrabold text-blue-700 hover:underline cursor-pointer">
+                  <LayoutDashboard className="w-3.5 h-3.5" /> Mi Canal ({usuario.username})
+                </button>
                 <button onClick={cerrarSesion} title="Cerrar sesión" className="text-slate-500 hover:text-rose-600 ml-1 cursor-pointer"><LogOut className="w-3.5 h-3.5" /></button>
               </div>
             ) : (
@@ -249,7 +261,7 @@ export default function Home() {
           </div>
         </div>
         <nav className="max-w-6xl mx-auto flex gap-2 mt-3 overflow-x-auto">
-          {[{ id: "inicio", label: "Explorar", icon: Flame }, { id: "shorts", label: "Verticales", icon: Play }, { id: "monetizar", label: "Monetización", icon: Award }].map((t) => (
+          {[{ id: "inicio", label: "Para Ti (Recomendados)", icon: Flame }, { id: "shorts", label: "Verticales", icon: Play }, { id: "monetizar", label: "Monetización", icon: Award }, ...(usuario ? [{ id: "canal", label: "Diseño de mi Canal", icon: LayoutDashboard }] : [])].map((t) => (
             <button key={t.id} onClick={() => { setTab(t.id); setVideoActivo(null); }} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold cursor-pointer whitespace-nowrap ${tab === t.id ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"}`}><t.icon className="w-3.5 h-3.5" /> {t.label}</button>
           ))}
         </nav>
@@ -268,7 +280,6 @@ export default function Home() {
                   <div className="flex flex-wrap items-center gap-2.5 text-xs">
                     {renderCreador(videoActivo.creador)}
                     <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} suscriptores • {videoActivo.vistas} {videoActivo.vistas === 1 ? "vista calificada" : "vistas calificadas"}</span>
-
                     {esMiCanal(videoActivo.creador) ? (
                       <span className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-extrabold">Tu Canal</span>
                     ) : (
@@ -298,7 +309,6 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-
                 <div className="flex flex-wrap items-center gap-2">
                   <button onClick={() => reaccionar(videoActivo, "like")} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition border ${votos[videoActivo.id] === "like" ? "bg-blue-600 text-white border-blue-600" : "bg-blue-50 text-blue-700 border-blue-200"}`}>
                     <Sparkles className="w-4 h-4" /> Esto me gustó ({videoActivo.likes || 0})
@@ -306,11 +316,12 @@ export default function Home() {
                   <button onClick={() => reaccionar(videoActivo, "dislike")} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition border ${votos[videoActivo.id] === "dislike" ? "bg-orange-600 text-white border-orange-600" : "bg-orange-50 text-orange-700 border-orange-200"}`}>
                     <ShieldAlert className="w-4 h-4" /> No me gustó ({videoActivo.dislikes || 0})
                   </button>
-                  <button onClick={() => compartirVideo(videoActivo)} className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Share2 className="w-4 h-4 text-blue-600" /> Compartir</button>
+                  <button onClick={() => setVideoCompartir(videoActivo)} className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Share2 className="w-4 h-4 text-blue-600" /> Compartir</button>
                   <button onClick={abrirSubir} className="flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Scissors className="w-4 h-4" /> Recrear Vertical</button>
                   <button onClick={() => setVideoActivo(null)} className="text-xs font-bold bg-slate-100 text-slate-500 px-3 py-2 rounded-xl cursor-pointer">Cerrar</button>
-                </div>
+                                  </div>
               </div>
+
               {(videoActivo.descripcion || videoActivo.hashtags) && (
                 <div className="bg-slate-50 rounded-2xl p-4 space-y-2 text-xs">
                   {videoActivo.descripcion && <p className="text-slate-700 whitespace-pre-line leading-relaxed">{videoActivo.descripcion}</p>}
@@ -341,14 +352,14 @@ export default function Home() {
               </div>
             </div>
           </div>
-        )}
+    )}
 
         {tab === "inicio" && (
           <div className="space-y-8">
             <section>
-              <h3 className="font-extrabold mb-3 text-blue-600">Videos Largos</h3>
+              <h3 className="font-extrabold mb-3 text-blue-600">Recomendados para Ti</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filtrados.filter(v => v.tipo === "largo").map(v => (
+                {recomendados.filter(v => v.tipo === "largo").map(v => (
                   <div key={v.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                     <div onClick={() => abrirVideo(v)} className="relative aspect-video bg-slate-900 flex items-center justify-center cursor-pointer">
                       <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
@@ -364,6 +375,7 @@ export default function Home() {
                         <div className="flex gap-1.5">
                           <button onClick={() => reaccionar(v, "like")} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${votos[v.id] === "like" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"}`}><Sparkles className="w-3.5 h-3.5" /> ({v.likes || 0})</button>
                           <button onClick={() => reaccionar(v, "dislike")} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${votos[v.id] === "dislike" ? "bg-orange-600 text-white" : "bg-orange-50 text-orange-700"}`}><ShieldAlert className="w-3.5 h-3.5" /> ({v.dislikes || 0})</button>
+                          <button onClick={() => setVideoCompartir(v)} title="Compartir" className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer"><Share2 className="w-3.5 h-3.5" /></button>
                         </div>
                         <span className="text-[11px] text-slate-400 font-bold">{v.vistas || 0} vistas</span>
                       </div>
@@ -372,10 +384,11 @@ export default function Home() {
                 ))}
               </div>
             </section>
+
             <section>
               <h3 className="font-extrabold mb-3 text-orange-500">Verticales / Shorts</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {filtrados.filter(v => v.tipo === "vertical").map(v => (
+                {recomendados.filter(v => v.tipo === "vertical").map(v => (
                   <div key={v.id} onClick={() => abrirVideo(v)} className="relative aspect-[9/16] rounded-2xl bg-slate-900 overflow-hidden cursor-pointer shadow-sm">
                     <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent p-3 flex flex-col justify-between text-white">
@@ -392,7 +405,7 @@ export default function Home() {
 
         {tab === "shorts" && (
           <div className="max-w-xs mx-auto space-y-6">
-            {filtrados.filter(v => v.tipo === "vertical").map(v => (
+            {recomendados.filter(v => v.tipo === "vertical").map(v => (
               <div key={v.id} className="rounded-3xl bg-slate-950 overflow-hidden shadow-lg border border-slate-200">
                 <video src={v.video_url} controls onTimeUpdate={(e) => registrarVistaCalificada(v, e.currentTarget.currentTime)} className="w-full aspect-[9/16] object-cover" />
                 <div className="p-4 bg-white space-y-2">
@@ -401,6 +414,48 @@ export default function Home() {
                   <div className="flex gap-2">
                     <button onClick={() => reaccionar(v, "like")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "like" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"}`}><Sparkles className="w-3.5 h-3.5" /> ({v.likes || 0})</button>
                     <button onClick={() => reaccionar(v, "dislike")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "dislike" ? "bg-orange-600 text-white" : "bg-orange-50 text-orange-700"}`}><ShieldAlert className="w-3.5 h-3.5" /> ({v.dislikes || 0})</button>
+                    <button onClick={() => setVideoCompartir(v)} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer"><Share2 className="w-3.5 h-3.5" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "monetizar" && (
+          <div className="max-w-xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 space-y-5 shadow-sm">
+            <div><h2 className="text-xl font-black">Requisitos Reales de Monetización</h2><p className="text-xs text-slate-500 mt-1">Comienzas desde cero y avanzas con cada vista calificada (+6 seg) y suscriptor real.</p></div>
+            <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Users className="w-4 h-4 text-blue-600" /> Suscriptores Reales</span><span>{seguidoresTotales} / 500</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${Math.min(100, (seguidoresTotales / 500) * 100)}%` }} /></div></div>
+            <section>
+              <h3 className="font-extrabold mb-3 text-orange-500">Verticales / Shorts</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {recomendados.filter(v => v.tipo === "vertical").map(v => (
+                  <div key={v.id} onClick={() => abrirVideo(v)} className="relative aspect-[9/16] rounded-2xl bg-slate-900 overflow-hidden cursor-pointer shadow-sm">
+                    <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent p-3 flex flex-col justify-between text-white">
+                      <span className="self-start bg-black/50 text-[10px] font-bold px-2 py-0.5 rounded-full">{v.nivel}</span>
+                      <Play className="self-center w-9 h-9 fill-white" />
+                      <div><p className="text-xs font-bold line-clamp-2">{v.titulo}</p><p className="text-[11px] text-orange-300 font-bold mt-0.5">{v.creador} • {v.vistas || 0} vistas</p></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+
+        {tab === "shorts" && (
+          <div className="max-w-xs mx-auto space-y-6">
+            {recomendados.filter(v => v.tipo === "vertical").map(v => (
+              <div key={v.id} className="rounded-3xl bg-slate-950 overflow-hidden shadow-lg border border-slate-200">
+                <video src={v.video_url} controls onTimeUpdate={(e) => registrarVistaCalificada(v, e.currentTarget.currentTime)} className="w-full aspect-[9/16] object-cover" />
+                <div className="p-4 bg-white space-y-2">
+                  <div className="flex items-center justify-between gap-2"><p className="text-sm">{renderCreador(v.creador)}</p>{esMiCanal(v.creador) ? <span className="text-xs font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-3 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}</button>}</div>
+                  <p className="text-xs font-bold">{v.titulo}</p>
+                  <div className="flex gap-2">
+                    <button onClick={() => reaccionar(v, "like")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "like" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"}`}><Sparkles className="w-3.5 h-3.5" /> ({v.likes || 0})</button>
+                    <button onClick={() => reaccionar(v, "dislike")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "dislike" ? "bg-orange-600 text-white" : "bg-orange-50 text-orange-700"}`}><ShieldAlert className="w-3.5 h-3.5" /> ({v.dislikes || 0})</button>
+                    <button onClick={() => setVideoCompartir(v)} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer"><Share2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
               </div>
@@ -414,6 +469,18 @@ export default function Home() {
             <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Users className="w-4 h-4 text-blue-600" /> Suscriptores Reales</span><span>{seguidoresTotales} / 500</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${Math.min(100, (seguidoresTotales / 500) * 100)}%` }} /></div></div>
             <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Eye className="w-4 h-4 text-orange-500" /> Vistas Calificadas (+6 seg)</span><span>{vistasTotales} / 5,000</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${Math.min(100, (vistasTotales / 5000) * 100)}%` }} /></div></div>
           </div>
+        )}
+
+        {tab === "canal" && usuario && (
+          <EstudioCanal
+            supabase={supabase}
+            perfil={usuario}
+            videosCanal={lista.filter((v) => v.creador.toLowerCase() === usuario.username.toLowerCase())}
+            seguidores={conteoSeguidores[usuario.username] || 0}
+            onActualizarPerfil={(p) => setUsuario(p)}
+            onAbrirVideo={(v) => { setTab("inicio"); abrirVideo(v); }}
+            onRecargar={cargarDatos}
+          />
         )}
 
         {tab === "subir" && usuario && (

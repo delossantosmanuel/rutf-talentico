@@ -28,32 +28,83 @@ export default function Home() {
   const [nuevoCom, setNuevoCom] = useState("");
   const vistaContadaRef = useRef<Record<string, boolean>>({});
 
-    const cargarDatos = async () => {
+  const cargarDatos = async () => {
     const { data: vids } = await supabase.from("videos").select("*").order("creado_en", { ascending: false });
     if (vids) setLista(vids);
-    const { data: subs } = await supabase.from("suscripciones").select("*");
+    const { data: subs } = await supabase.from("suscripciones_usuarios").select("canal");
     if (subs) {
       const mapa: Record<string, number> = {};
-      subs.forEach((s: { canal: string; seguidores: number }) => { mapa[s.canal] = s.seguidores; });
+      subs.forEach((s: { canal: string }) => { mapa[s.canal] = (mapa[s.canal] || 0) + 1; });
       setConteoSeguidores(mapa);
+    }
+  };
+
+  const cargarActividadUsuario = async (uid: string) => {
+    const { data: misSubs } = await supabase.from("suscripciones_usuarios").select("canal, notificaciones").eq("usuario_id", uid);
+    if (misSubs) {
+      const sMap: Record<string, boolean> = {};
+      const nMap: Record<string, "todas" | "ninguna"> = {};
+      misSubs.forEach((s: { canal: string; notificaciones: string }) => {
+        sMap[s.canal] = true;
+        nMap[s.canal] = s.notificaciones === "ninguna" ? "ninguna" : "todas";
+      });
+      setSuscritos(sMap);
+      setNotifCreador(nMap);
+    }
+    const { data: misVotos } = await supabase.from("votos_usuarios").select("video_id, tipo").eq("usuario_id", uid);
+    if (misVotos) {
+      const vMap: Record<string, "like" | "dislike"> = {};
+      misVotos.forEach((v: { video_id: string; tipo: "like" | "dislike" }) => { vMap[v.video_id] = v.tipo; });
+      setVotos(vMap);
     }
   };
 
   useEffect(() => {
     cargarDatos();
-    const sesion = localStorage.getItem("rutf_sesion");
-    if (sesion) setUsuario(JSON.parse(sesion));
-    const vG = localStorage.getItem("rutf_votos");
-    if (vG) setVotos(JSON.parse(vG));
-    const sG = localStorage.getItem("rutf_suscritos");
-    if (sG) setSuscritos(JSON.parse(sG));
-    const nG = localStorage.getItem("rutf_notif_creador");
-    if (nG) setNotifCreador(JSON.parse(nG));
+    const iniciarSesion = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData?.user?.email) {
+        const emailGoogle = authData.user.email.toLowerCase();
+        const { data: existente } = await supabase.from("usuarios_rutf").select("id, username, email, es_fundador").eq("email", emailGoogle).maybeSingle();
+        if (existente) {
+          localStorage.setItem("rutf_sesion", JSON.stringify(existente));
+          setUsuario(existente);
+          cargarActividadUsuario(existente.id);
+          return;
+        } else {
+          const base = emailGoogle.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
+          let handle = `@${base || "Talento"}`;
+          if (handle.toLowerCase() === "@rutf_talentico") handle = `@${base}_rd`;
+          const { data: creado } = await supabase.from("usuarios_rutf").insert([{
+            username: handle,
+            username_lower: handle.toLowerCase(),
+            email: emailGoogle,
+            password_hash: "google_oauth",
+            es_fundador: false,
+          }]).select("id, username, email, es_fundador").single();
+          if (creado) {
+            localStorage.setItem("rutf_sesion", JSON.stringify(creado));
+            setUsuario(creado);
+            cargarActividadUsuario(creado.id);
+            return;
+          }
+        }
+      }
+      const sesion = localStorage.getItem("rutf_sesion");
+      if (sesion) {
+        const u = JSON.parse(sesion);
+        setUsuario(u);
+        cargarActividadUsuario(u.id);
+      }
+    };
+    iniciarSesion();
   }, []);
-
-  const cerrarSesion = () => {
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("rutf_sesion");
     setUsuario(null);
+    setSuscritos({});
+    setVotos({});
     if (tab === "subir") setTab("inicio");
   };
 
@@ -64,27 +115,27 @@ export default function Home() {
   };
 
   const toggleSuscripcion = async (canal: string) => {
+    if (!usuario) return setMostrarAuth(true);
+    if (usuario.username.toLowerCase() === canal.toLowerCase()) return;
+
     const yaSuscrito = !!suscritos[canal];
-    const actual = conteoSeguidores[canal] || 0;
-    const nuevoTotal = yaSuscrito ? Math.max(0, actual - 1) : actual + 1;
-    const nuevosSuscritos = { ...suscritos, [canal]: !yaSuscrito };
-    setSuscritos(nuevosSuscritos);
-    localStorage.setItem("rutf_suscritos", JSON.stringify(nuevosSuscritos));
-    if (!yaSuscrito && !notifCreador[canal]) {
-      const nuevasNotif: Record<string, "todas" | "ninguna"> = { ...notifCreador, [canal]: "todas" };
-      setNotifCreador(nuevasNotif);
-      localStorage.setItem("rutf_notif_creador", JSON.stringify(nuevasNotif));
+    if (yaSuscrito) {
+      setSuscritos({ ...suscritos, [canal]: false });
+      setMenuEngranaje(null);
+      await supabase.from("suscripciones_usuarios").delete().eq("usuario_id", usuario.id).eq("canal", canal);
+    } else {
+      setSuscritos({ ...suscritos, [canal]: true });
+      setNotifCreador({ ...notifCreador, [canal]: "todas" });
+      await supabase.from("suscripciones_usuarios").upsert({ usuario_id: usuario.id, canal, notificaciones: "todas" }, { onConflict: "usuario_id,canal" });
     }
-    if (yaSuscrito) setMenuEngranaje(null);
-    setConteoSeguidores({ ...conteoSeguidores, [canal]: nuevoTotal });
-    await supabase.from("suscripciones").upsert({ canal, seguidores: nuevoTotal });
+    cargarDatos();
   };
 
-  const cambiarNotificacion = (canal: string, opcion: "todas" | "ninguna") => {
-    const nuevas: Record<string, "todas" | "ninguna"> = { ...notifCreador, [canal]: opcion };
-    setNotifCreador(nuevas);
-    localStorage.setItem("rutf_notif_creador", JSON.stringify(nuevas));
+  const cambiarNotificacion = async (canal: string, opcion: "todas" | "ninguna") => {
+    if (!usuario) return setMostrarAuth(true);
+    setNotifCreador({ ...notifCreador, [canal]: opcion });
     setMenuEngranaje(null);
+    await supabase.from("suscripciones_usuarios").update({ notificaciones: opcion }).eq("usuario_id", usuario.id).eq("canal", canal);
   };
 
   const cargarComentarios = async (videoId: string) => {
@@ -107,8 +158,10 @@ export default function Home() {
   };
 
   const reaccionar = async (v: Video, tipoReaccion: "like" | "dislike") => {
+    if (!usuario) return setMostrarAuth(true);
     const votoActual = votos[v.id];
     if (votoActual === tipoReaccion) return;
+
     let nuevosLikes = v.likes || 0;
     let nuevosDislikes = v.dislikes || 0;
     if (tipoReaccion === "like") {
@@ -118,9 +171,9 @@ export default function Home() {
       nuevosDislikes += 1;
       if (votoActual === "like") nuevosLikes = Math.max(0, nuevosLikes - 1);
     }
-    const nuevosVotos = { ...votos, [v.id]: tipoReaccion };
-    setVotos(nuevosVotos);
-    localStorage.setItem("rutf_votos", JSON.stringify(nuevosVotos));
+
+    setVotos({ ...votos, [v.id]: tipoReaccion });
+    await supabase.from("votos_usuarios").upsert({ usuario_id: usuario.id, video_id: v.id, tipo: tipoReaccion }, { onConflict: "usuario_id,video_id" });
     await supabase.from("videos").update({ likes: nuevosLikes, dislikes: nuevosDislikes }).eq("id", v.id);
     if (videoActivo && videoActivo.id === v.id) setVideoActivo({ ...videoActivo, likes: nuevosLikes, dislikes: nuevosDislikes });
     cargarDatos();
@@ -147,6 +200,8 @@ export default function Home() {
     </span>
   );
 
+  const esMiCanal = (creador: string) => !!usuario && usuario.username.toLowerCase() === creador.toLowerCase();
+
   const filtrados = lista.filter((v) => {
     const q = busqueda.toLowerCase().trim();
     if (!q) return true;
@@ -155,13 +210,12 @@ export default function Home() {
 
   const vistasTotales = lista.reduce((a, b) => a + (b.vistas || 0), 0);
   const seguidoresTotales = Object.values(conteoSeguidores).reduce((a, b) => a + (b || 0), 0);
-
-    return (
+  return (
     <div className="min-h-screen bg-slate-50/50 text-slate-900">
       {mostrarAuth && (
         <AuthModal
           supabase={supabase}
-          onLogin={(u) => { setUsuario(u); setMostrarAuth(false); }}
+          onLogin={(u) => { setUsuario(u); setMostrarAuth(false); cargarActividadUsuario(u.id); }}
           onCerrar={() => setMostrarAuth(false)}
         />
       )}
@@ -215,31 +269,33 @@ export default function Home() {
                     {renderCreador(videoActivo.creador)}
                     <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} suscriptores • {videoActivo.vistas} {videoActivo.vistas === 1 ? "vista calificada" : "vistas calificadas"}</span>
 
-                    <div className="relative inline-flex items-center gap-1.5">
-                      <button onClick={() => toggleSuscripcion(videoActivo.creador)} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black cursor-pointer transition shadow-sm ${suscritos[videoActivo.creador] ? "bg-slate-900 text-white" : "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-95"}`}>
-                        <UserPlus className="w-3.5 h-3.5" /> {suscritos[videoActivo.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}
-                      </button>
-
-                      {suscritos[videoActivo.creador] && (
-                        <button onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} title="Ajustes de notificaciones" className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 cursor-pointer transition">
-                          <Settings className="w-4 h-4 text-blue-600" />
+                    {esMiCanal(videoActivo.creador) ? (
+                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-extrabold">Tu Canal</span>
+                    ) : (
+                      <div className="relative inline-flex items-center gap-1.5">
+                        <button onClick={() => toggleSuscripcion(videoActivo.creador)} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black cursor-pointer transition shadow-sm ${suscritos[videoActivo.creador] ? "bg-slate-900 text-white" : "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-95"}`}>
+                          <UserPlus className="w-3.5 h-3.5" /> {suscritos[videoActivo.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}
                         </button>
-                      )}
-
-                      {menuEngranaje === videoActivo.creador && (
-                        <div className="absolute left-0 top-10 z-30 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 space-y-1">
-                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">Alertas de {videoActivo.creador}</p>
-                          <button onClick={() => cambiarNotificacion(videoActivo.creador, "todas")} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${notifCreador[videoActivo.creador] !== "ninguna" ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-slate-700"}`}>
-                            <span>Recibir todas las notificaciones</span>
-                            {notifCreador[videoActivo.creador] !== "ninguna" && <Check className="w-4 h-4 text-blue-600" />}
+                        {suscritos[videoActivo.creador] && (
+                          <button onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} title="Ajustes de notificaciones" className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 cursor-pointer transition">
+                            <Settings className="w-4 h-4 text-blue-600" />
                           </button>
-                          <button onClick={() => cambiarNotificacion(videoActivo.creador, "ninguna")} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${notifCreador[videoActivo.creador] === "ninguna" ? "bg-rose-50 text-rose-700" : "hover:bg-slate-50 text-slate-700"}`}>
-                            <span>No recibir ninguna notificación del creador</span>
-                            {notifCreador[videoActivo.creador] === "ninguna" && <X className="w-4 h-4 text-rose-600" />}
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                        {menuEngranaje === videoActivo.creador && (
+                          <div className="absolute left-0 top-10 z-30 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 space-y-1">
+                            <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">Alertas de {videoActivo.creador}</p>
+                            <button onClick={() => cambiarNotificacion(videoActivo.creador, "todas")} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${notifCreador[videoActivo.creador] !== "ninguna" ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-slate-700"}`}>
+                              <span>Recibir todas las notificaciones</span>
+                              {notifCreador[videoActivo.creador] !== "ninguna" && <Check className="w-4 h-4 text-blue-600" />}
+                            </button>
+                            <button onClick={() => cambiarNotificacion(videoActivo.creador, "ninguna")} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${notifCreador[videoActivo.creador] === "ninguna" ? "bg-rose-50 text-rose-700" : "hover:bg-slate-50 text-slate-700"}`}>
+                              <span>No recibir ninguna notificación del creador</span>
+                              {notifCreador[videoActivo.creador] === "ninguna" && <X className="w-4 h-4 text-rose-600" />}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -255,7 +311,7 @@ export default function Home() {
                   <button onClick={() => setVideoActivo(null)} className="text-xs font-bold bg-slate-100 text-slate-500 px-3 py-2 rounded-xl cursor-pointer">Cerrar</button>
                 </div>
               </div>
-                          {(videoActivo.descripcion || videoActivo.hashtags) && (
+              {(videoActivo.descripcion || videoActivo.hashtags) && (
                 <div className="bg-slate-50 rounded-2xl p-4 space-y-2 text-xs">
                   {videoActivo.descripcion && <p className="text-slate-700 whitespace-pre-line leading-relaxed">{videoActivo.descripcion}</p>}
                   {videoActivo.hashtags && (
@@ -302,7 +358,7 @@ export default function Home() {
                       <h4 onClick={() => abrirVideo(v)} className="font-bold text-sm line-clamp-1 cursor-pointer hover:text-blue-600">{v.titulo}</h4>
                       <div className="flex items-center justify-between text-xs text-slate-500">
                         {renderCreador(v.creador)}
-                        <button onClick={() => toggleSuscripcion(v.creador)} className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}</button>
+                        {esMiCanal(v.creador) ? <span className="text-[11px] font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}</button>}
                       </div>
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                         <div className="flex gap-1.5">
@@ -316,12 +372,10 @@ export default function Home() {
                 ))}
               </div>
             </section>
-
             <section>
               <h3 className="font-extrabold mb-3 text-orange-500">Verticales / Shorts</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {filtrados.filter(v => v.tipo === "vertical").map(v => (
-
                   <div key={v.id} onClick={() => abrirVideo(v)} className="relative aspect-[9/16] rounded-2xl bg-slate-900 overflow-hidden cursor-pointer shadow-sm">
                     <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent p-3 flex flex-col justify-between text-white">
@@ -342,7 +396,7 @@ export default function Home() {
               <div key={v.id} className="rounded-3xl bg-slate-950 overflow-hidden shadow-lg border border-slate-200">
                 <video src={v.video_url} controls onTimeUpdate={(e) => registrarVistaCalificada(v, e.currentTarget.currentTime)} className="w-full aspect-[9/16] object-cover" />
                 <div className="p-4 bg-white space-y-2">
-                  <div className="flex items-center justify-between gap-2"><p className="text-sm">{renderCreador(v.creador)}</p><button onClick={() => toggleSuscripcion(v.creador)} className={`px-3 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}</button></div>
+                  <div className="flex items-center justify-between gap-2"><p className="text-sm">{renderCreador(v.creador)}</p>{esMiCanal(v.creador) ? <span className="text-xs font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-3 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}</button>}</div>
                   <p className="text-xs font-bold">{v.titulo}</p>
                   <div className="flex gap-2">
                     <button onClick={() => reaccionar(v, "like")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "like" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"}`}><Sparkles className="w-3.5 h-3.5" /> ({v.likes || 0})</button>
@@ -363,14 +417,7 @@ export default function Home() {
         )}
 
         {tab === "subir" && usuario && (
-          <SubirVideoForm
-            supabase={supabase}
-            canalActual={usuario.username}
-            onPublicado={async () => {
-              await cargarDatos();
-              setTab("inicio");
-            }}
-          />
+          <SubirVideoForm supabase={supabase} canalActual={usuario.username} onPublicado={async () => { await cargarDatos(); setTab("inicio"); }} />
         )}
       </main>
     </div>

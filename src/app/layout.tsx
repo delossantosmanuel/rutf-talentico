@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "RUTF Talentico — Tu talento vale, paso a paso",
   description: "Plataforma oficial de talento en República Dominicana y el mundo. Sube videos largos y verticales, diseña tu canal y crece paso a paso.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo-rt.png",
+    apple: "/logo-rt.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -13,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#dc2626",
   width: "device-width",
   initialScale: 1,
 };

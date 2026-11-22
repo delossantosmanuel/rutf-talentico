@@ -1,0 +1,16 @@
+{
+  "name": "RUTF Talentico",
+  "short_name": "RUTF Talentico",
+  "description": "Tu talento vale, paso a paso",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "/logo-rt.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}

@@ -150,25 +150,26 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
   };
 
   const vistasCanal = videosCanal.reduce((a, b) => a + (b.vistas || 0), 0);
-  return (
+    return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <input ref={inputBannerRef} type="file" accept="image/*" onChange={(e) => subirImagen(e, "banner")} className="hidden" />
-      <input ref={inputAvatarRef} type="file" accept="image/*" onChange={(e) => subirImagen(e, "avatar")} className="hidden" />
+      <input id="input-banner-rutf" type="file" accept="image/*" onChange={(e) => subirImagen(e, "banner")} className="hidden" />
+      <input id="input-avatar-rutf" type="file" accept="image/*" onChange={(e) => subirImagen(e, "avatar")} className="hidden" />
 
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
         <div className={`h-40 sm:h-52 relative overflow-hidden bg-gradient-to-r ${tema}`}>
           {bannerBaseUrl && <img src={bannerBaseUrl} alt="Banner" style={{ objectPosition: `50% ${posY}%`, transform: `scale(${zoom / 100})` }} className="w-full h-full object-cover transition-transform" />}
-          <div className="absolute right-4 bottom-4 flex items-center gap-2">
+          <div className="absolute right-4 bottom-4 z-20 flex items-center gap-2">
             {bannerBaseUrl && (
-              <button type="button" onClick={() => setAbrirEditorBanner(!abrirEditorBanner)} className="bg-white/90 hover:bg-white text-slate-900 px-3 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm">
+              <button type="button" onClick={() => setAbrirEditorBanner(!abrirEditorBanner)} className="bg-white/95 hover:bg-white text-slate-900 px-3 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md">
                 <Sliders className="w-3.5 h-3.5 text-blue-600" /> Ajustar Vista TV / Móvil
               </button>
             )}
-            <button type="button" onClick={() => inputBannerRef.current?.click()} className="bg-black/75 hover:bg-black/90 text-white px-3.5 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm">
+            <label htmlFor="input-banner-rutf" className="bg-black/80 hover:bg-black text-white px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md">
               <ImageIcon className="w-4 h-4" /> Cambiar Banner
-            </button>
+            </label>
           </div>
         </div>
+
 
         {abrirEditorBanner && bannerBaseUrl && (
           <div className="bg-slate-900 text-white p-5 space-y-4 border-b border-slate-800">

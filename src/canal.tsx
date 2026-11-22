@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { Camera, Image as ImageIcon, Save, Trash2, Eye, Sparkles, CheckCircle2, Share2, Copy, Check, X, Play, Pencil } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Camera, Image as ImageIcon, Save, Trash2, Eye, Sparkles, CheckCircle2, Share2, Copy, Check, X, Play, Pencil, Tv, Monitor, Tablet, Smartphone, Sliders } from "lucide-react";
 
 export type PerfilCanal = {
   id: string;
@@ -21,6 +21,14 @@ const TEMAS_BANNER = [
   { id: "from-slate-900 via-blue-900 to-slate-800", nombre: "Estudio Noche" },
 ];
 
+function parseBanner(raw?: string) {
+  if (!raw) return { url: "", posY: 50, zoom: 100 };
+  const partes = raw.split("#");
+  const url = partes.at(0) || "";
+  const params = new URLSearchParams(partes.at(1) || "");
+  return { url, posY: Number(params.get("y") || 50), zoom: Number(params.get("z") || 100) };
+}
+
 export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; videoId: string; onCerrar: () => void }) {
   const [copiado, setCopiado] = useState(false);
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://vercel.app";
@@ -37,9 +45,7 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
   const compartirNativo = () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       navigator.share({ title: titulo, text: `Mira "${titulo}" en RUTF Talentico`, url: enlaceDirecto }).catch(() => {});
-    } else {
-      copiar();
-    }
+    } else copiar();
   };
 
   return (
@@ -50,18 +56,13 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
           <h3 className="text-lg font-black text-slate-900 flex items-center gap-2"><Share2 className="w-5 h-5 text-blue-600" /> Compartir Video</h3>
           <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{titulo}</p>
         </div>
-
         <div className="grid grid-cols-2 gap-2.5 text-xs font-extrabold">
           <a href={`https://whatsapp.com{texto}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-2xl transition">WhatsApp</a>
           <a href={`https://facebook.com{linkCodificado}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl transition">Facebook</a>
           <a href={`https://twitter.com{texto}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-2xl transition">X / Twitter</a>
           <a href={`https://t.me{linkCodificado}&text=${texto}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 text-white py-3 rounded-2xl transition">Telegram</a>
         </div>
-
-        <button onClick={compartirNativo} className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-extrabold py-2.5 rounded-xl text-xs cursor-pointer">
-          Instagram / Más apps del teléfono
-        </button>
-
+        <button onClick={compartirNativo} className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-extrabold py-2.5 rounded-xl text-xs cursor-pointer">Instagram / Más apps del teléfono</button>
         <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200">
           <input readOnly value={enlaceDirecto} className="bg-transparent text-[11px] text-slate-600 flex-1 outline-none px-1" />
           <button onClick={copiar} className="flex items-center gap-1 bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 cursor-pointer">
@@ -73,71 +74,59 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
   );
 }
 export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores, onActualizarPerfil, onAbrirVideo, onRecargar }: {
-  supabase: any;
-  perfil: PerfilCanal;
-  videosCanal: any[];
-  seguidores: number;
-  onActualizarPerfil: (p: PerfilCanal) => void;
-  onAbrirVideo: (v: any) => void;
-  onRecargar: () => void;
+  supabase: any; perfil: PerfilCanal; videosCanal: any[]; seguidores: number;
+  onActualizarPerfil: (p: PerfilCanal) => void; onAbrirVideo: (v: any) => void; onRecargar: () => void;
 }) {
+  const inicial = parseBanner(perfil.banner_url);
   const [nombreCanal, setNombreCanal] = useState(perfil.nombre_canal || perfil.username.replace("@", ""));
   const [bio, setBio] = useState(perfil.bio || "");
-  const [tema, setTema] = useState(perfil.tema_banner || TEMAS_BANNER[0].id);
+  const [tema, setTema] = useState(perfil.tema_banner || TEMAS_BANNER.at(0)?.id || "from-blue-600 via-indigo-600 to-orange-500");
   const [avatarUrl, setAvatarUrl] = useState(perfil.avatar_url || "");
-  const [bannerUrl, setBannerUrl] = useState(perfil.banner_url || "");
+  const [bannerBaseUrl, setBannerBaseUrl] = useState(inicial.url);
+  const [posY, setPosY] = useState(inicial.posY);
+  const [zoom, setZoom] = useState(inicial.zoom);
+  const [abrirEditorBanner, setAbrirEditorBanner] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [editandoVideo, setEditandoVideo] = useState<any | null>(null);
+  const inputAvatarRef = useRef<HTMLInputElement>(null);
+  const inputBannerRef = useRef<HTMLInputElement>(null);
+  const bannerCompletoUrl = bannerBaseUrl ? `${bannerBaseUrl}#y=${posY}&z=${zoom}` : "";
 
-  const subirImagen = async (file: File | null, tipo: "avatar" | "banner") => {
+  const subirImagen = async (e: React.ChangeEvent<HTMLInputElement>, tipo: "avatar" | "banner") => {
+    const file = Array.from(e.target.files || []).at(0);
     if (!file) return;
     if (file.size / (1024 * 1024) > 5) return alert("La imagen debe pesar menos de 5 MB.");
     setGuardando(true);
     const ext = file.name.split(".").pop() || "jpg";
     const ruta = `${perfil.id}-${tipo}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("perfiles-rutf").upload(ruta, file);
-    if (error) {
-      alert("Error subiendo imagen: " + error.message);
-      setGuardando(false);
-      return;
-    }
+    if (error) { alert("Error subiendo imagen: " + error.message); setGuardando(false); return; }
     const { data } = supabase.storage.from("perfiles-rutf").getPublicUrl(ruta);
     const nuevaUrl = data.publicUrl;
-    if (tipo === "avatar") setAvatarUrl(nuevaUrl);
-    else setBannerUrl(nuevaUrl);
-
-    const campoDb = tipo === "avatar" ? { avatar_url: nuevaUrl } : { banner_url: nuevaUrl };
-    await supabase.from("usuarios_rutf").update(campoDb).eq("id", perfil.id);
-    const actualizado = { ...perfil, ...campoDb };
-    localStorage.setItem("rutf_sesion", JSON.stringify(actualizado));
-    onActualizarPerfil(actualizado);
+    if (tipo === "avatar") {
+      setAvatarUrl(nuevaUrl);
+      await supabase.from("usuarios_rutf").update({ avatar_url: nuevaUrl }).eq("id", perfil.id);
+      const act = { ...perfil, avatar_url: nuevaUrl };
+      localStorage.setItem("rutf_sesion", JSON.stringify(act));
+      onActualizarPerfil(act);
+    } else {
+      setBannerBaseUrl(nuevaUrl); setPosY(50); setZoom(100); setAbrirEditorBanner(true);
+    }
     setGuardando(false);
+    e.target.value = "";
   };
 
-  const guardarCambios = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const guardarCambios = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setGuardando(true);
-    const actualizado: PerfilCanal = {
-      ...perfil,
-      nombre_canal: nombreCanal.trim(),
-      bio: bio.trim(),
-      tema_banner: tema,
-      avatar_url: avatarUrl,
-      banner_url: bannerUrl,
-    };
-    const { error } = await supabase.from("usuarios_rutf").update({
-      nombre_canal: actualizado.nombre_canal,
-      bio: actualizado.bio,
-      tema_banner: actualizado.tema_banner,
-      avatar_url: actualizado.avatar_url,
-      banner_url: actualizado.banner_url,
-    }).eq("id", perfil.id);
-
+    const actualizado: PerfilCanal = { ...perfil, nombre_canal: nombreCanal.trim(), bio: bio.trim(), tema_banner: tema, avatar_url: avatarUrl, banner_url: bannerCompletoUrl };
+    const { error } = await supabase.from("usuarios_rutf").update({ nombre_canal: actualizado.nombre_canal, bio: actualizado.bio, tema_banner: actualizado.tema_banner, avatar_url: actualizado.avatar_url, banner_url: actualizado.banner_url }).eq("id", perfil.id);
     setGuardando(false);
     if (error) return alert("No se pudo guardar: " + error.message);
     localStorage.setItem("rutf_sesion", JSON.stringify(actualizado));
     onActualizarPerfil(actualizado);
-    alert("¡Diseño de tu canal guardado con éxito!");
+    setAbrirEditorBanner(false);
+    alert("¡Diseño y encuadre de tu canal guardados con éxito!");
   };
 
   const guardarEdicionVideo = async (e: React.FormEvent) => {
@@ -145,19 +134,8 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
     if (!editandoVideo) return;
     if (editandoVideo.titulo.trim().length < 10) return alert("El título debe tener al menos 10 caracteres.");
     setGuardando(true);
-    const tagsLimpios = (editandoVideo.hashtags || "")
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((h: string) => (h.startsWith("#") ? h : `#${h}`))
-      .join(" ");
-
-    const { error } = await supabase.from("videos").update({
-      titulo: editandoVideo.titulo.trim(),
-      descripcion: (editandoVideo.descripcion || "").trim(),
-      etiquetas: (editandoVideo.etiquetas || "").trim(),
-      hashtags: tagsLimpios,
-    }).eq("id", editandoVideo.id);
-
+    const tagsLimpios = (editandoVideo.hashtags || "").split(/\s+/).filter(Boolean).map((h: string) => (h.startsWith("#") ? h : `#${h}`)).join(" ");
+    const { error } = await supabase.from("videos").update({ titulo: editandoVideo.titulo.trim(), descripcion: (editandoVideo.descripcion || "").trim(), etiquetas: (editandoVideo.etiquetas || "").trim(), hashtags: tagsLimpios }).eq("id", editandoVideo.id);
     setGuardando(false);
     if (error) return alert("Error al actualizar video: " + error.message);
     setEditandoVideo(null);
@@ -174,24 +152,66 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
   const vistasCanal = videosCanal.reduce((a, b) => a + (b.vistas || 0), 0);
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <input ref={inputBannerRef} type="file" accept="image/*" onChange={(e) => subirImagen(e, "banner")} className="hidden" />
+      <input ref={inputAvatarRef} type="file" accept="image/*" onChange={(e) => subirImagen(e, "avatar")} className="hidden" />
+
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-        <div className={`h-40 sm:h-52 relative bg-gradient-to-r ${tema}`}>
-          {bannerUrl && <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />}
-          <label className="absolute right-4 bottom-4 bg-black/70 hover:bg-black/85 text-white px-3.5 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-sm">
-            <ImageIcon className="w-4 h-4" /> Cambiar Banner
-            <input type="file" accept="image/*" onChange={(e) => subirImagen(e.target.files?.item(0) ?? null,
- "banner")} className="hidden" />
-          </label>
+        <div className={`h-40 sm:h-52 relative overflow-hidden bg-gradient-to-r ${tema}`}>
+          {bannerBaseUrl && <img src={bannerBaseUrl} alt="Banner" style={{ objectPosition: `50% ${posY}%`, transform: `scale(${zoom / 100})` }} className="w-full h-full object-cover transition-transform" />}
+          <div className="absolute right-4 bottom-4 flex items-center gap-2">
+            {bannerBaseUrl && (
+              <button type="button" onClick={() => setAbrirEditorBanner(!abrirEditorBanner)} className="bg-white/90 hover:bg-white text-slate-900 px-3 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-sm">
+                <Sliders className="w-3.5 h-3.5 text-blue-600" /> Ajustar Vista TV / Móvil
+              </button>
+            )}
+            <button type="button" onClick={() => inputBannerRef.current?.click()} className="bg-black/75 hover:bg-black/90 text-white px-3.5 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm">
+              <ImageIcon className="w-4 h-4" /> Cambiar Banner
+            </button>
+          </div>
         </div>
 
+        {abrirEditorBanner && bannerBaseUrl && (
+          <div className="bg-slate-900 text-white p-5 space-y-4 border-b border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h4 className="text-sm font-black flex items-center gap-1.5"><Sliders className="w-4 h-4 text-orange-400" /> Encuadre y Vista Previa Multidispositivo</h4>
+                <p className="text-[11px] text-slate-400">Ajusta la altura y el zoom para comprobar cómo se ve en cada pantalla.</p>
+              </div>
+              <button type="button" onClick={() => guardarCambios()} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-full text-xs font-extrabold cursor-pointer">Aplicar y Guardar Banner</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-800/70 p-3.5 rounded-2xl text-xs">
+              <div>
+                <div className="flex justify-between mb-1 font-bold"><span>Posición Vertical (Arriba / Abajo)</span><span>{posY}%</span></div>
+                <input type="range" min={0} max={100} value={posY} onChange={(e) => setPosY(Number(e.target.value))} className="w-full accent-orange-500 cursor-pointer" />
+              </div>
+              <div>
+                <div className="flex justify-between mb-1 font-bold"><span>Acercamiento (Zoom)</span><span>{zoom}%</span></div>
+                <input type="range" min={100} max={180} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="w-full accent-blue-500 cursor-pointer" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[11px]">
+              {[
+                { label: "Televisor (TV)", icon: Tv, aspect: "aspect-[16/5]" },
+                { label: "Computadora (PC)", icon: Monitor, aspect: "aspect-[16/4]" },
+                { label: "Tablet", icon: Tablet, aspect: "aspect-[16/5]" },
+                { label: "Teléfono Móvil", icon: Smartphone, aspect: "aspect-[16/7]" },
+              ].map((d) => (
+                <div key={d.label} className="bg-slate-800 rounded-xl p-2 space-y-1.5 border border-slate-700">
+                  <div className="flex items-center gap-1 font-bold text-slate-300"><d.icon className="w-3.5 h-3.5 text-blue-400" /> {d.label}</div>
+                  <div className={`w-full ${d.aspect} rounded-lg overflow-hidden bg-slate-950 relative`}>
+                    <img src={bannerBaseUrl} alt={d.label} style={{ objectPosition: `50% ${posY}%`, transform: `scale(${zoom / 100})` }} className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="px-6 pb-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 relative z-10">
             <div className="flex items-end gap-4">
-              <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-600 to-orange-500 border-4 border-white shadow-md overflow-hidden flex items-center justify-center text-white font-black text-2xl">
+              <div onClick={() => inputAvatarRef.current?.click()} title="Cambiar foto de perfil" className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-600 to-orange-500 border-4 border-white shadow-md overflow-hidden flex items-center justify-center text-white font-black text-2xl cursor-pointer group">
                 {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : perfil.username.replace("@", "").slice(0, 2).toUpperCase()}
-                <label title="Subir foto de perfil" className="absolute inset-0 bg-black/45 opacity-0 hover:opacity-100 flex items-center justify-center text-white cursor-pointer transition">
-                  <input type="file" accept="image/*" onChange={(e) => subirImagen(e.target.files?.item(0) ?? null, "avatar")} className="hidden" />
-                </label>
+                <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition"><Camera className="w-6 h-6" /></div>
               </div>
               <div className="pb-1">
                 <h2 className="text-xl font-black text-slate-900 flex items-center gap-1.5">
@@ -209,11 +229,10 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] text-slate-500 font-bold mr-1">Color de Banner:</span>
                 {TEMAS_BANNER.map((t) => (
-                  <button key={t.id} type="button" onClick={() => { setTema(t.id); setBannerUrl(""); }} title={t.nombre} className={`w-6 h-6 rounded-full bg-gradient-to-r ${t.id} border-2 cursor-pointer ${tema === t.id && !bannerUrl ? "border-slate-900 scale-110" : "border-white"}`} />
+                  <button key={t.id} type="button" onClick={() => { setTema(t.id); setBannerBaseUrl(""); setAbrirEditorBanner(false); }} title={t.nombre} className={`w-6 h-6 rounded-full bg-gradient-to-r ${t.id} border-2 cursor-pointer ${tema === t.id && !bannerBaseUrl ? "border-slate-900 scale-110" : "border-white"}`} />
                 ))}
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-slate-700 mb-1 block">Nombre visible del Canal</label>
@@ -224,13 +243,11 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
                 <input maxLength={160} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Cuéntale a tu comunidad qué talento compartes..." className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs outline-none focus:border-blue-600" />
               </div>
             </div>
-
-            <button disabled={guardando} type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 cursor-pointer disabled:opacity-50">
-              <Save className="w-4 h-4" /> {guardando ? "Guardando..." : "Guardar Diseño del Canal"}
-            </button>
+            <button disabled={guardando} type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"><Save className="w-4 h-4" /> {guardando ? "Guardando..." : "Guardar Diseño del Canal"}</button>
           </form>
         </div>
       </div>
+
       {editandoVideo && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form onSubmit={guardarEdicionVideo} className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
@@ -238,27 +255,13 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
               <h3 className="font-black text-base text-slate-900">Editar Video Publicado</h3>
               <button type="button" onClick={() => setEditandoVideo(null)} className="p-1.5 rounded-full bg-slate-100 text-slate-600 cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 mb-1 block">Título (Mín. 10 / Máx. 80)</label>
-              <input required minLength={10} maxLength={80} value={editandoVideo.titulo} onChange={(e) => setEditandoVideo({ ...editandoVideo, titulo: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-700 mb-1 block">Descripción</label>
-              <textarea rows={3} maxLength={1000} value={editandoVideo.descripcion || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, descripcion: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs resize-none" />
-            </div>
+            <div><label className="text-xs font-bold text-slate-700 mb-1 block">Título (Mín. 10 / Máx. 80)</label><input required minLength={10} maxLength={80} value={editandoVideo.titulo} onChange={(e) => setEditandoVideo({ ...editandoVideo, titulo: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs" /></div>
+            <div><label className="text-xs font-bold text-slate-700 mb-1 block">Descripción</label><textarea rows={3} maxLength={1000} value={editandoVideo.descripcion || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, descripcion: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs resize-none" /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-bold text-slate-700 mb-1 block">Etiquetas</label>
-                <input value={editandoVideo.etiquetas || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, etiquetas: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-slate-700 mb-1 block">Hashtags</label>
-                <input value={editandoVideo.hashtags || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, hashtags: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" />
-              </div>
+              <div><label className="text-xs font-bold text-slate-700 mb-1 block">Etiquetas</label><input value={editandoVideo.etiquetas || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, etiquetas: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" /></div>
+              <div><label className="text-xs font-bold text-slate-700 mb-1 block">Hashtags</label><input value={editandoVideo.hashtags || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, hashtags: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" /></div>
             </div>
-            <button disabled={guardando} type="submit" className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-extrabold py-2.5 rounded-xl text-xs cursor-pointer">
-              {guardando ? "Guardando cambios..." : "Guardar Cambios del Video"}
-            </button>
+            <button disabled={guardando} type="submit" className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-extrabold py-2.5 rounded-xl text-xs cursor-pointer">{guardando ? "Guardando cambios..." : "Guardar Cambios del Video"}</button>
           </form>
         </div>
       )}

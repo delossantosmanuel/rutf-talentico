@@ -173,27 +173,42 @@ export default function Home() {
     cargarDatos();
   };
 
-  const reaccionar = async (v: Video, tipoReaccion: "like" | "dislike") => {
+   const reaccionar = async (v: Video, tipoReaccion: "like" | "dislike") => {
     if (!usuario) return setMostrarAuth(true);
-    const votoActual = votos[v.id];
-    if (votoActual === tipoReaccion) return;
+    if (vistaContadaRef.current[`votando_${v.id}`]) return;
+    vistaContadaRef.current[`votando_${v.id}`] = true;
+    try {
+      const votoActual = votos[v.id];
+      let nuevosLikes = v.likes || 0;
+      let nuevosDislikes = v.dislikes || 0;
 
-    let nuevosLikes = v.likes || 0;
-    let nuevosDislikes = v.dislikes || 0;
-    if (tipoReaccion === "like") {
-      nuevosLikes += 1;
-      if (votoActual === "dislike") nuevosDislikes = Math.max(0, nuevosDislikes - 1);
-    } else {
-      nuevosDislikes += 1;
-      if (votoActual === "like") nuevosLikes = Math.max(0, nuevosLikes - 1);
+      if (votoActual === tipoReaccion) {
+        if (tipoReaccion === "like") nuevosLikes = Math.max(0, nuevosLikes - 1);
+        else nuevosDislikes = Math.max(0, nuevosDislikes - 1);
+        const copiaVotos = { ...votos };
+        delete copiaVotos[v.id];
+        setVotos(copiaVotos);
+        await supabase.from("votos_usuarios").delete().eq("usuario_id", usuario.id).eq("video_id", v.id);
+      } else {
+        if (tipoReaccion === "like") {
+          nuevosLikes += 1;
+          if (votoActual === "dislike") nuevosDislikes = Math.max(0, nuevosDislikes - 1);
+        } else {
+          nuevosDislikes += 1;
+          if (votoActual === "like") nuevosLikes = Math.max(0, nuevosLikes - 1);
+        }
+        setVotos({ ...votos, [v.id]: tipoReaccion });
+        await supabase.from("votos_usuarios").upsert({ usuario_id: usuario.id, video_id: v.id, tipo: tipoReaccion });
+      }
+
+      await supabase.from("videos").update({ likes: nuevosLikes, dislikes: nuevosDislikes }).eq("id", v.id);
+      if (videoActivo && videoActivo.id === v.id) setVideoActivo({ ...videoActivo, likes: nuevosLikes, dislikes: nuevosDislikes });
+      await cargarDatos();
+    } finally {
+      vistaContadaRef.current[`votando_${v.id}`] = false;
     }
-
-    setVotos({ ...votos, [v.id]: tipoReaccion });
-    await supabase.from("votos_usuarios").upsert({ usuario_id: usuario.id, video_id: v.id, tipo: tipoReaccion }, { onConflict: "usuario_id,video_id" });
-    await supabase.from("videos").update({ likes: nuevosLikes, dislikes: nuevosDislikes }).eq("id", v.id);
-    if (videoActivo && videoActivo.id === v.id) setVideoActivo({ ...videoActivo, likes: nuevosLikes, dislikes: nuevosDislikes });
-    cargarDatos();
   };
+
 
   const enviarComentario = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -268,7 +283,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                 <button onClick={() => { setTab("canal"); setVideoActivo(null); }} className="flex items-center gap-1 font-extrabold text-blue-700 hover:underline cursor-pointer">
                   <LayoutDashboard className="w-3.5 h-3.5" /> Mi Canal ({usuario.username})
                 </button>
-                <button onClick={cerrarSesion} title="Cerrar sesiÃ³n" className="text-slate-500 hover:text-rose-600 ml-1 cursor-pointer"><LogOut className="w-3.5 h-3.5" /></button>
+                <button onClick={cerrarSesion} title="Cerrar sesión" className="text-slate-500 hover:text-rose-600 ml-1 cursor-pointer"><LogOut className="w-3.5 h-3.5" /></button>
               </div>
             ) : (
               <button onClick={() => setMostrarAuth(true)} className="flex items-center gap-1 bg-slate-900 text-white px-3.5 py-2 rounded-full text-xs font-bold cursor-pointer"><LogIn className="w-3.5 h-3.5" /> Entrar / Crear Canal</button>
@@ -276,7 +291,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
           </div>
         </div>
         <nav className="max-w-6xl mx-auto flex gap-2 mt-3 overflow-x-auto">
-          {[{ id: "inicio", label: "Para Ti (Recomendados)", icon: Flame }, { id: "shorts", label: "Verticales", icon: Play }, { id: "monetizar", label: "MonetizaciÃ³n", icon: Award }, ...(usuario ? [{ id: "canal", label: "DiseÃ±o de mi Canal", icon: LayoutDashboard }] : [])].map((t) => (
+          {[{ id: "inicio", label: "Para Ti (Recomendados)", icon: Flame }, { id: "shorts", label: "Verticales", icon: Play }, { id: "monetizar", label: "Monetización", icon: Award }, ...(usuario ? [{ id: "canal", label: "Diseño de mi Canal", icon: LayoutDashboard }] : [])].map((t) => (
             <button key={t.id} onClick={() => { setTab(t.id); setVideoActivo(null); }} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold cursor-pointer whitespace-nowrap ${tab === t.id ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"}`}><t.icon className="w-3.5 h-3.5" /> {t.label}</button>
           ))}
         </nav>
@@ -294,13 +309,13 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   <h2 className="font-black text-lg sm:text-xl text-slate-900">{videoActivo.titulo}</h2>
                   <div className="flex flex-wrap items-center gap-2.5 text-xs">
                     {renderCreador(videoActivo.creador)}
-                    <span className="text-slate-500 font-bold">â€¢ {conteoSeguidores[videoActivo.creador] || 0} suscriptores â€¢ {videoActivo.vistas} {videoActivo.vistas === 1 ? "vista calificada" : "vistas calificadas"}</span>
+                    <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} suscriptores • {videoActivo.vistas} {videoActivo.vistas === 1 ? "vista calificada" : "vistas calificadas"}</span>
                     {esMiCanal(videoActivo.creador) ? (
                       <span className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-extrabold">Tu Canal</span>
                     ) : (
                       <div className="relative inline-flex items-center gap-1.5">
                         <button onClick={() => toggleSuscripcion(videoActivo.creador)} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black cursor-pointer transition shadow-sm ${suscritos[videoActivo.creador] ? "bg-slate-900 text-white" : "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-95"}`}>
-                          <UserPlus className="w-3.5 h-3.5" /> {suscritos[videoActivo.creador] ? "Suscrito âœ“" : "Si te gusta, suscrÃ­bete"}
+                          <UserPlus className="w-3.5 h-3.5" /> {suscritos[videoActivo.creador] ? "Suscrito âœ“" : "Si te gusta, suscríbete"}
                         </button>
                         {suscritos[videoActivo.creador] && (
                           <button onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} title="Ajustes de notificaciones" className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 cursor-pointer transition">
@@ -315,7 +330,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                               {notifCreador[videoActivo.creador] !== "ninguna" && <Check className="w-4 h-4 text-blue-600" />}
                             </button>
                             <button onClick={() => cambiarNotificacion(videoActivo.creador, "ninguna")} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${notifCreador[videoActivo.creador] === "ninguna" ? "bg-rose-50 text-rose-700" : "hover:bg-slate-50 text-slate-700"}`}>
-                              <span>No recibir ninguna notificaciÃ³n del creador</span>
+                              <span>No recibir ninguna notificación del creador</span>
                               {notifCreador[videoActivo.creador] === "ninguna" && <X className="w-4 h-4 text-rose-600" />}
                             </button>
                           </div>
@@ -326,10 +341,10 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <button onClick={() => reaccionar(videoActivo, "like")} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition border ${votos[videoActivo.id] === "like" ? "bg-blue-600 text-white border-blue-600" : "bg-blue-50 text-blue-700 border-blue-200"}`}>
-                    <Sparkles className="w-4 h-4" /> Esto me gustÃ³ ({videoActivo.likes || 0})
+                    <Sparkles className="w-4 h-4" /> Esto me gustó ({videoActivo.likes || 0})
                   </button>
                   <button onClick={() => reaccionar(videoActivo, "dislike")} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition border ${votos[videoActivo.id] === "dislike" ? "bg-orange-600 text-white border-orange-600" : "bg-orange-50 text-orange-700 border-orange-200"}`}>
-                    <ShieldAlert className="w-4 h-4" /> No me gustÃ³ ({videoActivo.dislikes || 0})
+                    <ShieldAlert className="w-4 h-4" /> No me gustó ({videoActivo.dislikes || 0})
                   </button>
                   <button onClick={() => setVideoCompartir(videoActivo)} className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Share2 className="w-4 h-4 text-blue-600" /> Compartir</button>
                   <button onClick={abrirSubir} className="flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Scissors className="w-4 h-4" /> Recrear Vertical</button>
@@ -353,11 +368,11 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
               <div className="pt-2 space-y-4">
                 <h3 className="font-extrabold text-sm flex items-center gap-1.5 text-slate-800"><MessageSquare className="w-4 h-4 text-blue-600" /> Comentarios ({comentarios.length})</h3>
                 <form onSubmit={enviarComentario} className="flex flex-col sm:flex-row gap-2">
-                  <input required value={nuevoCom} onChange={(e) => setNuevoCom(e.target.value)} placeholder={usuario ? `Comentar como ${usuario.username}...` : "Inicia sesiÃ³n para comentar..."} className="flex-1 border border-slate-300 rounded-xl px-3.5 py-2 text-xs" />
+                  <input required value={nuevoCom} onChange={(e) => setNuevoCom(e.target.value)} placeholder={usuario ? `Comentar como ${usuario.username}...` : "Inicia sesión para comentar..."} className="flex-1 border border-slate-300 rounded-xl px-3.5 py-2 text-xs" />
                   <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"><Send className="w-3.5 h-3.5" /> {usuario ? "Comentar" : "Entrar para comentar"}</button>
                 </form>
                 <div className="space-y-2.5 max-h-60 overflow-y-auto">
-                  {comentarios.length === 0 ? <p className="text-xs text-slate-400">SÃ© el primero en comentar este video.</p> : comentarios.map((c) => (
+                  {comentarios.length === 0 ? <p className="text-xs text-slate-400">Sé el primero en comentar este video.</p> : comentarios.map((c) => (
                     <div key={c.id} className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs">
                       <div className="flex justify-between items-center mb-1"><span className="font-bold text-blue-600">{c.usuario}</span><span className="text-[10px] text-slate-400">{new Date(c.creado_en).toLocaleDateString()}</span></div>
                       <p className="text-slate-700">{c.texto}</p>
@@ -384,7 +399,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                       <h4 onClick={() => abrirVideo(v)} className="font-bold text-sm line-clamp-1 cursor-pointer hover:text-blue-600">{v.titulo}</h4>
                       <div className="flex items-center justify-between text-xs text-slate-500">
                         {renderCreador(v.creador)}
-                        {esMiCanal(v.creador) ? <span className="text-[11px] font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito âœ“" : "Si te gusta, suscrÃ­bete"}</button>}
+                        {esMiCanal(v.creador) ? <span className="text-[11px] font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito âœ“" : "Si te gusta, suscríbete"}</button>}
                       </div>
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                         <div className="flex gap-1.5">
@@ -457,38 +472,56 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     className="w-full h-full object-cover"
                   />
 
-                  {mostrarGuiaSwipe && listaShorts.length > 1 && (
+                                   {mostrarGuiaSwipe && (
                     <div onClick={irSiguiente} className="absolute inset-x-0 top-4 z-20 flex justify-center cursor-pointer">
-                      <div className="bg-gradient-to-r from-blue-600/90 via-slate-900/90 to-orange-500/90 backdrop-blur-md text-white border border-white/25 px-4 py-2 rounded-full text-[11px] font-extrabold flex items-center gap-2 shadow-xl animate-pulse">
-                        <span>? Desliza hacia los lados para más talentos ?</span>
+                      <div className="bg-gradient-to-r from-blue-600/95 via-slate-900/95 to-orange-500/95 backdrop-blur-md text-white border border-white/30 px-4 py-2 rounded-full text-[11px] font-extrabold flex items-center gap-2 shadow-xl animate-bounce">
+                        <span>Desliza a la derecha para más talentos</span>
+                        <span className="text-sm font-black">→</span>
                       </div>
                     </div>
                   )}
 
+                  <button
+                    type="button"
+                    onClick={irSiguiente}
+                    title="Siguiente talento"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white border border-white/30 flex items-center justify-center text-lg font-black shadow-xl hover:scale-105 transition animate-pulse"
+                  >
+                    →
+                  </button>
+
                   {listaShorts.length > 1 && (
-                    <>
-                      <button type="button" onClick={irAnterior} title="Anterior" className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-black hover:bg-black/75">
-                        ‹
-                      </button>
-                      <button type="button" onClick={irSiguiente} title="Siguiente" className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white border border-white/25 flex items-center justify-center font-black shadow-lg hover:opacity-95">
-                        ›
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      onClick={irAnterior}
+                      title="Anterior talento"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 backdrop-blur-md text-white border border-white/25 flex items-center justify-center text-lg font-black hover:bg-black/75 transition"
+                    >
+                      ←
+                    </button>
                   )}
 
-                  <div className="absolute inset-x-0 bottom-12 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-4 text-white space-y-2.5">
+                  <div className="absolute inset-x-0 bottom-12 bg-gradient-to-t from-black/95 via-black/75 to-transparent p-4 text-white space-y-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="text-xs font-black text-orange-400 truncate">{actual.creador} • {indiceShort + 1}/{listaShorts.length}</div>
+                        <div className="text-xs font-black text-orange-400 truncate">
+                          {actual.creador} • {conteoSeguidores[actual.creador] || 0} suscriptores
+                        </div>
                         <p className="text-sm font-black line-clamp-2 leading-snug">{actual.titulo}</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => toggleSuscripcion(actual.creador)}
-                        className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black transition shadow ${estaSuscrito ? "bg-white/20 text-white border border-white/30" : "bg-red-600 hover:bg-red-700 text-white"}`}
-                      >
-                        {estaSuscrito ? "Suscrito" : "Suscribirse"}
-                      </button>
+                      {esMiCanal(actual.creador) ? (
+                        <span className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-black bg-white/15 text-white border border-white/25">
+                          Tu canal
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => toggleSuscripcion(actual.creador)}
+                          className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black transition shadow ${estaSuscrito ? "bg-white/20 text-white border border-white/30" : "bg-red-600 hover:bg-red-700 text-white"}`}
+                        >
+                          {estaSuscrito ? "Suscrito" : "Suscribirse"}
+                        </button>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2 pt-0.5">
@@ -508,6 +541,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         <ThumbsDown className="w-3.5 h-3.5" />
                         <span>{actual.dislikes || 0}</span>
                       </button>
+
                       <button
                         type="button"
                         onClick={() => setVideoCompartir(actual)}
@@ -527,7 +561,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
         {tab === "monetizar" && (
           <div className="max-w-xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 space-y-5 shadow-sm">
-            <div><h2 className="text-xl font-black">Requisitos Reales de MonetizaciÃ³n</h2><p className="text-xs text-slate-500 mt-1">Comienzas desde cero y avanzas con cada vista calificada (+6 seg) y suscriptor real.</p></div>
+            <div><h2 className="text-xl font-black">Requisitos Reales de Monetización</h2><p className="text-xs text-slate-500 mt-1">Comienzas desde cero y avanzas con cada vista calificada (+6 seg) y suscriptor real.</p></div>
             <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Users className="w-4 h-4 text-blue-600" /> Suscriptores Reales</span><span>{seguidoresTotales} / 500</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${Math.min(100, (seguidoresTotales / 500) * 100)}%` }} /></div></div>
             <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Eye className="w-4 h-4 text-orange-500" /> Vistas Calificadas (+6 seg)</span><span>{vistasTotales} / 5,000</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${Math.min(100, (vistasTotales / 5000) * 100)}%` }} /></div></div>
           </div>
@@ -550,16 +584,16 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         )}
       </main>
 
-      <footer className="max-w-7xl mx-auto px-4 pt-8 pb-24 text-center text-[11px] text-slate-400 space-y-2 border-t border-slate-200/70 mt-10">
-        <p className="font-bold text-slate-500">RUTF Talentico Â© 2026 â€” RepÃºblica Dominicana y el Mundo</p>
+            <footer className="max-w-7xl mx-auto px-4 pt-8 pb-24 text-center text-[11px] text-slate-400 space-y-2 border-t border-slate-200 mt-12">
+        <p className="font-bold text-slate-500">RUTF Talentico © 2026 • República Dominicana y el Mundo</p>
         <div className="flex flex-wrap items-center justify-center gap-4 font-semibold text-blue-600">
-          <button type="button" onClick={() => alert("POLÃTICA DE PRIVACIDAD â€” RUTF TALENTICO:\n\n1. Recopilamos Ãºnicamente tu correo, nombre de canal y videos publicados para operar tu cuenta.\n2. Utilizamos Google AdMob para mostrar publicidad segura.\n3. No vendemos datos personales a terceros.\n4. Puedes eliminar tu cuenta y todos tus datos en cualquier momento desde el enlace 'Eliminar Cuenta' o escribiendo a soporte@rutftalentico.com.")} className="hover:underline">PolÃ­tica de Privacidad</button>
-          <span>â€¢</span>
-          <button type="button" onClick={() => alert("TÃ‰RMINOS Y CONDICIONES DE USO â€” RUTF TALENTICO:\n\n1. Los creadores conservan los derechos de su talento original.\n2. EstÃ¡ prohibido subir contenido violento, sexual, piraterÃ­a o spam.\n3. RUTF Talentico se reserva el derecho de moderar contenido que incumpla las normas comunitarias.")} className="hover:underline">TÃ©rminos de Uso</button>
-          <span>â€¢</span>
+          <button type="button" onClick={() => alert("POLÍTICA DE PRIVACIDAD • RUTF TALENTICO:\n\n1. Recopilamos datos básicos de perfil (nombre de usuario, correo y contenido publicado) para operar tu canal.\n2. Usamos Google AdMob y análisis técnico para mantener la plataforma gratuita.\n3. No vendemos tus datos personales a terceros.\n4. Puedes solicitar la eliminación total de tus datos en cualquier momento desde el botón 'Eliminar Cuenta'.")} className="hover:underline">Política de Privacidad</button>
+          <span>•</span>
+          <button type="button" onClick={() => alert("TÉRMINOS Y CONDICIONES DE USO • RUTF TALENTICO:\n\n1. Al publicar videos confirmas que eres titular de los derechos del contenido.\n2. Está prohibido el contenido violento, explícito, fraudulento o que infrinja derechos de autor.\n3. Los ingresos por monetización están sujetos a revisión de cumplimiento y políticas publicitarias.")} className="hover:underline">Términos de Uso</button>
+          <span>•</span>
           <button type="button" onClick={async () => {
-            if (!usuario) return alert("Inicia sesiÃ³n en tu canal primero para eliminar tu cuenta y todos tus datos.");
-            if (confirm(`Â¿EstÃ¡s seguro de eliminar permanentemente el canal ${usuario.username} y todos sus datos? Esta acciÃ³n no se puede deshacer.`)) {
+            if (!usuario) return alert("Inicia sesión en tu canal primero para eliminar tu cuenta y todos tus datos.");
+            if (confirm(`¿Estás seguro de eliminar permanentemente el canal ${usuario.username} y todos sus datos? Esta acción no se puede deshacer.`)) {
               await supabase.from("usuarios_rutf").delete().eq("id", usuario.id);
               await cerrarSesion();
               alert("Tu cuenta y datos personales han sido eliminados correctamente.");
@@ -567,6 +601,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
           }} className="text-red-500 hover:underline">Eliminar Cuenta</button>
         </div>
       </footer>
+
     </div>
   );
 }

@@ -211,20 +211,23 @@ export function PanelMonetizacion({
       {/* 1. ENCABEZADO EDITORIAL LIMPIO (Toque secreto x5 para el Fundador) */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2
-            onClick={() => {
-              if (!esFundador) return;
-              const n = toquesFundador + 1;
-              setToquesFundador(n);
-              if (n >= 5) {
-                setAdminVisible(!adminVisible);
-                setToquesFundador(0);
-              }
-            }}
-            className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight select-none"
-          >
-            Monetización
-          </h2>
+                    <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              Monetización
+            </h2>
+            {esFundador && (
+              <button
+                type="button"
+                onClick={() => setAdminVisible(!adminVisible)}
+                className="inline-flex items-center gap-1 bg-slate-900 text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-full shadow-sm"
+              >
+                <ShieldCheck className="w-3 h-3" />
+                <span>Control Fundador ({todasSolicitudes.length})</span>
+              </button>
+            )}
+          </div>
+
+       
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             Convierte tu talento y constancia en ingresos reales en RUTF Talentico.
           </p>
@@ -311,21 +314,23 @@ export function PanelMonetizacion({
             <span>Solicitud enviada • En revisión de calidad (24 a 72 horas)</span>
           </div>
         ) : (
-          <button
+                    <button
             type="button"
             disabled={!cumpleRequisitos || guardando}
             onClick={enviarPostulacion}
-            className={`w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 transition shadow-sm ${
+            className={`w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 ${
               cumpleRequisitos
-                ? "bg-gradient-to-r from-emerald-600 to-blue-600 hover:opacity-95 text-white cursor-pointer shadow-md"
-                : "bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300"
+                ? "bg-gradient-to-r from-emerald-600 to-blue-600 text-white cursor-pointer"
+                : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
             }`}
           >
-            {cumpleRequisitos ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+            {cumpleRequisitos ? <Unlock className="w-4 h-4 shrink-0" /> : <Lock className="w-4 h-4 shrink-0" />}
             <span>
               {cumpleRequisitos ? "Solicitar Revisión de Monetización" : "Solicitar Revisión de Monetización (Completa el 100%)"}
             </span>
           </button>
+
+
         )}
       </div>
 

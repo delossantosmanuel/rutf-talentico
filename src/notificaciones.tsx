@@ -116,6 +116,25 @@ export function CampanaNotificaciones({
           });
         }
       });
+      if (usuario.username.toLowerCase() === "@manueldigitalidad") {
+        const { data: sols } = await supabase
+          .from("solicitudes_monetizacion")
+          .select("*")
+          .eq("estado", "pendiente")
+          .order("creado_en", { ascending: false });
+
+        (sols || []).forEach((s: any) => {
+          const notifId = `monet_${s.id}`;
+          listaGenerada.unshift({
+            id: notifId,
+            tipo: "suscripcion",
+            titulo: `Solicitud de Monetización: ${s.username}`,
+            mensaje: `${s.suscriptores} subs • ${s.vistas} vistas (+15s) • PayPal: ${s.paypal_email}`,
+            leida: Boolean(leidasGuardadas[notifId]),
+            fecha: s.creado_en ? new Date(s.creado_en).toLocaleDateString() : "Hoy",
+          });
+        });
+      }
 
       const noLeidas = listaGenerada.filter((n) => !n.leida).length;
       if (noLeidas > ultimoTotalRef.current) {

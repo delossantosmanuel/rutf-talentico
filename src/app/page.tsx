@@ -33,6 +33,8 @@ export default function Home() {
 
   const [nuevoCom, setNuevoCom] = useState("");
   const vistaContadaRef = useRef<Record<string, boolean>>({});
+const [abiertoComShort, setAbiertoComShort] = useState(false);
+const [likesComentario, setLikesComentario] = useState<Record<string, "like" | "dislike">>({});
 
     const cargarDatos = async () => {
     const { data: vids } = await supabase.from("videos").select("*").order("creado_en", { ascending: false });
@@ -310,33 +312,36 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   <div className="flex flex-wrap items-center gap-2.5 text-xs">
                     {renderCreador(videoActivo.creador)}
                     <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} suscriptores • {videoActivo.vistas} {videoActivo.vistas === 1 ? "vista calificada" : "vistas calificadas"}</span>
-                    {esMiCanal(videoActivo.creador) ? (
-                      <span className="bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-extrabold">Tu Canal</span>
-                    ) : (
-                      <div className="relative inline-flex items-center gap-1.5">
-                        <button onClick={() => toggleSuscripcion(videoActivo.creador)} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black cursor-pointer transition shadow-sm ${suscritos[videoActivo.creador] ? "bg-slate-900 text-white" : "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:opacity-95"}`}>
-                          <UserPlus className="w-3.5 h-3.5" /> {suscritos[videoActivo.creador] ? "Suscrito âœ“" : "Si te gusta, suscríbete"}
+
+                                         {suscritos[videoActivo.creador] ? (
+                      <div className="relative flex items-center gap-1.5">
+                        <button type="button" onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} className="bg-slate-900 text-white text-xs font-extrabold px-3.5 py-2 rounded-full flex items-center gap-1.5">
+                          <span>Suscrito</span>
                         </button>
-                        {suscritos[videoActivo.creador] && (
-                          <button onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} title="Ajustes de notificaciones" className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 cursor-pointer transition">
-                            <Settings className="w-4 h-4 text-blue-600" />
-                          </button>
-                        )}
+                        <button type="button" onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} className="p-2 rounded-full border border-slate-200 hover:bg-slate-100 text-slate-600" title="Preferencias de notificaciones">
+                          <Settings className="w-4 h-4 text-blue-600" />
+                        </button>
                         {menuEngranaje === videoActivo.creador && (
-                          <div className="absolute left-0 top-10 z-30 w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 space-y-1">
-                            <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-1">Alertas de {videoActivo.creador}</p>
-                            <button onClick={() => cambiarNotificacion(videoActivo.creador, "todas")} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${notifCreador[videoActivo.creador] !== "ninguna" ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-slate-700"}`}>
-                              <span>Recibir todas las notificaciones</span>
-                              {notifCreador[videoActivo.creador] !== "ninguna" && <Check className="w-4 h-4 text-blue-600" />}
+                          <div className="absolute left-0 top-10 z-30 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 text-xs font-bold">
+                            <button type="button" onClick={() => cambiarNotificacion(videoActivo.creador, "todas")} className={`w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 ${notifCreador[videoActivo.creador] !== "ninguna" ? "text-blue-600 font-black" : ""}`}>
+                              Recibir todas las notificaciones
                             </button>
-                            <button onClick={() => cambiarNotificacion(videoActivo.creador, "ninguna")} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer ${notifCreador[videoActivo.creador] === "ninguna" ? "bg-rose-50 text-rose-700" : "hover:bg-slate-50 text-slate-700"}`}>
-                              <span>No recibir ninguna notificación del creador</span>
-                              {notifCreador[videoActivo.creador] === "ninguna" && <X className="w-4 h-4 text-rose-600" />}
+                            <button type="button" onClick={() => cambiarNotificacion(videoActivo.creador, "ninguna")} className={`w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 ${notifCreador[videoActivo.creador] === "ninguna" ? "text-blue-600 font-black" : ""}`}>
+                              No recibir notificaciones
+                            </button>
+                            <button type="button" onClick={() => toggleSuscripcion(videoActivo.creador)} className="w-full text-left px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 border-t border-slate-100 mt-1 pt-2">
+                              Anular suscripción
                             </button>
                           </div>
                         )}
                       </div>
+                    ) : (
+                      <button type="button" onClick={() => toggleSuscripcion(videoActivo.creador)} className="bg-red-600 hover:bg-red-700 text-white text-xs font-black px-4 py-2 rounded-full shadow-sm">
+                        Suscripción
+                      </button>
                     )}
+
+                    
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">

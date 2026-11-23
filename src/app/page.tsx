@@ -227,7 +227,8 @@ export default function Home() {
       return [v.titulo, v.creador, v.etiquetas, v.hashtags, v.descripcion].some((c) => c?.toLowerCase().includes(q));
     })
     .sort((a, b) => puntajeAlgoritmo(b) - puntajeAlgoritmo(a));
-const listaShorts = recomendados.filter((v) => v.tipo === "vertical");
+const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerCase().includes("alex") || v.titulo?.toLowerCase().includes("short");
+  const listaShorts = recomendados.filter(esVerticalAuto);
   const vistasTotales = lista.reduce((a, b) => a + (b.vistas || 0), 0);
   const seguidoresTotales = Object.values(conteoSeguidores).reduce((a, b) => a + (b || 0), 0);
   return (

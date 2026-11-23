@@ -7,6 +7,7 @@ import AuthModal from "../auth";
 import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
 import { BarraInstitucional } from "../institucional";
 import { CampanaNotificaciones, reproducirSonidoRUTF } from "../notificaciones";
+import { PanelMonetizacion } from "../monetizacion";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
@@ -788,13 +789,16 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         )}
 
 
-        {tab === "monetizar" && (
-          <div className="max-w-xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 space-y-5 shadow-sm">
-            <div><h2 className="text-xl font-black">Requisitos Reales de Monetización</h2><p className="text-xs text-slate-500 mt-1">Comienzas desde cero y avanzas con cada vista calificada (+6 seg) y suscriptor real.</p></div>
-            <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Users className="w-4 h-4 text-blue-600" /> Suscriptores Reales</span><span>{seguidoresTotales} / 500</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${Math.min(100, (seguidoresTotales / 500) * 100)}%` }} /></div></div>
-            <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Eye className="w-4 h-4 text-orange-500" /> Vistas Calificadas (+6 seg)</span><span>{vistasTotales} / 5,000</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${Math.min(100, (vistasTotales / 5000) * 100)}%` }} /></div></div>
-          </div>
-        )}
+            {tab === "monetizar" && (
+       <PanelMonetizacion
+         usuario={usuario}
+         suscriptoresReales={usuario ? (conteoSeguidores[usuario.username] || 0) : 0}
+         vistasReales={usuario ? lista.filter((v) => v.creador.toLowerCase() === usuario.username.toLowerCase()).reduce((acc, v) => acc + (v.vistas || 0), 0) : 0}
+         supabase={supabase}
+         onAbrirAuth={() => setMostrarAuth(true)}
+       />
+     )}
+
 
         {tab === "canal" && usuario && (
           <EstudioCanal

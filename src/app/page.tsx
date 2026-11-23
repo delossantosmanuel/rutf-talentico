@@ -5,6 +5,7 @@ import { Play, ThumbsUp, ThumbsDown, Flame, PlusCircle, Award, Users, Eye, Dolla
 import SubirVideoForm from "../subir";
 import AuthModal from "../auth";
 import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
+import { BarraInstitucional } from "../institucional";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
@@ -298,6 +299,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
           ))}
         </nav>
       </header>
+      <BarraInstitucional usuario={usuario} onAbrirAuth={() => setMostrarAuth(true)} />
+
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {videoActivo && (

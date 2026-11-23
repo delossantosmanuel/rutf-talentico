@@ -32,9 +32,11 @@ export default function Home() {
   const [toqueInicioY, setToqueInicioY] = useState<number | null>(null);
 
   const [nuevoCom, setNuevoCom] = useState("");
+    const [abiertoComShort, setAbiertoComShort] = useState(false);
+  const [likesComentario, setLikesComentario] = useState<Record<string, "like" | "dislike">>({});
+
   const vistaContadaRef = useRef<Record<string, boolean>>({});
-const [abiertoComShort, setAbiertoComShort] = useState(false);
-const [likesComentario, setLikesComentario] = useState<Record<string, "like" | "dislike">>({});
+
 
     const cargarDatos = async () => {
     const { data: vids } = await supabase.from("videos").select("*").order("creado_en", { ascending: false });
@@ -175,34 +177,25 @@ const [likesComentario, setLikesComentario] = useState<Record<string, "like" | "
     cargarDatos();
   };
 
-   const reaccionar = async (v: Video, tipoReaccion: "like" | "dislike") => {
+    const reaccionar = async (v: Video, tipoReaccion: "like" | "dislike") => {
     if (!usuario) return setMostrarAuth(true);
     if (vistaContadaRef.current[`votando_${v.id}`]) return;
     vistaContadaRef.current[`votando_${v.id}`] = true;
     try {
       const votoActual = votos[v.id];
-      let nuevosLikes = v.likes || 0;
-      let nuevosDislikes = v.dislikes || 0;
-
       if (votoActual === tipoReaccion) {
-        if (tipoReaccion === "like") nuevosLikes = Math.max(0, nuevosLikes - 1);
-        else nuevosDislikes = Math.max(0, nuevosDislikes - 1);
         const copiaVotos = { ...votos };
         delete copiaVotos[v.id];
         setVotos(copiaVotos);
         await supabase.from("votos_usuarios").delete().eq("usuario_id", usuario.id).eq("video_id", v.id);
       } else {
-        if (tipoReaccion === "like") {
-          nuevosLikes += 1;
-          if (votoActual === "dislike") nuevosDislikes = Math.max(0, nuevosDislikes - 1);
-        } else {
-          nuevosDislikes += 1;
-          if (votoActual === "like") nuevosLikes = Math.max(0, nuevosLikes - 1);
-        }
         setVotos({ ...votos, [v.id]: tipoReaccion });
         await supabase.from("votos_usuarios").upsert({ usuario_id: usuario.id, video_id: v.id, tipo: tipoReaccion });
       }
-
+      const { count: cLikes } = await supabase.from("votos_usuarios").select("*", { count: "exact", head: true }).eq("video_id", v.id).eq("tipo", "like");
+      const { count: cDislikes } = await supabase.from("votos_usuarios").select("*", { count: "exact", head: true }).eq("video_id", v.id).eq("tipo", "dislike");
+      const nuevosLikes = cLikes || 0;
+      const nuevosDislikes = cDislikes || 0;
       await supabase.from("videos").update({ likes: nuevosLikes, dislikes: nuevosDislikes }).eq("id", v.id);
       if (videoActivo && videoActivo.id === v.id) setVideoActivo({ ...videoActivo, likes: nuevosLikes, dislikes: nuevosDislikes });
       await cargarDatos();

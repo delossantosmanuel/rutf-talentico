@@ -1,17 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import AdMobManager from "./AdMobManager";
 
 export const metadata: Metadata = {
-  title: "RUTF Talentico — Tu talento vale, paso a paso",
-  description: "Plataforma oficial de talento en República Dominicana y el mundo. Sube videos largos y verticales, diseña tu canal y crece paso a paso.",
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/logo-rt.png",
-    apple: "/logo-rt.png",
-  },
+  title: "RUTF Talentico",
+  description: "Plataforma oficial de RUTF Talentico",
   appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
     title: "RUTF Talentico",
   },
 };
@@ -22,10 +16,17 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es">
-      <body className="antialiased bg-slate-50 text-slate-900">{children}</body>
+      <body className="antialiased bg-slate-50 text-slate-900 pb-16">
+        <AdMobManager />
+        {children}
+      </body>
     </html>
   );
 }

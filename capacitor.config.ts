@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'RUTF Talentico',
   webDir: 'public',
   server: {
-    url: 'https://vercel.app',
+    url: 'https://rutf-talentico.vercel.app',
     cleartext: true
   },
   android: {

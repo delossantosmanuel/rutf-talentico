@@ -507,27 +507,22 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         </div>
                         <p className="text-sm font-black line-clamp-2 leading-snug">{actual.titulo}</p>
                       </div>
-                                           {esMiCanal(actual.creador) ? (
-                        <button
-                          type="button"
-                          onClick={() => setTab("canal")}
-                          className="shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black bg-white/20 hover:bg-white/30 text-white border border-white/30 transition"
-                        >
-                          Mi Canal
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => toggleSuscripcion(actual.creador)}
-                          className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black transition shadow ${estaSuscrito ? "bg-white/20 text-white border border-white/30" : "bg-red-600 hover:bg-red-700 text-white animate-pulse"}`}
-                        >
-                          {estaSuscrito ? "Suscrito" : "Suscripción"}
-                        </button>
-                      )}
-
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (esMiCanal(actual.creador)) setTab("canal");
+                          else {
+                            setBusqueda(actual.creador);
+                            setTab("inicio");
+                          }
+                        }}
+                        className="shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black bg-white/20 hover:bg-white/30 text-white border border-white/30 transition"
+                      >
+                        {esMiCanal(actual.creador) ? "Mi Canal" : "Ver Canal"}
+                      </button>
                     </div>
 
-                    <div className="flex items-center gap-2 pt-0.5">
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
                       <button
                         type="button"
                         onClick={() => reaccionar(actual, "like")}
@@ -544,7 +539,21 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         <ThumbsDown className="w-3.5 h-3.5" />
                         <span>{actual.dislikes || 0}</span>
                       </button>
-
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const abrir = !abiertoComShort;
+                          setAbiertoComShort(abrir);
+                          if (abrir) {
+                            setVideoActivo(actual);
+                            await cargarComentarios(actual.id);
+                          }
+                        }}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-blue-600 to-orange-500 border border-white/30 text-white hover:opacity-95 shadow-md transition"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Comentar{abiertoComShort && videoActivo?.id === actual.id ? ` (${comentarios.length})` : ""}</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => setVideoCompartir(actual)}
@@ -554,6 +563,93 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         <span>Compartir</span>
                       </button>
                     </div>
+
+                    {abiertoComShort && videoActivo?.id === actual.id && (
+                      <div className="bg-slate-950/95 backdrop-blur-md border border-white/20 rounded-2xl p-3 space-y-2.5 max-h-56 overflow-y-auto shadow-2xl">
+                        {!usuario ? (
+                          <div className="flex items-center justify-between gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2">
+                            <span className="text-[11px] font-bold text-slate-200">Inicia sesión primero para poder comentar</span>
+                            <button type="button" onClick={() => setMostrarAuth(true)} className="shrink-0 bg-gradient-to-r from-blue-600 to-orange-500 text-white text-[11px] font-black px-3 py-1 rounded-full">
+                              Entrar
+                            </button>
+                          </div>
+                        ) : (
+                          <form onSubmit={enviarComentario} className="flex items-center gap-1.5">
+                            <span className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white text-[10px] font-black flex items-center justify-center uppercase shrink-0">
+                              {usuario.username.replace("@", "").charAt(0)}
+                            </span>
+                            <input
+                              required
+                              value={nuevoCom}
+                              onChange={(e) => setNuevoCom(e.target.value)}
+                              placeholder={`Comentar como ${usuario.username}...`}
+                              className="flex-1 bg-white/10 border border-white/20 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder:text-slate-400 outline-none"
+                            />
+                            <button type="submit" className="bg-gradient-to-r from-blue-600 to-orange-500 text-white px-3 py-1.5 rounded-xl text-[11px] font-black">
+                              Publicar
+                            </button>
+                          </form>
+                        )}
+
+                        {comentarios.length === 0 ? (
+                          <p className="text-[11px] text-slate-400 text-center py-2">Sé el primero en comentar este talento.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {comentarios.map((c) => {
+                              const votoCom = likesComentario[c.id];
+                              return (
+                                <div key={c.id} className="bg-white/5 border border-white/10 rounded-xl p-2 space-y-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white text-[10px] font-black flex items-center justify-center uppercase">
+                                        {(c.usuario || "U").replace("@", "").charAt(0)}
+                                      </span>
+                                      <span className="text-[11px] font-black text-orange-400">{c.usuario}</span>
+                                    </div>
+                                    <span className="text-[9px] text-slate-400">{new Date(c.creado_en).toLocaleDateString()}</span>
+                                  </div>
+                                  <p className="text-xs text-slate-100">{c.texto}</p>
+                                  <div className="flex items-center gap-2 pt-0.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (!usuario) return setMostrarAuth(true);
+                                        setLikesComentario((prev) => {
+                                          const copia = { ...prev };
+                                          if (copia[c.id] === "like") delete copia[c.id];
+                                          else copia[c.id] = "like";
+                                          return copia;
+                                        });
+                                      }}
+                                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${votoCom === "like" ? "bg-blue-600 border-blue-400 text-white" : "bg-white/5 border-white/15 text-slate-300"}`}
+                                    >
+                                      <ThumbsUp className="w-2.5 h-2.5" />
+                                      <span>Esto me gustó ({votoCom === "like" ? 1 : 0})</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (!usuario) return setMostrarAuth(true);
+                                        setLikesComentario((prev) => {
+                                          const copia = { ...prev };
+                                          if (copia[c.id] === "dislike") delete copia[c.id];
+                                          else copia[c.id] = "dislike";
+                                          return copia;
+                                        });
+                                      }}
+                                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${votoCom === "dislike" ? "bg-red-600 border-red-400 text-white" : "bg-white/5 border-white/15 text-slate-300"}`}
+                                    >
+                                      <ThumbsDown className="w-2.5 h-2.5" />
+                                      <span>No me gustó ({votoCom === "dislike" ? 1 : 0})</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

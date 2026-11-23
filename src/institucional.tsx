@@ -95,7 +95,7 @@ export function BarraInstitucional({
                   <p>¿Deseas colaborar como patrocinador, mentor o institución aliada de la Fundación RUTF Talentico?</p>
                 </div>
                 <a
-                  href="mailto:fundacion@://rutftalentico.com"
+                  href="mailto:delossantosmanuel892@://gmail.com"
                   className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs px-4 py-2.5 rounded-xl transition"
                 >
                   <span>Contactar a la Fundación</span>

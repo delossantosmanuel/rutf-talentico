@@ -263,42 +263,99 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         <ModalCompartir titulo={videoCompartir.titulo} videoId={videoCompartir.id} onCerrar={() => setVideoCompartir(null)} />
       )}
 
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div onClick={() => { setTab("inicio"); setVideoActivo(null); }} className="flex items-center gap-2.5 cursor-pointer">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-orange-500 flex items-center justify-center text-white font-black text-lg shadow-sm">RT</div>
-            <div>
-              <h1 className="text-base sm:text-lg font-extrabold leading-none"><span className="text-blue-600">RUTF</span> <span className="text-orange-500">TALENTICO</span></h1>
-              <p className="text-[11px] text-slate-500">Tu talento vale, paso a paso</p>
+            <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col gap-2">
+          {/* Fila 1: Logo a la izquierda + Entrar / Crear Canal compacto arriba a la derecha */}
+          <div className="flex items-center justify-between gap-2">
+            <div onClick={() => { setTab("inicio"); setVideoActivo(null); setBusqueda(""); }} className="flex items-center gap-2 cursor-pointer shrink-0">
+              <img src="/logo-rt.png" alt="RUTF Talentico" className="w-9 h-9 rounded-xl object-cover shadow" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+              <div>
+                <h1 className="text-base sm:text-lg font-black tracking-tight bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent leading-none">RUTF TALENTICO</h1>
+                <p className="text-[9px] font-bold text-slate-400">Tu talento vale, paso a paso</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              {usuario ? (
+                <>
+                  <button type="button" onClick={() => { setTab("canal"); setVideoActivo(null); }} className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 px-2.5 py-1.5 rounded-full text-[11px] font-extrabold">
+                    <span className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white text-[10px] font-black flex items-center justify-center uppercase">{usuario.username.replace("@", "").charAt(0)}</span>
+                    <span className="max-w-[85px] truncate">{usuario.username}</span>
+                  </button>
+                  <button type="button" onClick={cerrarSesion} title="Cerrar sesión" className="p-1.5 rounded-full border border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50">
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              ) : (
+                <button type="button" onClick={() => setMostrarAuth(true)} className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-full text-[11px] font-extrabold shadow-sm">
+                  <span>Entrar / Crear Canal</span>
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="order-3 lg:order-2 w-full lg:w-80 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            <input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar talento, #hashtag o @canal..." className="w-full bg-slate-100 focus:bg-white border border-slate-200 focus:border-blue-600 rounded-full pl-9 pr-4 py-1.5 text-xs outline-none transition" />
+          {/* Fila 2: Monetización (izquierda) + Subir Video en diseño verde profesional (derecha) */}
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => { setTab("monetizar"); setVideoActivo(null); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black border transition shadow-sm ${
+                tab === "monetizar"
+                  ? "bg-amber-500 text-white border-amber-600"
+                  : "bg-amber-50/90 hover:bg-amber-100 text-amber-800 border-amber-300"
+              }`}
+            >
+              <DollarSign className={`w-4 h-4 ${tab === "monetizar" ? "text-white" : "text-amber-600"}`} />
+              <span>Monetización</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={abrirSubir}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white px-3.5 py-2 rounded-xl text-xs font-black shadow-md transition"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Subir Video</span>
+            </button>
           </div>
 
-          <div className="order-2 lg:order-3 flex items-center gap-2">
-            <button onClick={() => setTab("monetizar")} className="hidden sm:flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer"><DollarSign className="w-3.5 h-3.5" /> $0.00</button>
-            <button onClick={abrirSubir} className="flex items-center gap-1 bg-gradient-to-r from-blue-600 to-orange-500 text-white px-3.5 py-2 rounded-full text-xs font-bold shadow-sm cursor-pointer"><PlusCircle className="w-4 h-4" /> Subir Video</button>
-            {usuario ? (
-              <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded-full text-xs">
-                <button onClick={() => { setTab("canal"); setVideoActivo(null); }} className="flex items-center gap-1 font-extrabold text-blue-700 hover:underline cursor-pointer">
-                  <LayoutDashboard className="w-3.5 h-3.5" /> Mi Canal ({usuario.username})
-                </button>
-                <button onClick={cerrarSesion} title="Cerrar sesión" className="text-slate-500 hover:text-rose-600 ml-1 cursor-pointer"><LogOut className="w-3.5 h-3.5" /></button>
-              </div>
-            ) : (
-              <button onClick={() => setMostrarAuth(true)} className="flex items-center gap-1 bg-slate-900 text-white px-3.5 py-2 rounded-full text-xs font-bold cursor-pointer"><LogIn className="w-3.5 h-3.5" /> Entrar / Crear Canal</button>
-            )}
+          {/* Fila 3: Buscador */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar talento, título o @canal..."
+              className="w-full bg-slate-100 border border-slate-200 rounded-full pl-9 pr-4 py-1.5 text-xs outline-none focus:border-blue-500 focus:bg-white"
+            />
+          </div>
+
+          {/* Fila 4: Pestañas de navegación de video limpias y sin cortarse */}
+          <div className="grid grid-cols-2 gap-2 pt-0.5">
+            <button
+              type="button"
+              onClick={() => { setTab("inicio"); setVideoActivo(null); }}
+              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition ${
+                tab === "inicio" ? "bg-blue-600 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5" />
+              <span>Para Ti (Recomendados)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTab("shorts"); setVideoActivo(null); }}
+              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition ${
+                tab === "shorts" ? "bg-orange-500 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <Play className="w-3.5 h-3.5" />
+              <span>Verticales</span>
+            </button>
           </div>
         </div>
-        <nav className="max-w-6xl mx-auto flex gap-2 mt-3 overflow-x-auto">
-          {[{ id: "inicio", label: "Para Ti (Recomendados)", icon: Flame }, { id: "shorts", label: "Verticales", icon: Play }, { id: "monetizar", label: "Monetización", icon: Award }, ...(usuario ? [{ id: "canal", label: "Diseño de mi Canal", icon: LayoutDashboard }] : [])].map((t) => (
-            <button key={t.id} onClick={() => { setTab(t.id); setVideoActivo(null); }} className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold cursor-pointer whitespace-nowrap ${tab === t.id ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600"}`}><t.icon className="w-3.5 h-3.5" /> {t.label}</button>
-          ))}
-        </nav>
       </header>
+
       <BarraInstitucional usuario={usuario} onAbrirAuth={() => setMostrarAuth(true)} />
 
 

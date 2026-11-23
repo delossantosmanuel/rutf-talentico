@@ -25,6 +25,15 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       return;
     }
     setArchivo(file);
+    const urlTemp = URL.createObjectURL(file);
+    const vid = document.createElement("video");
+    vid.preload = "metadata";
+    vid.onloadedmetadata = () => {
+      if (vid.videoHeight > vid.videoWidth) setTipo("vertical");
+      else setTipo("largo");
+      URL.revokeObjectURL(urlTemp);
+    };
+    vid.src = urlTemp;
   };
 
   const publicar = async (e: React.FormEvent) => {

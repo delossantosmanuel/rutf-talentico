@@ -34,6 +34,8 @@ export default function Home() {
   const [nuevoCom, setNuevoCom] = useState("");
     const [abiertoComShort, setAbiertoComShort] = useState(false);
   const [likesComentario, setLikesComentario] = useState<Record<string, "like" | "dislike">>({});
+    const [conteoComs, setConteoComs] = useState<Record<string, number>>({});
+
 
   const vistaContadaRef = useRef<Record<string, boolean>>({});
 
@@ -55,6 +57,11 @@ export default function Home() {
       const mapa: Record<string, number> = {};
       subs.forEach((s: { canal: string }) => { mapa[s.canal] = (mapa[s.canal] || 0) + 1; });
       setConteoSeguidores(mapa);
+          const { data: todosComs } = await supabase.from("comentarios").select("video_id");
+    const mapaComs: Record<string, number> = {};
+    (todosComs || []).forEach((c: { video_id: string }) => { mapaComs[c.video_id] = (mapaComs[c.video_id] || 0) + 1; });
+    setConteoComs(mapaComs);
+
     }
   };
 
@@ -483,7 +490,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     type="button"
                     onClick={irSiguiente}
                     title="Siguiente talento"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white border border-white/30 flex items-center justify-center text-lg font-black shadow-xl hover:scale-105 transition animate-pulse"
+                    className="absolute right-2.5 top-1/3 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white border border-white/30 flex items-center justify-center text-lg font-black shadow-xl hover:scale-105 transition animate-pulse"
                   >
                     →
                   </button>
@@ -539,7 +546,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         <ThumbsDown className="w-3.5 h-3.5" />
                         <span>{actual.dislikes || 0}</span>
                       </button>
-                      <button
+                                            <button
                         type="button"
                         onClick={async () => {
                           const abrir = !abiertoComShort;
@@ -549,11 +556,22 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                             await cargarComentarios(actual.id);
                           }
                         }}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-blue-600 to-orange-500 border border-white/30 text-white hover:opacity-95 shadow-md transition"
+                        className="relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-blue-600 to-orange-500 border border-white/30 text-white hover:opacity-95 shadow-md transition"
                       >
+                        <span className="absolute -top-2 -right-1.5 flex items-center justify-center w-5 h-5 rounded-full bg-slate-950 border border-amber-400/80 shadow">
+                          <svg viewBox="0 0 24 24" className="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                            <path d="M9.5 11.5h5" />
+                            <path d="M12 9v5" />
+                          </svg>
+                        </span>
                         <MessageSquare className="w-3.5 h-3.5" />
-                        <span>Comentar{abiertoComShort && videoActivo?.id === actual.id ? ` (${comentarios.length})` : ""}</span>
+                        <span>Comentar</span>
+                        <span className="bg-black/30 px-2 py-0.5 rounded-full text-[11px] font-black">
+                          {abiertoComShort && videoActivo?.id === actual.id ? comentarios.length : (conteoComs[actual.id] || 0)}
+                        </span>
                       </button>
+
                       <button
                         type="button"
                         onClick={() => setVideoCompartir(actual)}
@@ -574,7 +592,9 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                             </button>
                           </div>
                         ) : (
-                          <form onSubmit={enviarComentario} className="flex items-center gap-1.5">
+                          <form onSubmit={async (e) => { await enviarComentario(e); setConteoComs((prev) => ({ ...prev, [actual.id]: (prev[actual.id] || 0) + 1 })); }} className="flex items-center gap-1.5">
+
+
                             <span className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white text-[10px] font-black flex items-center justify-center uppercase shrink-0">
                               {usuario.username.replace("@", "").charAt(0)}
                             </span>

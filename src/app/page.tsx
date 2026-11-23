@@ -6,6 +6,7 @@ import SubirVideoForm from "../subir";
 import AuthModal from "../auth";
 import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
 import { BarraInstitucional } from "../institucional";
+import { CampanaNotificaciones, reproducirSonidoRUTF } from "../notificaciones";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
@@ -278,6 +279,18 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             <div className="flex items-center gap-1.5 shrink-0">
               {usuario ? (
                 <>
+                               <CampanaNotificaciones
+                 usuario={usuario}
+                 videos={lista}
+                 suscritos={suscritos}
+                 notifCreador={notifCreador}
+                 supabase={supabase}
+                 onAbrirVideo={(vidId) => {
+                   const encontrado = lista.find((v) => v.id === vidId);
+                   if (encontrado) abrirVideo(encontrado);
+                 }}
+               />
+
                   <button type="button" onClick={() => { setTab("canal"); setVideoActivo(null); }} className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 px-2.5 py-1.5 rounded-full text-[11px] font-extrabold">
                     <span className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white text-[10px] font-black flex items-center justify-center uppercase">{usuario.username.replace("@", "").charAt(0)}</span>
                     <span className="max-w-[85px] truncate">{usuario.username}</span>

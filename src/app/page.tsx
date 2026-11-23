@@ -27,6 +27,10 @@ export default function Home() {
   const [conteoSeguidores, setConteoSeguidores] = useState<Record<string, number>>({});
   const [videoActivo, setVideoActivo] = useState<Video | null>(null);
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
+    const [indiceShort, setIndiceShort] = useState(0);
+  const [mostrarGuiaSwipe, setMostrarGuiaSwipe] = useState(true);
+  const [toqueInicioY, setToqueInicioY] = useState<number | null>(null);
+
   const [nuevoCom, setNuevoCom] = useState("");
   const vistaContadaRef = useRef<Record<string, boolean>>({});
 
@@ -223,6 +227,7 @@ export default function Home() {
       return [v.titulo, v.creador, v.etiquetas, v.hashtags, v.descripcion].some((c) => c?.toLowerCase().includes(q));
     })
     .sort((a, b) => puntajeAlgoritmo(b) - puntajeAlgoritmo(a));
+  const listaShorts = recomendados.filter((v) => v.tipo === "vertical");
 
   const vistasTotales = lista.reduce((a, b) => a + (b.vistas || 0), 0);
   const seguidoresTotales = Object.values(conteoSeguidores).reduce((a, b) => a + (b || 0), 0);
@@ -394,17 +399,32 @@ export default function Home() {
                 ))}
               </div>
             </section>
-
-            <section>
-              <h3 className="font-extrabold mb-3 text-orange-500">Verticales / Shorts</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {recomendados.filter(v => v.tipo === "vertical").map(v => (
-                  <div key={v.id} onClick={() => abrirVideo(v)} className="relative aspect-[9/16] rounded-2xl bg-slate-900 overflow-hidden cursor-pointer shadow-sm">
-                    <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent p-3 flex flex-col justify-between text-white">
-                      <span className="self-start bg-black/50 text-[10px] font-bold px-2 py-0.5 rounded-full">{v.nivel}</span>
-                      <Play className="self-center w-9 h-9 fill-white" />
-                      <div><p className="text-xs font-bold line-clamp-2">{v.titulo}</p><p className="text-[11px] text-orange-300 font-bold mt-0.5">{v.creador} • {v.vistas || 0} vistas</p></div>
+            <section className="bg-slate-900/5 border border-slate-200/80 rounded-3xl p-4 sm:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />
+                  Verticales / Shorts
+                </h3>
+                <button type="button" onClick={() => { setIndiceShort(0); setTab("shorts"); }} className="text-xs font-extrabold text-blue-600 hover:underline">
+                  Ver pantalla completa →
+                </button>
+              </div>
+              <div className="flex gap-3.5 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none">
+                {listaShorts.map((v, idx) => (
+                  <div
+                    key={v.id}
+                    onClick={() => { setIndiceShort(idx); setTab("shorts"); }}
+                    className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] relative rounded-2xl overflow-hidden bg-slate-950 shadow-md cursor-pointer group border border-slate-800/40"
+                  >
+                    <video src={v.video_url} muted playsInline preload="metadata" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent p-3 flex flex-col justify-between text-white">
+                      <span className="self-start bg-black/55 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {v.vistas || 0} vistas
+                      </span>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-extrabold line-clamp-2 leading-snug">{v.titulo}</p>
+                        <p className="text-[10px] text-slate-300 font-semibold truncate">{v.creador}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -414,64 +434,80 @@ export default function Home() {
         )}
 
         {tab === "shorts" && (
-          <div className="max-w-xs mx-auto space-y-6">
-            {recomendados.filter(v => v.tipo === "vertical").map(v => (
-              <div key={v.id} className="rounded-3xl bg-slate-950 overflow-hidden shadow-lg border border-slate-200">
-                <video src={v.video_url} controls onTimeUpdate={(e) => registrarVistaCalificada(v, e.currentTarget.currentTime)} className="w-full aspect-[9/16] object-cover" />
-                <div className="p-4 bg-white space-y-2">
-                  <div className="flex items-center justify-between gap-2"><p className="text-sm">{renderCreador(v.creador)}</p>{esMiCanal(v.creador) ? <span className="text-xs font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-3 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}</button>}</div>
-                  <p className="text-xs font-bold">{v.titulo}</p>
-                  <div className="flex gap-2">
-                    <button onClick={() => reaccionar(v, "like")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "like" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"}`}><Sparkles className="w-3.5 h-3.5" /> ({v.likes || 0})</button>
-                    <button onClick={() => reaccionar(v, "dislike")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "dislike" ? "bg-orange-600 text-white" : "bg-orange-50 text-orange-700"}`}><ShieldAlert className="w-3.5 h-3.5" /> ({v.dislikes || 0})</button>
-                    <button onClick={() => setVideoCompartir(v)} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer"><Share2 className="w-3.5 h-3.5" /></button>
-                  </div>
-                </div>
+          <div className="max-w-md mx-auto">
+            {listaShorts.length === 0 ? (
+              <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center text-sm text-slate-500">
+                Aún no hay videos verticales publicados. ¡Sé el primero en subir tu talento!
               </div>
-            ))}
-          </div>
-        )}
+            ) : (() => {
+              const actual = listaShorts[Math.min(indiceShort, listaShorts.length - 1)];
+              const irSiguiente = () => {
+                setMostrarGuiaSwipe(false);
+                setIndiceShort((prev) => (prev + 1 < listaShorts.length ? prev + 1 : 0));
+              };
+              const irAnterior = () => {
+                setMostrarGuiaSwipe(false);
+                setIndiceShort((prev) => (prev - 1 >= 0 ? prev - 1 : listaShorts.length - 1));
+              };
+              return (
+                <div
+                  onTouchStart={(e) => setToqueInicioY(e.touches[0].clientY)}
+                  onTouchEnd={(e) => {
+                    if (toqueInicioY === null) return;
+                    const diff = toqueInicioY - e.changedTouches[0].clientY;
+                    if (diff > 45) irSiguiente();
+                    else if (diff < -45) irAnterior();
+                    setToqueInicioY(null);
+                  }}
+                  className="relative aspect-[9/16] max-h-[78vh] mx-auto rounded-3xl bg-slate-950 overflow-hidden shadow-2xl border border-slate-800 select-none"
+                >
+                  <video
+                    key={actual.id}
+                    src={actual.video_url}
+                    autoPlay
+                    playsInline
+                    controls
+                    onEnded={() => setMostrarGuiaSwipe(true)}
+                  onTimeUpdate={(e) => registrarVistaCalificada(actual, e.currentTarget.currentTime)}
+                    className="w-full h-full object-cover"
+                  />
 
-        {tab === "monetizar" && (
-          <div className="max-w-xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 space-y-5 shadow-sm">
-            <div><h2 className="text-xl font-black">Requisitos Reales de Monetización</h2><p className="text-xs text-slate-500 mt-1">Comienzas desde cero y avanzas con cada vista calificada (+6 seg) y suscriptor real.</p></div>
-            <div><div className="flex justify-between text-xs font-bold mb-1"><span className="flex items-center gap-1"><Users className="w-4 h-4 text-blue-600" /> Suscriptores Reales</span><span>{seguidoresTotales} / 500</span></div><div className="h-3 bg-slate-100 rounded-full overflow-hidden"><div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${Math.min(100, (seguidoresTotales / 500) * 100)}%` }} /></div></div>
-            <section>
-              <h3 className="font-extrabold mb-3 text-orange-500">Verticales / Shorts</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {recomendados.filter(v => v.tipo === "vertical").map(v => (
-                  <div key={v.id} onClick={() => abrirVideo(v)} className="relative aspect-[9/16] rounded-2xl bg-slate-900 overflow-hidden cursor-pointer shadow-sm">
-                    <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent p-3 flex flex-col justify-between text-white">
-                      <span className="self-start bg-black/50 text-[10px] font-bold px-2 py-0.5 rounded-full">{v.nivel}</span>
-                      <Play className="self-center w-9 h-9 fill-white" />
-                      <div><p className="text-xs font-bold line-clamp-2">{v.titulo}</p><p className="text-[11px] text-orange-300 font-bold mt-0.5">{v.creador} • {v.vistas || 0} vistas</p></div>
+                  {mostrarGuiaSwipe && listaShorts.length > 1 && (
+                    <div
+                      onClick={irSiguiente}
+                      className="absolute inset-x-0 top-5 z-20 flex justify-center pointer-events-auto cursor-pointer"
+                    >
+                      <div className="bg-black/75 backdrop-blur-md text-white border border-white/20 px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-2 shadow-xl animate-bounce">
+                        <span>↑ Desliza o toca aquí para ver el siguiente talento</span>
+                      </div>
                     </div>
+                  )}
+
+                  <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-2.5">
+                    <button type="button" onClick={irAnterior} title="Anterior" className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-black hover:bg-black/80">
+                      ↑
+                    </button>
+                    <button type="button" onClick={irSiguiente} title="Siguiente" className="w-10 h-10 rounded-full bg-blue-600/90 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-black shadow-lg hover:bg-blue-600">
+                      ↓
+                    </button>
+                    <button type="button" onClick={() => reaccionar(actual, "like")} className={`w-10 h-10 rounded-full backdrop-blur-md border border-white/20 flex items-center justify-center text-xs font-black ${votos[actual.id] === "like" ? "bg-blue-600 text-white" : "bg-black/60 text-white"}`}>
+                      👍
+                    </button>
+                    <button type="button" onClick={() => setVideoCompartir(actual)} className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center text-xs font-black">
+                      ↗
+                    </button>
                   </div>
-                ))}
-              </div>
-            </section>
+
+                  <div className="absolute inset-x-0 bottom-12 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 text-white pointer-events-none">
+                    <div className="text-xs font-bold text-orange-400 mb-0.5">{actual.creador} • {indiceShort + 1}/{listaShorts.length}</div>
+                    <p className="text-sm font-black line-clamp-2">{actual.titulo}</p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
-        {tab === "shorts" && (
-          <div className="max-w-xs mx-auto space-y-6">
-            {recomendados.filter(v => v.tipo === "vertical").map(v => (
-              <div key={v.id} className="rounded-3xl bg-slate-950 overflow-hidden shadow-lg border border-slate-200">
-                <video src={v.video_url} controls onTimeUpdate={(e) => registrarVistaCalificada(v, e.currentTarget.currentTime)} className="w-full aspect-[9/16] object-cover" />
-                <div className="p-4 bg-white space-y-2">
-                  <div className="flex items-center justify-between gap-2"><p className="text-sm">{renderCreador(v.creador)}</p>{esMiCanal(v.creador) ? <span className="text-xs font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-3 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito ✓" : "Si te gusta, suscríbete"}</button>}</div>
-                  <p className="text-xs font-bold">{v.titulo}</p>
-                  <div className="flex gap-2">
-                    <button onClick={() => reaccionar(v, "like")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "like" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"}`}><Sparkles className="w-3.5 h-3.5" /> ({v.likes || 0})</button>
-                    <button onClick={() => reaccionar(v, "dislike")} className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${votos[v.id] === "dislike" ? "bg-orange-600 text-white" : "bg-orange-50 text-orange-700"}`}><ShieldAlert className="w-3.5 h-3.5" /> ({v.dislikes || 0})</button>
-                    <button onClick={() => setVideoCompartir(v)} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer"><Share2 className="w-3.5 h-3.5" /></button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {tab === "monetizar" && (
           <div className="max-w-xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 space-y-5 shadow-sm">

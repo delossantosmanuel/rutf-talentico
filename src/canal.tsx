@@ -78,10 +78,11 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
           <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{titulo}</p>
         </div>
         <div className="grid grid-cols-2 gap-2.5 text-xs font-extrabold">
-          <button type="button" onClick={() => abrirRedSocial(`https://whatsapp.com{texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600">WhatsApp</button>
+                  <button type="button" onClick={() => abrirRedSocial(`https://whatsapp.com{texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600">WhatsApp</button>
           <button type="button" onClick={() => abrirRedSocial(`https://facebook.com{linkCodificado}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Facebook</button>
           <button type="button" onClick={() => abrirRedSocial(`https://twitter.com{texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800">X / Twitter</button>
           <button type="button" onClick={() => abrirRedSocial(`https://t.me{linkCodificado}&text=${texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-sky-500 text-white hover:bg-sky-600">Telegram</button>
+
         </div>
         <button type="button" onClick={compartirNativo} className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-black py-3 rounded-xl text-xs shadow-md hover:opacity-95">Instagram / Más apps del teléfono</button>
         <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200">

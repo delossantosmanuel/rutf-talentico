@@ -31,13 +31,13 @@ function parseBanner(raw?: string) {
 
 export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; videoId: string; onCerrar: () => void }) {
   const [copiado, setCopiado] = useState(false);
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://vercel.app";
+  const baseUrl = "https://vercel.app";
   const enlaceDirecto = `${baseUrl}/?v=${videoId}`;
   const texto = encodeURIComponent(`Mira "${titulo}" en RUTF Talentico: ${enlaceDirecto}`);
   const linkCodificado = encodeURIComponent(enlaceDirecto);
 
   const copiar = () => {
-    navigator.clipboard?.writeText(`${titulo} — Mira este talento en RUTF Talentico: ${enlaceDirecto}`);
+    navigator.clipboard?.writeText(`${titulo} - Mira este talento en RUTF Talentico: ${enlaceDirecto}`);
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2500);
   };
@@ -45,27 +45,33 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
   const compartirNativo = () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       navigator.share({ title: titulo, text: `Mira "${titulo}" en RUTF Talentico`, url: enlaceDirecto }).catch(() => {});
-    } else copiar();
+    } else {
+      copiar();
+    }
+  };
+
+  const abrirRedSocial = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 relative">
-        <button onClick={onCerrar} className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 cursor-pointer"><X className="w-4 h-4" /></button>
+        <button onClick={onCerrar} className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200"><X className="w-4 h-4" /></button>
         <div>
-          <h3 className="text-lg font-black text-slate-900 flex items-center gap-2"><Share2 className="w-5 h-5 text-blue-600" /> Compartir Video</h3>
+          <h3 className="text-lg font-black text-slate-900 flex items-center gap-2"><Share2 className="w-5 h-5 text-blue-600" /> Compartir Talento</h3>
           <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{titulo}</p>
         </div>
         <div className="grid grid-cols-2 gap-2.5 text-xs font-extrabold">
-          <a href={`https://whatsapp.com{texto}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-2xl transition">WhatsApp</a>
-          <a href={`https://facebook.com{linkCodificado}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl transition">Facebook</a>
-          <a href={`https://twitter.com{texto}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-2xl transition">X / Twitter</a>
-          <a href={`https://t.me{linkCodificado}&text=${texto}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 text-white py-3 rounded-2xl transition">Telegram</a>
+          <button type="button" onClick={() => abrirRedSocial(`https://whatsapp.com{texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600">WhatsApp</button>
+          <button type="button" onClick={() => abrirRedSocial(`https://facebook.com{linkCodificado}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Facebook</button>
+          <button type="button" onClick={() => abrirRedSocial(`https://twitter.com{texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800">X / Twitter</button>
+          <button type="button" onClick={() => abrirRedSocial(`https://t.me{linkCodificado}&text=${texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-sky-500 text-white hover:bg-sky-600">Telegram</button>
         </div>
-        <button onClick={compartirNativo} className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-extrabold py-2.5 rounded-xl text-xs cursor-pointer">Instagram / Más apps del teléfono</button>
+        <button type="button" onClick={compartirNativo} className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-black py-3 rounded-xl text-xs shadow-md hover:opacity-95">Instagram / Más apps del teléfono</button>
         <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200">
-          <input readOnly value={enlaceDirecto} className="bg-transparent text-[11px] text-slate-600 flex-1 outline-none px-1" />
-          <button onClick={copiar} className="flex items-center gap-1 bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-800 cursor-pointer">
+          <input readOnly value={enlaceDirecto} className="bg-transparent text-[11px] text-slate-600 flex-1 outline-none" />
+          <button type="button" onClick={copiar} className="flex items-center gap-1 bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-slate-50">
             {copiado ? <><Check className="w-3.5 h-3.5 text-emerald-600" /> Copiado</> : <><Copy className="w-3.5 h-3.5" /> Copiar</>}
           </button>
         </div>
@@ -73,6 +79,7 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
     </div>
   );
 }
+
 export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores, onActualizarPerfil, onAbrirVideo, onRecargar }: {
   supabase: any; perfil: PerfilCanal; videosCanal: any[]; seguidores: number;
   onActualizarPerfil: (p: PerfilCanal) => void; onAbrirVideo: (v: any) => void; onRecargar: () => void;

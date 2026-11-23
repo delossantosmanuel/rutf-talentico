@@ -30,9 +30,18 @@ export default function Home() {
   const [nuevoCom, setNuevoCom] = useState("");
   const vistaContadaRef = useRef<Record<string, boolean>>({});
 
-  const cargarDatos = async () => {
+    const cargarDatos = async () => {
     const { data: vids } = await supabase.from("videos").select("*").order("creado_en", { ascending: false });
-    if (vids) setLista(vids);
+    if (vids) {
+      setLista(vids);
+      if (typeof window !== "undefined") {
+        const videoParam = new URLSearchParams(window.location.search).get("v");
+        if (videoParam) {
+          const encontrado = vids.find((item: Video) => String(item.id) === String(videoParam));
+          if (encontrado) abrirVideo(encontrado);
+        }
+      }
+    }
     const { data: subs } = await supabase.from("suscripciones_usuarios").select("canal");
     if (subs) {
       const mapa: Record<string, number> = {};
@@ -40,6 +49,7 @@ export default function Home() {
       setConteoSeguidores(mapa);
     }
   };
+
 
   const cargarActividadUsuario = async (uid: string) => {
     const { data: misSubs } = await supabase.from("suscripciones_usuarios").select("canal, notificaciones").eq("usuario_id", uid);
@@ -487,6 +497,24 @@ export default function Home() {
           <SubirVideoForm supabase={supabase} canalActual={usuario.username} onPublicado={async () => { await cargarDatos(); setTab("inicio"); }} />
         )}
       </main>
+
+      <footer className="max-w-7xl mx-auto px-4 pt-8 pb-24 text-center text-[11px] text-slate-400 space-y-2 border-t border-slate-200/70 mt-10">
+        <p className="font-bold text-slate-500">RUTF Talentico © {new Date().getFullYear()} — República Dominicana y el Mundo</p>
+        <div className="flex flex-wrap items-center justify-center gap-4 font-semibold text-blue-600">
+          <button type="button" onClick={() => alert("POLÍTICA DE PRIVACIDAD — RUTF TALENTICO:\n\n1. Recopilamos únicamente tu correo, nombre de canal y videos publicados para operar tu cuenta.\n2. Utilizamos Google AdMob para mostrar publicidad segura.\n3. No vendemos datos personales a terceros.\n4. Puedes eliminar tu cuenta y todos tus datos en cualquier momento desde el enlace 'Eliminar Cuenta' o escribiendo a soporte@rutftalentico.com.")} className="hover:underline">Política de Privacidad</button>
+          <span>•</span>
+          <button type="button" onClick={() => alert("TÉRMINOS Y CONDICIONES DE USO — RUTF TALENTICO:\n\n1. Los creadores conservan los derechos de su talento original.\n2. Está prohibido subir contenido violento, sexual, piratería o spam.\n3. RUTF Talentico se reserva el derecho de moderar contenido que incumpla las normas comunitarias.")} className="hover:underline">Términos de Uso</button>
+          <span>•</span>
+          <button type="button" onClick={async () => {
+            if (!usuario) return alert("Inicia sesión en tu canal primero para eliminar tu cuenta y todos tus datos.");
+            if (confirm(`¿Estás seguro de eliminar permanentemente el canal ${usuario.username} y todos sus datos? Esta acción no se puede deshacer.`)) {
+              await supabase.from("usuarios_rutf").delete().eq("id", usuario.id);
+              await cerrarSesion();
+              alert("Tu cuenta y datos personales han sido eliminados correctamente.");
+            }
+          }} className="text-red-500 hover:underline">Eliminar Cuenta</button>
+        </div>
+      </footer>
     </div>
   );
 }

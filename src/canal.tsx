@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { Camera, Image as ImageIcon, Save, Trash2, Eye, Sparkles, CheckCircle2, Share2, Copy, Check, X, Play, Pencil, Tv, Monitor, Tablet, Smartphone, Sliders } from "lucide-react";
+import { Share } from "@capacitor/share";
 
 export type PerfilCanal = {
   id: string;
@@ -41,24 +42,32 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
     setCopiado(true);
     setTimeout(() => setCopiado(false), 2500);
   };
-
-  const compartirNativo = () => {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: titulo, text: `Mira "${titulo}" en RUTF Talentico`, url: enlaceDirecto }).catch(() => {});
-    } else {
-      copiar();
+  const compartirNativo = async () => {
+    try {
+      await Share.share({
+        title: titulo,
+        text: `Mira "${titulo}" en RUTF Talentico`,
+        url: enlaceDirecto,
+        dialogTitle: "Compartir talento en...",
+      });
+    } catch {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        navigator.share({ title: titulo, text: `Mira "${titulo}" en RUTF Talentico`, url: enlaceDirecto }).catch(() => copiar());
+      } else {
+        copiar();
+      }
     }
   };
 
-   const abrirRedSocial = (url: string) => {
-    if (typeof navigator !== "undefined" && /Android|iPhone|iPad/i.test(navigator.userAgent) && navigator.share) {
-      navigator.share({ title: titulo, text: `Mira "${titulo}" en RUTF Talentico`, url: enlaceDirecto }).catch(() => {
-        window.open(url, "_blank", "noopener,noreferrer");
-      });
+  const abrirRedSocial = async (url: string) => {
+    const esMovil = typeof navigator !== "undefined" && /Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (esMovil) {
+      await compartirNativo();
     } else {
       window.open(url, "_blank", "noopener,noreferrer");
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">

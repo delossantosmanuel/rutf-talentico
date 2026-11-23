@@ -6,7 +6,13 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     url: 'https://rutf-talentico.vercel.app',
-    cleartext: true
+    cleartext: true,
+    allowNavigation: [
+      'rutf-talentico.vercel.app',
+      '*.vercel.app',
+      '*.supabase.co',
+      '://google.com'
+    ]
   },
   android: {
     allowMixedContent: true

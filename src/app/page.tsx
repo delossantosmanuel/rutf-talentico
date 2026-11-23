@@ -499,7 +499,7 @@ export default function Home() {
       </main>
 
       <footer className="max-w-7xl mx-auto px-4 pt-8 pb-24 text-center text-[11px] text-slate-400 space-y-2 border-t border-slate-200/70 mt-10">
-        <p className="font-bold text-slate-500">RUTF Talentico © {new Date().getFullYear()} — República Dominicana y el Mundo</p>
+        <p className="font-bold text-slate-500">RUTF Talentico © 2026 — República Dominicana y el Mundo</p>
         <div className="flex flex-wrap items-center justify-center gap-4 font-semibold text-blue-600">
           <button type="button" onClick={() => alert("POLÍTICA DE PRIVACIDAD — RUTF TALENTICO:\n\n1. Recopilamos únicamente tu correo, nombre de canal y videos publicados para operar tu cuenta.\n2. Utilizamos Google AdMob para mostrar publicidad segura.\n3. No vendemos datos personales a terceros.\n4. Puedes eliminar tu cuenta y todos tus datos en cualquier momento desde el enlace 'Eliminar Cuenta' o escribiendo a soporte@rutftalentico.com.")} className="hover:underline">Política de Privacidad</button>
           <span>•</span>

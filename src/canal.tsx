@@ -50,8 +50,14 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
     }
   };
 
-  const abrirRedSocial = (url: string) => {
-    window.open(url, "_blank", "noopener,noreferrer");
+   const abrirRedSocial = (url: string) => {
+    if (typeof navigator !== "undefined" && /Android|iPhone|iPad/i.test(navigator.userAgent) && navigator.share) {
+      navigator.share({ title: titulo, text: `Mira "${titulo}" en RUTF Talentico`, url: enlaceDirecto }).catch(() => {
+        window.open(url, "_blank", "noopener,noreferrer");
+      });
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   };
 
   return (

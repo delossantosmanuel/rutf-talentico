@@ -509,19 +509,24 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         </div>
                         <p className="text-sm font-black line-clamp-2 leading-snug">{actual.titulo}</p>
                       </div>
-                      {esMiCanal(actual.creador) ? (
-                        <span className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-black bg-white/15 text-white border border-white/25">
-                          Tu canal
-                        </span>
+                                           {esMiCanal(actual.creador) ? (
+                        <button
+                          type="button"
+                          onClick={() => setTab("canal")}
+                          className="shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black bg-white/20 hover:bg-white/30 text-white border border-white/30 transition"
+                        >
+                          Mi Canal
+                        </button>
                       ) : (
                         <button
                           type="button"
                           onClick={() => toggleSuscripcion(actual.creador)}
-                          className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black transition shadow ${estaSuscrito ? "bg-white/20 text-white border border-white/30" : "bg-red-600 hover:bg-red-700 text-white"}`}
+                          className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black transition shadow ${estaSuscrito ? "bg-white/20 text-white border border-white/30" : "bg-red-600 hover:bg-red-700 text-white animate-pulse"}`}
                         >
-                          {estaSuscrito ? "Suscrito" : "Suscribirse"}
+                          {estaSuscrito ? "Suscrito" : "Suscripción"}
                         </button>
                       )}
+
                     </div>
 
                     <div className="flex items-center gap-2 pt-0.5">

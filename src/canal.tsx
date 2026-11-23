@@ -34,6 +34,7 @@ export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; 
   const [copiado, setCopiado] = useState(false);
   const baseUrl = "https://vercel.app";
 
+
   const enlaceDirecto = `${baseUrl}/?v=${videoId}`;
   const texto = encodeURIComponent(`Mira "${titulo}" en RUTF Talentico: ${enlaceDirecto}`);
   const linkCodificado = encodeURIComponent(enlaceDirecto);

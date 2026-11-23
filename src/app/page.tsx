@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Play, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
+import { Play, ThumbsUp, ThumbsDown, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import SubirVideoForm from "../subir";
 import AuthModal from "../auth";
 import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
@@ -403,11 +403,25 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
           </div>
         )}
 
-        {tab === "shorts" && (
-          <div className="max-w-md mx-auto">
+                {tab === "shorts" && (
+          <div className="max-w-md mx-auto space-y-3">
+            <div className="flex items-center justify-between bg-white border border-slate-200/90 rounded-2xl px-4 py-2.5 shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />
+                <span className="text-xs font-black text-slate-800">Talentos Verticales</span>
+              </div>
+              <button type="button" onClick={abrirSubir} className="bg-gradient-to-r from-blue-600 to-orange-500 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow-md hover:opacity-95 transition flex items-center gap-1.5">
+                <span>+</span>
+                <span>Crear Short</span>
+              </button>
+            </div>
+
             {listaShorts.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center text-sm text-slate-500">
-                Aún no hay videos verticales publicados. ¡Sé el primero en subir tu talento!
+              <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-3">
+                <p className="text-sm font-bold text-slate-600">�Crea tu primer Short y hazte viral en RUTF Talentico!</p>
+                <button type="button" onClick={abrirSubir} className="bg-gradient-to-r from-blue-600 to-orange-500 text-white text-xs font-black px-5 py-2.5 rounded-full shadow-md">
+                  + Publicar Talento Vertical
+                </button>
               </div>
             ) : (() => {
               const actual = listaShorts[Math.min(indiceShort, listaShorts.length - 1)];
@@ -419,12 +433,13 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                 setMostrarGuiaSwipe(false);
                 setIndiceShort((prev) => (prev - 1 >= 0 ? prev - 1 : listaShorts.length - 1));
               };
+              const estaSuscrito = !!suscritos[actual.creador];
               return (
                 <div
-                  onTouchStart={(e) => setToqueInicioY(e.touches[0].clientY)}
+                  onTouchStart={(e) => setToqueInicioY(e.touches[0].clientX)}
                   onTouchEnd={(e) => {
                     if (toqueInicioY === null) return;
-                    const diff = toqueInicioY - e.changedTouches[0].clientY;
+                    const diff = toqueInicioY - e.changedTouches[0].clientX;
                     if (diff > 45) irSiguiente();
                     else if (diff < -45) irAnterior();
                     setToqueInicioY(null);
@@ -438,39 +453,70 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     playsInline
                     controls
                     onEnded={() => setMostrarGuiaSwipe(true)}
-                  onTimeUpdate={(e) => registrarVistaCalificada(actual, e.currentTarget.currentTime)}
+                    onTimeUpdate={(e) => registrarVistaCalificada(actual, e.currentTarget.currentTime)}
                     className="w-full h-full object-cover"
                   />
 
                   {mostrarGuiaSwipe && listaShorts.length > 1 && (
-                    <div
-                      onClick={irSiguiente}
-                      className="absolute inset-x-0 top-5 z-20 flex justify-center pointer-events-auto cursor-pointer"
-                    >
-                      <div className="bg-black/75 backdrop-blur-md text-white border border-white/20 px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-2 shadow-xl animate-bounce">
-                        <span>↑ Desliza o toca aquí para ver el siguiente talento</span>
+                    <div onClick={irSiguiente} className="absolute inset-x-0 top-4 z-20 flex justify-center cursor-pointer">
+                      <div className="bg-gradient-to-r from-blue-600/90 via-slate-900/90 to-orange-500/90 backdrop-blur-md text-white border border-white/25 px-4 py-2 rounded-full text-[11px] font-extrabold flex items-center gap-2 shadow-xl animate-pulse">
+                        <span>? Desliza hacia los lados para m�s talentos ?</span>
                       </div>
                     </div>
                   )}
 
-                  <div className="absolute right-3 bottom-28 z-20 flex flex-col gap-2.5">
-                    <button type="button" onClick={irAnterior} title="Anterior" className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-black hover:bg-black/80">
-                      ↑
-                    </button>
-                    <button type="button" onClick={irSiguiente} title="Siguiente" className="w-10 h-10 rounded-full bg-blue-600/90 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-black shadow-lg hover:bg-blue-600">
-                      ↓
-                    </button>
-                    <button type="button" onClick={() => reaccionar(actual, "like")} className={`w-10 h-10 rounded-full backdrop-blur-md border border-white/20 flex items-center justify-center text-xs font-black ${votos[actual.id] === "like" ? "bg-blue-600 text-white" : "bg-black/60 text-white"}`}>
-                      👍
-                    </button>
-                    <button type="button" onClick={() => setVideoCompartir(actual)} className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center justify-center text-xs font-black">
-                      ↗
-                    </button>
-                  </div>
+                  {listaShorts.length > 1 && (
+                    <>
+                      <button type="button" onClick={irAnterior} title="Anterior" className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/50 backdrop-blur-md text-white border border-white/20 flex items-center justify-center font-black hover:bg-black/75">
+                        �
+                      </button>
+                      <button type="button" onClick={irSiguiente} title="Siguiente" className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white border border-white/25 flex items-center justify-center font-black shadow-lg hover:opacity-95">
+                        �
+                      </button>
+                    </>
+                  )}
 
-                  <div className="absolute inset-x-0 bottom-12 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 text-white pointer-events-none">
-                    <div className="text-xs font-bold text-orange-400 mb-0.5">{actual.creador} • {indiceShort + 1}/{listaShorts.length}</div>
-                    <p className="text-sm font-black line-clamp-2">{actual.titulo}</p>
+                  <div className="absolute inset-x-0 bottom-12 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-4 text-white space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-xs font-black text-orange-400 truncate">{actual.creador} � {indiceShort + 1}/{listaShorts.length}</div>
+                        <p className="text-sm font-black line-clamp-2 leading-snug">{actual.titulo}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleSuscripcion(actual.creador)}
+                        className={`shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black transition shadow ${estaSuscrito ? "bg-white/20 text-white border border-white/30" : "bg-red-600 hover:bg-red-700 text-white"}`}
+                      >
+                        {estaSuscrito ? "Suscrito" : "Suscribirse"}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => reaccionar(actual, "like")}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold border transition ${votos[actual.id] === "like" ? "bg-blue-600 border-blue-400 text-white" : "bg-white/15 border-white/20 text-white hover:bg-white/25"}`}
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                        <span>{actual.likes || 0}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => reaccionar(actual, "dislike")}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold border transition ${votos[actual.id] === "dislike" ? "bg-red-600 border-red-400 text-white" : "bg-white/15 border-white/20 text-white hover:bg-white/25"}`}
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                        <span>{actual.dislikes || 0}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVideoCompartir(actual)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-white/15 border border-white/20 text-white hover:bg-white/25"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span>Compartir</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

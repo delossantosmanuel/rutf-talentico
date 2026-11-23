@@ -313,25 +313,25 @@ export function PanelMonetizacion({
             <Clock className="w-4 h-4 text-amber-600" />
             <span>Solicitud enviada • En revisión de calidad (24 a 72 horas)</span>
           </div>
-        ) : (
-                    <button
+               ) : cumpleRequisitos ? (
+          <button
             type="button"
-            disabled={!cumpleRequisitos || guardando}
+            disabled={guardando}
             onClick={enviarPostulacion}
-            className={`w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 ${
-              cumpleRequisitos
-                ? "bg-gradient-to-r from-emerald-600 to-blue-600 text-white cursor-pointer"
-                : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-            }`}
+            className="w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white cursor-pointer"
           >
-            {cumpleRequisitos ? <Unlock className="w-4 h-4 shrink-0" /> : <Lock className="w-4 h-4 shrink-0" />}
-            <span>
-              {cumpleRequisitos ? "Solicitar Revisión de Monetización" : "Solicitar Revisión de Monetización (Completa el 100%)"}
-            </span>
+            <Unlock className="w-4 h-4 shrink-0" />
+            <span>{guardando ? "Enviando solicitud..." : "Solicitar Revisión de Monetización"}</span>
           </button>
-
-
+        ) : (
+          <div className="w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 bg-slate-200 text-slate-600 border border-slate-300 select-none">
+            <Lock className="w-4 h-4 shrink-0" />
+            <span>Solicitar Revisión de Monetización (Completa el 100%)</span>
+          </div>
         )}
+
+
+
       </div>
 
       {/* 3. FORMAS DE GANAR DINERO (CUADRÍCULA 2x2 COMPACTA) */}

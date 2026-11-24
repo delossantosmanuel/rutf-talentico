@@ -20,38 +20,33 @@ function AnilloProgreso({
   titulo: string;
   colorHex: string;
 }) {
-  const radio = 36;
-  const circunferencia = 2 * Math.PI * radio;
-  const offset = circunferencia - (porcentaje / 100) * circunferencia;
-
   return (
-    <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-3.5 flex flex-col items-center text-center space-y-2">
-      <div className="relative w-24 h-24 flex items-center justify-center">
-        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 88 88">
-          <circle cx="44" cy="44" r={radio} stroke="#e2e8f0" strokeWidth="7" fill="transparent" />
-          <circle
-            cx="44"
-            cy="44"
-            r={radio}
-            stroke={colorHex}
-            strokeWidth="7"
-            strokeLinecap="round"
-            fill="transparent"
-            strokeDasharray={circunferencia}
-            strokeDashoffset={offset}
-            
-          />
-        </svg>
-        <span className="absolute text-base font-black text-slate-900">{porcentaje}%</span>
-      </div>
-      <div>
+    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-2.5">
+      <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-black text-slate-900">{titulo}</p>
-        <p className="text-[11px] font-bold text-slate-600 mt-0.5">{actual}</p>
-        <p className="text-[10px] text-slate-400">{meta}</p>
+        <span
+          className="text-xs font-black px-2 py-0.5 rounded-full text-white"
+          style={{ backgroundColor: colorHex }}
+        >
+          {porcentaje}%
+        </span>
+      </div>
+
+      <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${porcentaje}%`, backgroundColor: colorHex }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+        <span className="text-slate-700">{actual}</span>
+        <span>{meta}</span>
       </div>
     </div>
   );
 }
+
 
 export function PanelMonetizacion({
   usuario,
@@ -298,33 +293,37 @@ export function PanelMonetizacion({
           />
         </div>
 
-                {solicitudActual?.estado === "aprobado" || solicitudActual?.estado === "pagado" ? (
-          <p className="w-full py-3 px-3 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold text-center">
-            ✓ Canal Monetizado Activo • Retiros a PayPal desde $10.00 USD cada 7 días
-          </p>
+                 {solicitudActual?.estado === "aprobado" || solicitudActual?.estado === "pagado" ? (
+          <div className="w-full py-3.5 px-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-black flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Canal Monetizado Activo • Retiros a PayPal desde $10.00 USD cada 7 días</span>
+          </div>
         ) : solicitudActual?.estado === "rechazado" ? (
-          <p className="w-full py-3 px-3 rounded-lg bg-red-50 border border-red-300 text-red-800 text-xs font-bold text-center">
-            Solicitud rechazada • Asegúrate de publicar contenido 100% original
-          </p>
+          <div className="w-full py-3.5 px-4 rounded-2xl bg-red-50 border border-red-300 text-red-800 text-xs font-black flex items-center justify-center gap-2">
+            <XCircle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>Solicitud rechazada • Asegúrate de publicar contenido 100% original</span>
+          </div>
         ) : solicitudActual?.estado === "pendiente" ? (
-          <p className="w-full py-3 px-3 rounded-lg bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold text-center">
-            Solicitud enviada • En revisión de calidad (24 a 72 horas)
-          </p>
+          <div className="w-full py-3.5 px-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-black flex items-center justify-center gap-2">
+            <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>Solicitud enviada • En revisión de calidad (24 a 72 horas)</span>
+          </div>
         ) : cumpleRequisitos ? (
           <button
             type="button"
             disabled={guardando}
             onClick={enviarPostulacion}
-            className="w-full py-3 px-3 rounded-lg text-xs font-bold bg-emerald-600 text-white text-center"
+            className="w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white shadow-md cursor-pointer"
           >
-            {guardando ? "Enviando solicitud..." : "Solicitar Revisión de Monetización"}
+            <Unlock className="w-4 h-4 shrink-0" />
+            <span>{guardando ? "Enviando solicitud..." : "Solicitar Revisión de Monetización"}</span>
           </button>
         ) : (
-          <p className="w-full py-3 px-3 rounded-lg text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 text-center">
-            Solicitar Revisión de Monetización (Completa el 100%)
-          </p>
+          <div className="w-full py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 bg-slate-100 text-slate-600 border border-slate-200">
+            <Lock className="w-4 h-4 text-slate-500 shrink-0" />
+            <span>Solicitar Revisión de Monetización (Completa el 100%)</span>
+          </div>
         )}
-
 
 
 

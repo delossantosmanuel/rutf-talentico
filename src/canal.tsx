@@ -334,9 +334,12 @@ export default function EstudioCanal({
               {seguidores === 1 ? "suscriptor" : "suscriptores"}
             </p>
 
-            <p className="text-xs sm:text-sm text-slate-700 pt-1.5 leading-relaxed line-clamp-2">
-              {perfil.bio || "Creador oficial en RUTF Talentico."}
-            </p>
+             {perfil.bio && (
+  <p className="text-xs sm:text-sm text-slate-700 pt-1.5 leading-relaxed line-clamp-2">
+    {perfil.bio}
+  </p>
+)}
+
 
             <div className="pt-1">
               <button

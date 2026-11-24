@@ -42,7 +42,7 @@ export function CampanaNotificaciones({
   supabase,
   onAbrirVideo,
 }: {
-  usuario: { id: string; username: string } | null;
+  usuario: { id: string; username: string; email?: string } | null;
   videos: { id: string; titulo: string; creador: string; creado_en?: string }[];
   suscritos: Record<string, boolean>;
   notifCreador: Record<string, "todas" | "ninguna">;

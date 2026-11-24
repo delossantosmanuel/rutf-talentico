@@ -5,9 +5,11 @@ import { Play, ThumbsUp, ThumbsDown, Flame, PlusCircle, Award, Users, Eye, Dolla
 import SubirVideoForm from "../subir";
 import AuthModal from "../auth";
 import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
-import { BarraInstitucional } from "../institucional";
+import { BarraInstitucional, PieLegal } from "../institucional";
+
 import { CampanaNotificaciones, reproducirSonidoRUTF } from "../notificaciones";
-import { PanelMonetizacion } from "../monetizacion";
+import PanelMonetizacion from "../monetizacion";
+
 import { iniciarNotificacionesCreadores } from "../notificacionesNativas";
 import { App as CapApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
@@ -219,13 +221,19 @@ const [menuCuenta, setMenuCuenta] = useState(false);
     cargarComentarios(v.id);
   };
 
-    const registrarVistaCalificada = async (v: Video, segundosVistos: number) => {
-    if (segundosVistos < 6 || vistaContadaRef.current[v.id]) return;
-    vistaContadaRef.current[v.id] = true;
-    const nuevasVistas = (v.vistas || 0) + 1;
-    setVideoActivo((prev) => (prev && prev.id === v.id ? { ...prev, vistas: nuevasVistas } : prev));
-    await supabase.rpc("incrementar_vista_atomica", { p_video_id: v.id });
-    cargarDatos();
+      const registrarVistaCalificada = async (v: Video, segundosVistos: number) => {
+    if (segundosVistos >= 6 && !vistaContadaRef.current[v.id]) {
+      vistaContadaRef.current[v.id] = true;
+      const nuevasVistas = (v.vistas || 0) + 1;
+      setVideoActivo((prev) => (prev && prev.id === v.id ? { ...prev, vistas: nuevasVistas } : prev));
+      await supabase.rpc("incrementar_vista_atomica", { p_video_id: v.id });
+      cargarDatos();
+    }
+    if (segundosVistos >= 15 && !vistaContadaRef.current[`${v.id}_15s`]) {
+      vistaContadaRef.current[`${v.id}_15s`] = true;
+      await supabase.rpc("incrementar_vista_15s_atomica", { p_video_id: v.id });
+      cargarDatos();
+    }
   };
 
 
@@ -851,15 +859,24 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         )}
 
 
-            {tab === "monetizar" && (
-       <PanelMonetizacion
-         usuario={usuario}
-         suscriptoresReales={usuario ? (conteoSeguidores[usuario.username] || 0) : 0}
-         vistasReales={usuario ? lista.filter((v) => v.creador.toLowerCase() === usuario.username.toLowerCase()).reduce((acc, v) => acc + (v.vistas || 0), 0) : 0}
-         supabase={supabase}
-         onAbrirAuth={() => setMostrarAuth(true)}
-       />
-     )}
+                {tab === "monetizar" && (
+          <PanelMonetizacion
+            supabase={supabase}
+            usuario={usuario}
+            seguidoresCanal={usuario ? (conteoSeguidores[usuario.username] || 0) : 0}
+            vistasCalificadas15s={
+              usuario
+                ? lista
+                    .filter((v: any) => v.creador.toLowerCase() === usuario.username.toLowerCase())
+                    .reduce((acc: number, v: any) => acc + (v.vistas_15s || 0), 0)
+                : 0
+            }
+            onAbrirAuth={() => setMostrarAuth(true)}
+            onRefrescarMetricas={cargarDatos}
+            onCerrar={() => setTab("inicio")}
+          />
+        )}
+
 
 
                   {tab === "canal" && usuario && (
@@ -890,23 +907,16 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         )}
       </main>
 
-            <footer className="max-w-7xl mx-auto px-4 pt-8 pb-24 text-center text-[11px] text-slate-400 space-y-2 border-t border-slate-200 mt-12">
-        <p className="font-bold text-slate-500">RUTF Talentico © 2026 • República Dominicana y el Mundo</p>
-        <div className="flex flex-wrap items-center justify-center gap-4 font-semibold text-blue-600">
-          <button type="button" onClick={() => alert("POLÍTICA DE PRIVACIDAD • RUTF TALENTICO:\n\n1. Recopilamos datos básicos de perfil (nombre de usuario, correo y contenido publicado) para operar tu canal.\n2. Usamos Google AdMob y análisis técnico para mantener la plataforma gratuita.\n3. No vendemos tus datos personales a terceros.\n4. Puedes solicitar la eliminación total de tus datos en cualquier momento desde el botón 'Eliminar Cuenta'.")} className="hover:underline">Política de Privacidad</button>
-          <span>•</span>
-          <button type="button" onClick={() => alert("TÉRMINOS Y CONDICIONES DE USO • RUTF TALENTICO:\n\n1. Al publicar videos confirmas que eres titular de los derechos del contenido.\n2. Está prohibido el contenido violento, explícito, fraudulento o que infrinja derechos de autor.\n3. Los ingresos por monetización están sujetos a revisión de cumplimiento y políticas publicitarias.")} className="hover:underline">Términos de Uso</button>
-          <span>•</span>
-          <button type="button" onClick={async () => {
-            if (!usuario) return alert("Inicia sesión en tu canal primero para eliminar tu cuenta y todos tus datos.");
-            if (confirm(`¿Estás seguro de eliminar permanentemente el canal ${usuario.username} y todos sus datos? Esta acción no se puede deshacer.`)) {
-              await supabase.from("usuarios_rutf").delete().eq("id", usuario.id);
-              await cerrarSesion();
-              alert("Tu cuenta y datos personales han sido eliminados correctamente.");
-            }
-          }} className="text-red-500 hover:underline">Eliminar Cuenta</button>
-        </div>
-      </footer>
+                <PieLegal
+        usuario={usuario}
+        supabase={supabase}
+        onCuentaEliminada={() => {
+          setUsuario(null);
+          setTab("inicio");
+          cargarDatos();
+        }}
+      />
+
 
     </div>
   );

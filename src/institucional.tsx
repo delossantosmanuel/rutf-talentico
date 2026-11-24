@@ -1,213 +1,275 @@
 "use client";
-import React, { useState } from "react";
-import { ShieldCheck, Sparkles, HeartHandshake, ExternalLink, CheckCircle2, ArrowLeft } from "lucide-react";
 
-type SeccionInstitucional = "fundacion" | "pro" | "legal" | null;
+import { useState } from "react";
+import { Shield, FileText, Trash2, HeartHandshake, Sparkles, X } from "lucide-react";
 
 export function BarraInstitucional({
   usuario,
   onAbrirAuth,
 }: {
-  usuario: { id: string; username: string; email?: string } | null;
+  usuario: any;
   onAbrirAuth: () => void;
 }) {
-  const [seccionActiva, setSeccionActiva] = useState<SeccionInstitucional>(null);
-  const [planSeleccionado, setPlanSeleccionado] = useState<"mensual" | "anual">("mensual");
-  const [solicitudEnviada, setSolicitudEnviada] = useState(false);
+  const [modalAbierto, setModalAbierto] = useState<"fundacion" | "pro" | null>(null);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-3">
-      {/* 3 Botones Horizontales Cortos y Profesionales */}
-      <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
+    <>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 pt-2 flex items-center justify-end gap-2 flex-wrap">
         <button
           type="button"
-          onClick={() => setSeccionActiva(seccionActiva === "fundacion" ? null : "fundacion")}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black border transition shadow-sm ${
-            seccionActiva === "fundacion"
-              ? "bg-orange-500 text-white border-orange-600"
-              : "bg-white text-slate-700 border-slate-200 hover:border-orange-400 hover:text-orange-600"
-          }`}
+          onClick={() => setModalAbierto("fundacion")}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-[11px] font-extrabold transition"
         >
-          <HeartHandshake className="w-3.5 h-3.5 text-orange-500" />
+          <HeartHandshake className="w-3.5 h-3.5 text-amber-600" />
           <span>Fundación</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setSeccionActiva(seccionActiva === "pro" ? null : "pro")}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black border transition shadow-sm ${
-            seccionActiva === "pro"
-              ? "bg-gradient-to-r from-blue-600 to-orange-500 text-white border-transparent"
-              : "bg-white text-slate-800 border-blue-200 hover:border-blue-500"
-          }`}
+          onClick={() => setModalAbierto("pro")}
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 text-[11px] font-extrabold transition"
         >
           <Sparkles className="w-3.5 h-3.5 text-blue-600" />
           <span>RUTF Pro</span>
         </button>
-
-        <button
-          type="button"
-          onClick={() => setSeccionActiva(seccionActiva === "legal" ? null : "legal")}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black border transition shadow-sm ${
-            seccionActiva === "legal"
-              ? "bg-slate-900 text-white border-slate-900"
-              : "bg-white text-slate-700 border-slate-200 hover:border-slate-400"
-          }`}
-        >
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Legal &amp; Términos</span>
-        </button>
       </div>
 
-      {/* Panel Desplegable Funcional */}
-      {seccionActiva && (
-        <div className="mt-3 bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h2 className="text-base sm:text-lg font-black text-slate-900">
-              {seccionActiva === "fundacion" && "Fundación RUTF Talentico • Impulso Social y Cultural"}
-              {seccionActiva === "pro" && "RUTF Talentico Pro • Membresía Oficial de Creadores"}
-              {seccionActiva === "legal" && "Términos, Condiciones y Política de Privacidad del Fundador"}
-            </h2>
-            <button
-              type="button"
-              onClick={() => setSeccionActiva(null)}
-              className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-900 px-3 py-1 rounded-full bg-slate-100"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Cerrar</span>
-            </button>
-          </div>
+      {modalAbierto && (
+        <div
+          onClick={() => setModalAbierto(null)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-slate-900">
+                {modalAbierto === "fundacion"
+                  ? "Fundación RUTF Talentico"
+                  : "Programa RUTF Pro"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setModalAbierto(null)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
-          {seccionActiva === "fundacion" && (
-            <div className="grid md:grid-cols-2 gap-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
-              <div className="bg-orange-50/70 border border-orange-200 rounded-2xl p-4 space-y-2">
-                <p className="font-black text-orange-700">Nuestra Misión como Fundación</p>
-                <p>
-                  La <strong>Fundación RUTF Talentico</strong> nace en República Dominicana para descubrir, formar y respaldar a jóvenes creadores, músicos, deportistas y emprendedores digitales sin barreras económicas.
-                </p>
-                <p>
-                  Destinamos parte del crecimiento de la plataforma a becas de equipamiento audiovisual, talleres de producción digital y programas comunitarios.
-                </p>
-              </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 flex flex-col justify-between">
-                <div className="space-y-1.5">
-                  <p className="font-black text-slate-800">Alianzas y Apoyo Institucional</p>
-                  <p>¿Deseas colaborar como patrocinador, mentor o institución aliada de la Fundación RUTF Talentico?</p>
-                </div>
-                <a
-                  href="mailto:delossantosmanuel892@://gmail.com"
-                  className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs px-4 py-2.5 rounded-xl transition"
+            {modalAbierto === "fundacion" ? (
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Apoyamos a nuevos talentos independientes brindándoles visibilidad gratuita,
+                herramientas de difusión y oportunidades reales de crecimiento creativo sin
+                barreras económicas.
+              </p>
+            ) : (
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Los creadores verificados con contenido 100 % original acceden a posicionamiento
+                destacado y participación en ingresos publicitarios al completar los requisitos
+                del programa.
+              </p>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              {!usuario && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalAbierto(null);
+                    onAbrirAuth();
+                  }}
+                  className="px-4 py-2 rounded-full bg-blue-600 text-white text-xs font-black"
                 >
-                  <span>Contactar a la Fundación</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
+                  Crear Canal Gratis
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setModalAbierto(null)}
+                className="px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-black"
+              >
+                Cerrar
+              </button>
             </div>
-          )}
-
-          {seccionActiva === "pro" && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-blue-600 to-orange-500 text-white rounded-2xl p-4">
-                <div>
-                  <p className="text-sm sm:text-base font-black">Lleva tu canal al siguiente nivel con RUTF Pro</p>
-                  <p className="text-xs text-white/90">Insignia verificada, mayor alcance en recomendaciones y experiencia sin anuncios.</p>
-                </div>
-                <div className="flex bg-black/20 p-1 rounded-xl text-xs font-black">
-                  <button
-                    type="button"
-                    onClick={() => setPlanSeleccionado("mensual")}
-                    className={`px-3 py-1 rounded-lg transition ${planSeleccionado === "mensual" ? "bg-white text-slate-900" : "text-white"}`}
-                  >
-                    Mensual ($4.99)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPlanSeleccionado("anual")}
-                    className={`px-3 py-1 rounded-lg transition ${planSeleccionado === "anual" ? "bg-white text-slate-900" : "text-white"}`}
-                  >
-                    Anual ($49.99)
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-3 text-xs">
-                <div className="border border-slate-200 rounded-2xl p-3.5 space-y-1">
-                  <div className="flex items-center gap-1.5 font-black text-blue-600">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Distintivo Oficial Pro</span>
-                  </div>
-                  <p className="text-slate-600">Insignia destacada en tu canal, videos largos, verticales y comentarios.</p>
-                </div>
-                <div className="border border-slate-200 rounded-2xl p-3.5 space-y-1">
-                  <div className="flex items-center gap-1.5 font-black text-orange-600">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Impulso de Algoritmo</span>
-                  </div>
-                  <p className="text-slate-600">Prioridad de descubrimiento en la pestaña Para Ti y Talentos Verticales.</p>
-                </div>
-                <div className="border border-slate-200 rounded-2xl p-3.5 space-y-1">
-                  <div className="flex items-center gap-1.5 font-black text-emerald-600">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Navegación Sin Cortes</span>
-                  </div>
-                  <p className="text-slate-600">Disfruta de toda la plataforma libre de anuncios publicitarios.</p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                <span className="text-xs text-slate-500">
-                  {usuario ? `Cuenta vinculada: ${usuario.username}` : "Inicia sesión para vincular la membresía a tu canal."}
-                </span>
-                {solicitudEnviada ? (
-                  <span className="bg-emerald-100 text-emerald-800 text-xs font-black px-4 py-2 rounded-xl">
-                    ✓ Solicitud RUTF Pro ({planSeleccionado === "mensual" ? "$4.99/mes" : "$49.99/año"}) registrada para {usuario?.username}
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!usuario) return onAbrirAuth();
-                      setSolicitudEnviada(true);
-                    }}
-                    className="bg-slate-900 hover:bg-blue-600 text-white text-xs font-black px-5 py-2.5 rounded-xl transition shadow"
-                  >
-                    {usuario ? `Activar RUTF Pro (${planSeleccionado === "mensual" ? "$4.99/mes" : "$49.99/año"})` : "Iniciar sesión para adquirir Pro"}
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {seccionActiva === "legal" && (
-            <div className="space-y-3 text-xs text-slate-600 leading-relaxed max-h-72 overflow-y-auto pr-1">
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1">
-                <p className="font-black text-slate-900">1. Propiedad Intelectual y Dirección de la Plataforma</p>
-                <p>
-                  <strong>RUTF Talentico</strong> es una plataforma digital fundada y dirigida por <strong>Manuel De Los Santos</strong>. La marca, diseño, arquitectura tecnológica y algoritmos son propiedad exclusiva de su fundador.
-                </p>
-              </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1">
-                <p className="font-black text-slate-900">2. Derechos y Responsabilidad de los Creadores</p>
-                <p>
-                  Cada creador conserva la titularidad de sus obras audiovisuales y garantiza poseer los derechos de imagen, audio y música publicados. Queda estrictamente prohibido el contenido violento, explícito, fraudulento o que vulnere derechos de terceros.
-                </p>
-              </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1">
-                <p className="font-black text-slate-900">3. Monetización, Publicidad y Pagos</p>
-                <p>
-                  Los ingresos generados mediante Google AdMob y suscripciones RUTF Pro se distribuyen conforme a los requisitos vigentes de vistas calificadas, cumplimiento de políticas publicitarias y verificación de identidad del creador.
-                </p>
-              </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1">
-                <p className="font-black text-slate-900">4. Privacidad y Control Total de Datos (Google Play Policy)</p>
-                <p>
-                  Solo recopilamos los datos esenciales para operar tu canal (nombre de usuario, correo electrónico y contenido publicado). Nunca vendemos datos personales a terceros y puedes eliminar permanentemente tu cuenta y todos tus datos desde el botón &ldquo;Eliminar Cuenta&rdquo; en el pie de página.
-                </p>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
-    </div>
+    </>
+  );
+}
+
+export function PieLegal({
+  usuario,
+  supabase,
+  onCuentaEliminada,
+}: {
+  usuario: any;
+  supabase: any;
+  onCuentaEliminada: () => void;
+}) {
+  const [docActivo, setDocActivo] = useState<"privacidad" | "terminos" | null>(null);
+  const [eliminando, setEliminando] = useState(false);
+
+  const eliminarCuenta = async () => {
+    if (!usuario) {
+      alert("Inicia sesión en la cuenta que deseas eliminar.");
+      return;
+    }
+    const confirmar = window.confirm(
+      `¿Seguro que deseas eliminar permanentemente tu cuenta ${usuario.username} y todos tus datos? Esta acción no se puede deshacer.`
+    );
+    if (!confirmar) return;
+
+    setEliminando(true);
+    try {
+      await supabase.from("suscripciones_usuarios").delete().eq("usuario_id", usuario.id);
+      await supabase.from("videos").delete().eq("creador", usuario.username);
+      await supabase.from("usuarios_rutf").delete().eq("id", usuario.id);
+      localStorage.removeItem("rutf_sesion");
+      onCuentaEliminada();
+    } finally {
+      setEliminando(false);
+    }
+  };
+
+  return (
+    <>
+      <footer className="max-w-7xl mx-auto px-4 py-8 mt-8 border-t border-slate-200 text-center space-y-2.5">
+        <p className="text-xs font-extrabold text-slate-600">
+          RUTF Talentico © 2026 • Plataforma Global de Talento Original
+        </p>
+
+        <div className="flex items-center justify-center gap-3 flex-wrap text-xs font-bold">
+          <button
+            type="button"
+            onClick={() => setDocActivo("privacidad")}
+            className="text-blue-600 hover:underline inline-flex items-center gap-1"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Política de Privacidad</span>
+          </button>
+
+          <span className="text-slate-300">•</span>
+
+          <button
+            type="button"
+            onClick={() => setDocActivo("terminos")}
+            className="text-blue-600 hover:underline inline-flex items-center gap-1"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Términos de Uso</span>
+          </button>
+
+          <span className="text-slate-300">•</span>
+
+          <button
+            type="button"
+            onClick={eliminarCuenta}
+            disabled={eliminando}
+            className="text-red-600 hover:underline inline-flex items-center gap-1 disabled:opacity-50"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>{eliminando ? "Eliminando..." : "Eliminar Cuenta"}</span>
+          </button>
+        </div>
+      </footer>
+
+      {docActivo && (
+        <div
+          onClick={() => setDocActivo(null)}
+          className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-base sm:text-lg font-black text-slate-900">
+                {docActivo === "privacidad"
+                  ? "Política de Privacidad • RUTF Talentico"
+                  : "Términos y Condiciones de Uso • RUTF Talentico"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setDocActivo(null)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed text-left">
+              {docActivo === "privacidad" ? (
+                <>
+                  <p>
+                    <strong>1. Datos recopilados y finalidad:</strong> RUTF Talentico recopila
+                    únicamente los datos esenciales para crear y gestionar tu canal de creador
+                    (nombre de usuario, correo electrónico, foto de perfil, banner y videos
+                    publicados voluntariamente).
+                  </p>
+                  <p>
+                    <strong>2. Publicidad y servicios de terceros (Google AdMob):</strong> Esta
+                    aplicación utiliza Google AdMob para mostrar anuncios que permiten mantener la
+                    plataforma gratuita. Google puede emplear identificadores publicitarios del
+                    dispositivo conforme a sus políticas de privacidad y consentimiento.
+                  </p>
+                  <p>
+                    <strong>3. Protección y no comercialización de datos:</strong> Nunca vendemos,
+                    alquilamos ni cedemos tu información personal a terceros con fines comerciales.
+                    Toda la transmisión se realiza mediante conexiones cifradas HTTPS.
+                  </p>
+                  <p>
+                    <strong>4. Seguridad infantil y contenido apto:</strong> RUTF Talentico prohíbe
+                    estrictamente cualquier contenido que vulnere la seguridad de menores, incitación
+                    al odio, violencia gráfica o material sexual explícito.
+                  </p>
+                  <p>
+                    <strong>5. Control total y eliminación de cuenta:</strong> Puedes editar tu
+                    perfil o solicitar la eliminación definitiva e inmediata de tu cuenta y todos
+                    tus archivos en cualquier momento desde la opción <em>Eliminar Cuenta</em>.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    <strong>1. Aceptación del servicio:</strong> Al registrarte o utilizar RUTF
+                    Talentico aceptas cumplir estas normas comunitarias y condiciones de uso.
+                  </p>
+                  <p>
+                    <strong>2. Propiedad intelectual y contenido original:</strong> Solo puedes
+                    subir videos de tu propia autoría o sobre los cuales poseas derechos legítimos
+                    de difusión. Queda prohibida la resubida de material protegido sin autorización.
+                  </p>
+                  <p>
+                    <strong>3. Programa de Monetización y métricas auténticas:</strong> La
+                    elegibilidad requiere alcanzar los umbrales de suscriptores reales y
+                    visualizaciones calificadas mínimas de 15 segundos continuos. Cualquier intento
+                    de manipulación artificial, bots o tráfico inválido conlleva la descalificación
+                    inmediata.
+                  </p>
+                  <p>
+                    <strong>4. Moderación y cumplimiento:</strong> RUTF Talentico se reserva el
+                    derecho de retirar publicaciones o suspender cuentas que infrinjan las políticas
+                    de seguridad, derechos de autor o estándares de anunciantes.
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setDocActivo(null)}
+                className="px-6 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-black transition"
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Camera,
   CheckCircle2,
@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 
 export type PerfilCanal = {
-
   id: string;
   username: string;
   email: string;
@@ -52,6 +51,43 @@ type Props = {
   onCerrarSesion?: () => void;
 };
 
+async function comprimirImagen(archivo: File, maxAncho: number, calidad = 0.84): Promise<Blob> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(archivo);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let ancho = img.width;
+      let alto = img.height;
+      if (ancho > maxAncho) {
+        alto = Math.round((alto * maxAncho) / ancho);
+        ancho = maxAncho;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = ancho;
+      canvas.height = alto;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(archivo);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, ancho, alto);
+      canvas.toBlob(
+        (blob) => {
+          resolve(blob || archivo);
+        },
+        "image/jpeg",
+        calidad
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(archivo);
+    };
+    img.src = url;
+  });
+}
+
 export default function EstudioCanal({
   supabase,
   perfil,
@@ -80,25 +116,34 @@ export default function EstudioCanal({
   const inputAvatarRef = useRef<HTMLInputElement>(null);
   const inputBannerRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (perfil.avatar_url !== undefined) setAvatarUrl(perfil.avatar_url || "");
+    if (perfil.banner_url !== undefined) setBannerUrl(perfil.banner_url || "");
+  }, [perfil.avatar_url, perfil.banner_url]);
+
+  const inicialesCanal = perfil.username.replace("@", "").slice(0, 2).toUpperCase();
   const vistasTotales = videos.reduce((acc, v) => acc + (v.vistas || 0), 0);
 
   const subirImagen = async (archivo: File, tipo: "avatar" | "banner") => {
     setSubiendoImg(tipo);
     try {
-      const ext = archivo.name.split(".").pop() || "jpg";
-      const ruta = `perfiles/${perfil.id}_${tipo}_${Date.now()}.${ext}`;
+      const optimizado = await comprimirImagen(archivo, tipo === "avatar" ? 512 : 1400, 0.84);
+      const ruta = `${perfil.id}_${tipo}_${Date.now()}.jpg`;
+
       const { error: upErr } = await supabase.storage
-        .from("videos")
-        .upload(ruta, archivo, { upsert: true });
+        .from("perfiles")
+        .upload(ruta, optimizado, {
+          contentType: "image/jpeg",
+          upsert: true,
+        });
 
       if (upErr) {
         alert("No se pudo subir la imagen: " + upErr.message);
-        setSubiendoImg(null);
         return;
       }
 
-      const { data: pub } = supabase.storage.from("videos").getPublicUrl(ruta);
-      const urlPublica = pub.publicUrl;
+      const { data: pub } = supabase.storage.from("perfiles").getPublicUrl(ruta);
+      const urlPublica = `${pub.publicUrl}?t=${Date.now()}`;
 
       if (tipo === "avatar") {
         setAvatarUrl(urlPublica);
@@ -114,10 +159,12 @@ export default function EstudioCanal({
         .select("*")
         .single();
 
-      if (actualizado) {
-        localStorage.setItem("rutf_sesion", JSON.stringify(actualizado));
-        onActualizarPerfil(actualizado);
-      }
+      const perfilFinal = actualizado || { ...perfil, ...campo };
+      localStorage.setItem("rutf_sesion", JSON.stringify(perfilFinal));
+      onActualizarPerfil(perfilFinal);
+
+      setBarraActualizada(true);
+      setTimeout(() => setBarraActualizada(false), 3000);
     } finally {
       setSubiendoImg(null);
     }
@@ -165,7 +212,7 @@ export default function EstudioCanal({
         </div>
       )}
 
-            <div className="sticky top-0 z-30 -mx-4 px-4 py-2.5 bg-white/95 backdrop-blur border-b border-slate-200 space-y-2">
+      <div className="sticky top-0 z-30 -mx-4 px-4 py-2.5 bg-white/95 backdrop-blur border-b border-slate-200 space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {onVolver && (
@@ -185,7 +232,7 @@ export default function EstudioCanal({
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Cuenta" className="w-full h-full object-cover" />
               ) : (
-                perfil.username.replace("@", "").charAt(0).toUpperCase()
+                inicialesCanal
               )}
             </div>
 
@@ -256,7 +303,7 @@ export default function EstudioCanal({
         )}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
         <div className="relative h-36 sm:h-48 bg-gradient-to-r from-blue-950 via-blue-800 to-slate-900">
           {bannerUrl && (
             <img src={bannerUrl} alt="Banner del canal" className="w-full h-full object-cover" />
@@ -270,6 +317,7 @@ export default function EstudioCanal({
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) subirImagen(f, "banner");
+              e.target.value = "";
             }}
           />
 
@@ -294,10 +342,11 @@ export default function EstudioCanal({
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) subirImagen(f, "avatar");
+                e.target.value = "";
               }}
             />
 
-                    <div
+            <div
               onClick={() => inputAvatarRef.current?.click()}
               title="Cambiar foto de perfil"
               className="relative w-20 h-20 aspect-square rounded-full border-4 border-white shadow-md overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
@@ -305,7 +354,7 @@ export default function EstudioCanal({
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                perfil.username.replace("@", "").slice(0, 2).toUpperCase()
+                inicialesCanal
               )}
               <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
                 <Camera className="w-5 h-5 text-white" />
@@ -337,12 +386,11 @@ export default function EstudioCanal({
               {seguidores === 1 ? "suscriptor" : "suscriptores"}
             </p>
 
-             {perfil.bio && (
-  <p className="text-xs sm:text-sm text-slate-700 pt-1.5 leading-relaxed line-clamp-2">
-    {perfil.bio}
-  </p>
-)}
-
+            {perfil.bio && (
+              <p className="text-xs sm:text-sm text-slate-700 pt-1.5 leading-relaxed line-clamp-2">
+                {perfil.bio}
+              </p>
+            )}
 
             <div className="pt-1">
               <button
@@ -406,29 +454,25 @@ export default function EstudioCanal({
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
         <h3 className="text-base font-black text-slate-900">
           Mis Videos Publicados ({videos.length})
         </h3>
 
-               {videos.length === 0 ? (
-          <div className="py-4 space-y-3.5">
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Sube tu primer video, haz crecer tu talento y empieza a monetizar y ganar dinero como los demás creadores de RUTF Talentico.
-            </p>
+        {videos.length === 0 ? (
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed py-2">
+            Sube tu primer video, haz crecer tu talento y empieza a monetizar y ganar dinero como los demás creadores de RUTF Talentico{" "}
             {onAbrirSubir && (
               <button
                 type="button"
                 onClick={onAbrirSubir}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm transition"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 ml-1 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-black align-middle transition"
               >
-                <PlusCircle className="w-4 h-4" />
-                <span>Subir mi Primer Video</span>
+                <span>+ Subir</span>
               </button>
             )}
-          </div>
+          </p>
         ) : (
-
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {videos.map((v) => (
               <div
@@ -485,8 +529,10 @@ export default function EstudioCanal({
             <div className="space-y-3 text-sm text-slate-700">
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-semibold">Fecha de creación</span>
-                <span className="font-extrabold text-slate-900">
-                  Se unió el{" "}
+                                <span className="font-extrabold text-slate-900">
+
+                                Se unió el{" "}
+                                
                   {perfil.created_at
                     ? new Date(perfil.created_at).toLocaleDateString("es-ES", {
                         day: "numeric",
@@ -576,5 +622,3 @@ export function ModalCompartir({
     </div>
   );
 }
-
- 

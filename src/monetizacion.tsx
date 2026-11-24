@@ -333,29 +333,30 @@ export function PanelMonetizacion({
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3.5">
         <h3 className="text-base font-black text-slate-900">Formas de Ganar Dinero</h3>
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3 text-xs">
-          <div className="border-2 border-emerald-500/40 bg-emerald-50/40 rounded-2xl p-3.5 space-y-1.5">
+                    <div className="border border-emerald-300 bg-emerald-50 rounded-2xl p-3.5 space-y-1.5">
             <span className="inline-block bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">Disponible al calificar</span>
             <p className="font-black text-slate-900 flex items-center gap-1"><Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Vistas Calificadas</p>
             <p className="text-[11px] text-slate-600 leading-snug">Ingresos semanales por vistas (+15 seg) en tus videos públicos.</p>
           </div>
 
-          <div className="border border-slate-200 bg-slate-50/70 rounded-2xl p-3.5 space-y-1.5 opacity-75">
+          <div className="border border-slate-200 bg-slate-50 rounded-2xl p-3.5 space-y-1.5">
             <span className="inline-block bg-slate-200 text-slate-600 text-[9px] font-black px-2 py-0.5 rounded-full">Próximamente</span>
             <p className="font-black text-slate-700 flex items-center gap-1"><Gift className="w-3.5 h-3.5 text-slate-400 shrink-0" /> Propinas de Fans</p>
             <p className="text-[11px] text-slate-500 leading-snug">Aportes directos de tus seguidores mientras ven tus talentos.</p>
           </div>
 
-          <div className="border border-slate-200 bg-slate-50/70 rounded-2xl p-3.5 space-y-1.5 opacity-75">
+          <div className="border border-slate-200 bg-slate-50 rounded-2xl p-3.5 space-y-1.5">
             <span className="inline-block bg-slate-200 text-slate-600 text-[9px] font-black px-2 py-0.5 rounded-full">Próximamente</span>
             <p className="font-black text-slate-700 flex items-center gap-1"><Users className="w-3.5 h-3.5 text-slate-400 shrink-0" /> Suscripciones VIP</p>
             <p className="text-[11px] text-slate-500 leading-snug">Contenido exclusivo mensual para miembros de tu canal.</p>
           </div>
 
-          <div className="border border-slate-200 bg-slate-50/70 rounded-2xl p-3.5 space-y-1.5 opacity-75">
+          <div className="border border-slate-200 bg-slate-50 rounded-2xl p-3.5 space-y-1.5">
             <span className="inline-block bg-slate-200 text-slate-600 text-[9px] font-black px-2 py-0.5 rounded-full">Próximamente</span>
             <p className="font-black text-slate-700 flex items-center gap-1"><Handshake className="w-3.5 h-3.5 text-slate-400 shrink-0" /> Patrocinios RUTF</p>
             <p className="text-[11px] text-slate-500 leading-snug">Campañas directas con marcas aliadas de la plataforma.</p>
           </div>
+
         </div>
       </div>
 

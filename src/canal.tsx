@@ -1,256 +1,300 @@
 "use client";
-import React, { useState, useRef } from "react";
-import { Camera, Image as ImageIcon, Save, Trash2, Eye, Sparkles, CheckCircle2, Share2, Copy, Check, X, Play, Pencil, Tv, Monitor, Tablet, Smartphone, Sliders } from "lucide-react";
-import { Share } from "@capacitor/share";
+
+import { useState, useRef } from "react";
+import {
+  Camera,
+  CheckCircle2,
+  Play,
+  Eye,
+  Save,
+  ArrowLeft,
+  PlusCircle,
+  MoreVertical,
+  Edit3,
+  Info,
+  LogOut,
+  X,
+} from "lucide-react";
 
 export type PerfilCanal = {
+
   id: string;
   username: string;
   email: string;
-  es_fundador: boolean;
+  es_fundador?: boolean;
   nombre_canal?: string;
   bio?: string;
   avatar_url?: string;
   banner_url?: string;
   tema_banner?: string;
   created_at?: string;
-
 };
 
+type VideoCanal = {
+  id: string;
+  titulo: string;
+  video_url: string;
+  vistas?: number;
+  likes?: number;
+  creado_en?: string;
+};
 
-const TEMAS_BANNER = [
-  { id: "from-blue-600 via-indigo-600 to-orange-500", nombre: "Oficial RUTF" },
-  { id: "from-emerald-600 via-teal-600 to-cyan-600", nombre: "Esmeralda" },
-  { id: "from-orange-500 via-rose-500 to-purple-600", nombre: "Atardecer" },
-  { id: "from-slate-900 via-blue-900 to-slate-800", nombre: "Estudio Noche" },
-];
+type Props = {
+  supabase: any;
+  perfil: PerfilCanal;
+  videos: VideoCanal[];
+  seguidores: number;
+  onActualizarPerfil: (p: PerfilCanal) => void;
+  onAbrirVideo: (v: VideoCanal) => void;
+  onRecargar: () => void;
+  onVolver?: () => void;
+  onAbrirSubir?: () => void;
+  onCerrarSesion?: () => void;
+};
 
-function parseBanner(raw?: string) {
-  if (!raw) return { url: "", posY: 50, zoom: 100 };
-  const partes = raw.split("#");
-  const url = partes.at(0) || "";
-  const params = new URLSearchParams(partes.at(1) || "");
-  return { url, posY: Number(params.get("y") || 50), zoom: Number(params.get("z") || 100) };
-}
-
-export function ModalCompartir({ titulo, videoId, onCerrar }: { titulo: string; videoId: string; onCerrar: () => void }) {
-  const [copiado, setCopiado] = useState(false);
-  const baseUrl = "https://vercel.app";
-
-
-  const enlaceDirecto = `${baseUrl}/?v=${videoId}`;
-  const texto = encodeURIComponent(`Mira "${titulo}" en RUTF Talentico: ${enlaceDirecto}`);
-  const linkCodificado = encodeURIComponent(enlaceDirecto);
-
-  const copiar = () => {
-    navigator.clipboard?.writeText(`${titulo} - Mira este talento en RUTF Talentico: ${enlaceDirecto}`);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2500);
-  };
-  const compartirNativo = async () => {
-    try {
-      await Share.share({
-        title: titulo,
-        text: `Mira "${titulo}" en RUTF Talentico`,
-        url: enlaceDirecto,
-        dialogTitle: "Compartir talento en...",
-      });
-    } catch {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        navigator.share({ title: titulo, text: `Mira "${titulo}" en RUTF Talentico`, url: enlaceDirecto }).catch(() => copiar());
-      } else {
-        copiar();
-      }
-    }
-  };
-
-  const abrirRedSocial = async (url: string) => {
-    const esMovil = typeof navigator !== "undefined" && /Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (esMovil) {
-      await compartirNativo();
-    } else {
-      window.open(url, "_blank", "noopener,noreferrer");
-    }
-  };
-
-
-  return (
-    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 relative">
-        <button onClick={onCerrar} className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200"><X className="w-4 h-4" /></button>
-        <div>
-          <h3 className="text-lg font-black text-slate-900 flex items-center gap-2"><Share2 className="w-5 h-5 text-blue-600" /> Compartir Talento</h3>
-          <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">{titulo}</p>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5 text-xs font-extrabold">
-                  <button type="button" onClick={() => abrirRedSocial(`https://whatsapp.com{texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600">WhatsApp</button>
-          <button type="button" onClick={() => abrirRedSocial(`https://facebook.com{linkCodificado}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Facebook</button>
-          <button type="button" onClick={() => abrirRedSocial(`https://twitter.com{texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-900 text-white hover:bg-slate-800">X / Twitter</button>
-          <button type="button" onClick={() => abrirRedSocial(`https://t.me{linkCodificado}&text=${texto}`)} className="flex items-center justify-center gap-2 py-3 rounded-xl bg-sky-500 text-white hover:bg-sky-600">Telegram</button>
-
-        </div>
-        <button type="button" onClick={compartirNativo} className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-black py-3 rounded-xl text-xs shadow-md hover:opacity-95">Instagram / Más apps del teléfono</button>
-        <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200">
-          <input readOnly value={enlaceDirecto} className="bg-transparent text-[11px] text-slate-600 flex-1 outline-none" />
-          <button type="button" onClick={copiar} className="flex items-center gap-1 bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-slate-50">
-            {copiado ? <><Check className="w-3.5 h-3.5 text-emerald-600" /> Copiado</> : <><Copy className="w-3.5 h-3.5" /> Copiar</>}
-          </button>
-        </div>
-      </div>
-    </div>
+export default function EstudioCanal({
+  supabase,
+  perfil,
+  videos,
+  seguidores,
+  onActualizarPerfil,
+  onAbrirVideo,
+  onRecargar,
+  onVolver,
+  onAbrirSubir,
+  onCerrarSesion,
+}: Props) {
+  const [nombreCanal, setNombreCanal] = useState(
+    perfil.nombre_canal || perfil.username.replace("@", "")
   );
-}
-
-export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores, onActualizarPerfil, onAbrirVideo, onRecargar }: {
-  supabase: any; perfil: PerfilCanal; videosCanal: any[]; seguidores: number;
-  onActualizarPerfil: (p: PerfilCanal) => void; onAbrirVideo: (v: any) => void; onRecargar: () => void;
-}) {
-  const inicial = parseBanner(perfil.banner_url);
-  const [nombreCanal, setNombreCanal] = useState(perfil.nombre_canal || perfil.username.replace("@", ""));
   const [bio, setBio] = useState(perfil.bio || "");
-  const [tema, setTema] = useState(perfil.tema_banner || TEMAS_BANNER.at(0)?.id || "from-blue-600 via-indigo-600 to-orange-500");
   const [avatarUrl, setAvatarUrl] = useState(perfil.avatar_url || "");
-  const [bannerBaseUrl, setBannerBaseUrl] = useState(inicial.url);
-  const [posY, setPosY] = useState(inicial.posY);
-  const [zoom, setZoom] = useState(inicial.zoom);
-  const [abrirEditorBanner, setAbrirEditorBanner] = useState(false);
+  const [bannerUrl, setBannerUrl] = useState(perfil.banner_url || "");
   const [guardando, setGuardando] = useState(false);
+  const [subiendoImg, setSubiendoImg] = useState<"avatar" | "banner" | null>(null);
   const [barraActualizada, setBarraActualizada] = useState(false);
+  const [editorAbierto, setEditorAbierto] = useState(false);
+  const [menuOpciones, setMenuOpciones] = useState(false);
+  const [modalInfoCanal, setModalInfoCanal] = useState(false);
 
-  const [editandoVideo, setEditandoVideo] = useState<any | null>(null);
   const inputAvatarRef = useRef<HTMLInputElement>(null);
   const inputBannerRef = useRef<HTMLInputElement>(null);
-  const bannerCompletoUrl = bannerBaseUrl ? `${bannerBaseUrl}#y=${posY}&z=${zoom}` : "";
 
-  const subirImagen = async (e: React.ChangeEvent<HTMLInputElement>, tipo: "avatar" | "banner") => {
-    const file = Array.from(e.target.files || []).at(0);
-    if (!file) return;
-    if (file.size / (1024 * 1024) > 5) return alert("La imagen debe pesar menos de 5 MB.");
-    setGuardando(true);
-    const ext = file.name.split(".").pop() || "jpg";
-    const ruta = `${perfil.id}-${tipo}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("perfiles-rutf").upload(ruta, file);
-    if (error) { alert("Error subiendo imagen: " + error.message); setGuardando(false); return; }
-    const { data } = supabase.storage.from("perfiles-rutf").getPublicUrl(ruta);
-    const nuevaUrl = data.publicUrl;
-    if (tipo === "avatar") {
-      setAvatarUrl(nuevaUrl);
-      await supabase.from("usuarios_rutf").update({ avatar_url: nuevaUrl }).eq("id", perfil.id);
-      const act = { ...perfil, avatar_url: nuevaUrl };
-      localStorage.setItem("rutf_sesion", JSON.stringify(act));
-      onActualizarPerfil(act);
-    } else {
-      setBannerBaseUrl(nuevaUrl); setPosY(50); setZoom(100); setAbrirEditorBanner(true);
+  const vistasTotales = videos.reduce((acc, v) => acc + (v.vistas || 0), 0);
+
+  const subirImagen = async (archivo: File, tipo: "avatar" | "banner") => {
+    setSubiendoImg(tipo);
+    try {
+      const ext = archivo.name.split(".").pop() || "jpg";
+      const ruta = `perfiles/${perfil.id}_${tipo}_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("videos")
+        .upload(ruta, archivo, { upsert: true });
+
+      if (upErr) {
+        alert("No se pudo subir la imagen: " + upErr.message);
+        setSubiendoImg(null);
+        return;
+      }
+
+      const { data: pub } = supabase.storage.from("videos").getPublicUrl(ruta);
+      const urlPublica = pub.publicUrl;
+
+      if (tipo === "avatar") {
+        setAvatarUrl(urlPublica);
+      } else {
+        setBannerUrl(urlPublica);
+      }
+
+      const campo = tipo === "avatar" ? { avatar_url: urlPublica } : { banner_url: urlPublica };
+      const { data: actualizado } = await supabase
+        .from("usuarios_rutf")
+        .update(campo)
+        .eq("id", perfil.id)
+        .select("*")
+        .single();
+
+      if (actualizado) {
+        localStorage.setItem("rutf_sesion", JSON.stringify(actualizado));
+        onActualizarPerfil(actualizado);
+      }
+    } finally {
+      setSubiendoImg(null);
     }
-    setGuardando(false);
-    e.target.value = "";
   };
 
-  const guardarCambios = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setGuardando(true);
-    const actualizado: PerfilCanal = { ...perfil, nombre_canal: nombreCanal.trim(), bio: bio.trim(), tema_banner: tema, avatar_url: avatarUrl, banner_url: bannerCompletoUrl };
-    const { error } = await supabase.from("usuarios_rutf").update({ nombre_canal: actualizado.nombre_canal, bio: actualizado.bio, tema_banner: actualizado.tema_banner, avatar_url: actualizado.avatar_url, banner_url: actualizado.banner_url }).eq("id", perfil.id);
-    setGuardando(false);
-    if (error) return alert("No se pudo guardar: " + error.message);
-    localStorage.setItem("rutf_sesion", JSON.stringify(actualizado));
-    onActualizarPerfil(actualizado);
-    setAbrirEditorBanner(false);
-       setBarraActualizada(true);
-    setTimeout(() => setBarraActualizada(false), 3500);
-
-  };
-
-  const guardarEdicionVideo = async (e: React.FormEvent) => {
+  const guardarCambios = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editandoVideo) return;
-    if (editandoVideo.titulo.trim().length < 10) return alert("El título debe tener al menos 10 caracteres.");
     setGuardando(true);
-    const tagsLimpios = (editandoVideo.hashtags || "").split(/\s+/).filter(Boolean).map((h: string) => (h.startsWith("#") ? h : `#${h}`)).join(" ");
-    const { error } = await supabase.from("videos").update({ titulo: editandoVideo.titulo.trim(), descripcion: (editandoVideo.descripcion || "").trim(), etiquetas: (editandoVideo.etiquetas || "").trim(), hashtags: tagsLimpios }).eq("id", editandoVideo.id);
-    setGuardando(false);
-    if (error) return alert("Error al actualizar video: " + error.message);
-    setEditandoVideo(null);
-    onRecargar();
-    alert("¡Video actualizado con éxito!");
+    try {
+      const bioLimpia = bio.trim().slice(0, 160);
+      const nombreLimpio = nombreCanal.trim() || perfil.username.replace("@", "");
+      const { data: actualizado, error } = await supabase
+        .from("usuarios_rutf")
+        .update({
+          nombre_canal: nombreLimpio,
+          bio: bioLimpia,
+        })
+        .eq("id", perfil.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        alert("Error al guardar cambios: " + error.message);
+        return;
+      }
+
+      if (actualizado) {
+        localStorage.setItem("rutf_sesion", JSON.stringify(actualizado));
+        onActualizarPerfil(actualizado);
+      }
+      setEditorAbierto(false);
+      setBarraActualizada(true);
+      setTimeout(() => setBarraActualizada(false), 3500);
+      onRecargar();
+    } finally {
+      setGuardando(false);
+    }
   };
 
-  const borrarVideo = async (videoId: string) => {
-    if (!confirm("¿Seguro que deseas eliminar este video de tu canal?")) return;
-    await supabase.from("videos").delete().eq("id", videoId);
-    onRecargar();
-  };
-
-  const vistasCanal = videosCanal.reduce((a, b) => a + (b.vistas || 0), 0);
-    return (
-    <div className="max-w-4xl mx-auto space-y-6">
-            {barraActualizada && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 text-white text-xs font-black py-2 px-4 text-center shadow-lg flex items-center justify-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-white animate-ping" />
-          <span>Cambios guardados correctamente</span>
-
+  return (
+    <div className="max-w-4xl mx-auto pb-16 space-y-5">
+      {barraActualizada && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 text-white text-xs font-black py-2 px-4 text-center shadow-lg">
+          Cambios guardados correctamente
         </div>
       )}
 
-      <input id="input-banner-rutf" type="file" accept="image/*" onChange={(e) => subirImagen(e, "banner")} className="hidden" />
-      <input id="input-avatar-rutf" type="file" accept="image/*" onChange={(e) => subirImagen(e, "avatar")} className="hidden" />
-
-      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-        <div className={`h-40 sm:h-52 relative overflow-hidden bg-gradient-to-r ${tema}`}>
-          {bannerBaseUrl && <img src={bannerBaseUrl} alt="Banner" style={{ objectPosition: `50% ${posY}%`, transform: `scale(${zoom / 100})` }} className="w-full h-full object-cover transition-transform" />}
-          <div className="absolute right-4 bottom-4 z-20 flex items-center gap-2">
-            {bannerBaseUrl && (
-              <button type="button" onClick={() => setAbrirEditorBanner(!abrirEditorBanner)} className="bg-white/95 hover:bg-white text-slate-900 px-3 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md">
-                <Sliders className="w-3.5 h-3.5 text-blue-600" /> Ajustar Vista TV / Móvil
-              </button>
-            )}
-            <label htmlFor="input-banner-rutf" className="bg-black/80 hover:bg-black text-white px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md">
-              <ImageIcon className="w-4 h-4" /> Cambiar Banner
-            </label>
-          </div>
+      <div className="sticky top-0 z-30 -mx-4 px-4 py-2.5 bg-white/95 backdrop-blur border-b border-slate-200 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          {onVolver && (
+            <button
+              type="button"
+              onClick={onVolver}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold transition shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Volver</span>
+            </button>
+          )}
+          <span className="text-sm font-black text-slate-900 truncate">{perfil.username}</span>
         </div>
 
+        <div className="flex items-center gap-2 shrink-0">
+          {onAbrirSubir && (
+            <button
+              type="button"
+              onClick={onAbrirSubir}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm transition"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Subir Video</span>
+            </button>
+          )}
 
-        {abrirEditorBanner && bannerBaseUrl && (
-          <div className="bg-slate-900 text-white p-5 space-y-4 border-b border-slate-800">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h4 className="text-sm font-black flex items-center gap-1.5"><Sliders className="w-4 h-4 text-orange-400" /> Encuadre y Vista Previa Multidispositivo</h4>
-                <p className="text-[11px] text-slate-400">Ajusta la altura y el zoom para comprobar cómo se ve en cada pantalla.</p>
-              </div>
-              <button type="button" onClick={() => guardarCambios()} className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-full text-xs font-extrabold cursor-pointer">Aplicar y Guardar Banner</button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-800/70 p-3.5 rounded-2xl text-xs">
-              <div>
-                <div className="flex justify-between mb-1 font-bold"><span>Posición Vertical (Arriba / Abajo)</span><span>{posY}%</span></div>
-                <input type="range" min={0} max={100} value={posY} onChange={(e) => setPosY(Number(e.target.value))} className="w-full accent-orange-500 cursor-pointer" />
-              </div>
-              <div>
-                <div className="flex justify-between mb-1 font-bold"><span>Acercamiento (Zoom)</span><span>{zoom}%</span></div>
-                <input type="range" min={100} max={180} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="w-full accent-blue-500 cursor-pointer" />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-[11px]">
-              {[
-                { label: "Televisor (TV)", icon: Tv, aspect: "aspect-[16/5]" },
-                { label: "Computadora (PC)", icon: Monitor, aspect: "aspect-[16/4]" },
-                { label: "Tablet", icon: Tablet, aspect: "aspect-[16/5]" },
-                { label: "Teléfono Móvil", icon: Smartphone, aspect: "aspect-[16/7]" },
-              ].map((d) => (
-                <div key={d.label} className="bg-slate-800 rounded-xl p-2 space-y-1.5 border border-slate-700">
-                  <div className="flex items-center gap-1 font-bold text-slate-300"><d.icon className="w-3.5 h-3.5 text-blue-400" /> {d.label}</div>
-                  <div className={`w-full ${d.aspect} rounded-lg overflow-hidden bg-slate-950 relative`}>
-                    <img src={bannerBaseUrl} alt={d.label} style={{ objectPosition: `50% ${posY}%`, transform: `scale(${zoom / 100})` }} className="w-full h-full object-cover" />
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="w-8 h-8 aspect-square rounded-full overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xs flex items-center justify-center shrink-0">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Cuenta" className="w-full h-full object-cover" />
+            ) : (
+              perfil.username.replace("@", "").charAt(0).toUpperCase()
+            )}
           </div>
-        )}
-             <div className="px-6 pb-6">
-        <div className="flex flex-col items-start gap-3 -mt-10 relative z-10">
-          <div className="flex items-end gap-4">
-            <div
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpciones(!menuOpciones)}
+              aria-label="Opciones del canal"
+              className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </button>
+
+            {menuOpciones && (
+              <div className="absolute right-0 top-10 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl py-1.5 z-40 text-xs font-bold text-slate-700">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpciones(false);
+                    setModalInfoCanal(true);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2"
+                >
+                  <Info className="w-4 h-4 text-blue-600" />
+                  <span>Información del canal</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpciones(false);
+                    setEditorAbierto(!editorAbierto);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4 text-slate-600" />
+                  <span>{editorAbierto ? "Cerrar edición" : "Editar canal"}</span>
+                </button>
+                {onCerrarSesion && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpciones(false);
+                      onCerrarSesion();
+                    }}
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 border-t border-slate-100"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Cerrar sesión</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
+        <div className="relative h-36 sm:h-48 bg-gradient-to-r from-blue-950 via-blue-800 to-slate-900">
+          {bannerUrl && (
+            <img src={bannerUrl} alt="Banner del canal" className="w-full h-full object-cover" />
+          )}
+
+          <input
+            ref={inputBannerRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) subirImagen(f, "banner");
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={() => inputBannerRef.current?.click()}
+            disabled={subiendoImg === "banner"}
+            className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-full bg-slate-950/75 hover:bg-slate-950 text-white text-xs font-extrabold backdrop-blur inline-flex items-center gap-1.5 shadow transition"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span>{subiendoImg === "banner" ? "Subiendo..." : "Cambiar Banner"}</span>
+          </button>
+        </div>
+
+        <div className="px-5 sm:px-6 pb-6">
+          <div className="flex items-end justify-between gap-3 -mt-10 relative z-10">
+            <input
+              ref={inputAvatarRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) subirImagen(f, "avatar");
+              }}
+            />
+
+                    <div
               onClick={() => inputAvatarRef.current?.click()}
               title="Cambiar foto de perfil"
               className="relative w-20 h-20 aspect-square rounded-full border-4 border-white shadow-md overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
@@ -264,9 +308,18 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
                 <Camera className="w-5 h-5 text-white" />
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setEditorAbierto(!editorAbierto)}
+              className="px-4 py-2 rounded-full border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-extrabold inline-flex items-center gap-1.5 transition"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
+            </button>
           </div>
 
-          <div className="pt-1 w-full">
+          <div className="mt-3 space-y-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="text-xl font-black text-slate-900 truncate">
                 {nombreCanal || perfil.username}
@@ -275,115 +328,235 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
                 <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
               )}
             </div>
-            <p className="text-xs font-bold text-slate-500 mt-0.5">{perfil.username}</p>
 
-            <p className="text-xs sm:text-sm text-slate-700 mt-2.5 leading-relaxed">
+            <p className="text-xs font-bold text-slate-500">
+              {perfil.username} • {seguidores.toLocaleString()}{" "}
+              {seguidores === 1 ? "suscriptor" : "suscriptores"}
+            </p>
+
+            <p className="text-xs sm:text-sm text-slate-700 pt-1.5 leading-relaxed line-clamp-2">
               {perfil.bio || "Creador oficial en RUTF Talentico."}
             </p>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
-              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">
-                Información del Canal
-              </p>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
-                <span>
-                  Se unió el{" "}
-                  <strong className="text-slate-800">
-                    {perfil.created_at
-                      ? new Date(perfil.created_at).toLocaleDateString("es-ES", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })
-                      : "24 de noviembre de 2026"}
-                  </strong>
-                </span>
-                <span className="text-slate-300">|</span>
-                <span>
-                  Suscriptores totales:{" "}
-                  <strong className="text-slate-800">{seguidores.toLocaleString()}</strong>
-                </span>
-                <span className="text-slate-300">|</span>
-                <span>
-                  Visualizaciones totales:{" "}
-                  <strong className="text-slate-800">{vistasCanal.toLocaleString()}</strong>
-                </span>
-              </div>
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setModalInfoCanal(true)}
+                className="text-xs font-extrabold text-blue-600 hover:text-blue-700 inline-flex items-center gap-0.5 transition"
+              >
+                <span>Información del canal ›</span>
+              </button>
             </div>
           </div>
-        </div>
 
+          {editorAbierto && (
+            <form
+              onSubmit={guardarCambios}
+              className="mt-5 pt-5 border-t border-slate-200 space-y-4"
+            >
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 mb-1">
+                  Nombre visible del Canal
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={40}
+                  value={nombreCanal}
+                  onChange={(e) => setNombreCanal(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600"
+                />
+              </div>
 
-          <form onSubmit={guardarCambios} className="mt-6 pt-5 border-t border-slate-100 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-black text-slate-800">Personalizar Diseño de mi Canal</h3>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-slate-500 font-bold mr-1">Color de Banner:</span>
-                {TEMAS_BANNER.map((t) => (
-                  <button key={t.id} type="button" onClick={() => { setTema(t.id); setBannerBaseUrl(""); setAbrirEditorBanner(false); }} title={t.nombre} className={`w-6 h-6 rounded-full bg-gradient-to-r ${t.id} border-2 cursor-pointer ${tema === t.id && !bannerBaseUrl ? "border-slate-900 scale-110" : "border-white"}`} />
-                ))}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 mb-1 block">Nombre visible del Canal</label>
-                <input maxLength={50} value={nombreCanal} onChange={(e) => setNombreCanal(e.target.value)} placeholder="Ej: Manuel Digitalidad" className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs outline-none focus:border-blue-600" />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-extrabold text-slate-700">
+                    Descripción / Biografía del Canal
+                  </label>
+                  <span className="text-[11px] font-bold text-slate-400">
+                    {bio.length}/160
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  maxLength={160}
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Cuéntale a tu comunidad qué talento compartes..."
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600 resize-none"
+                />
               </div>
-              <div>
-                <label className="text-xs font-bold text-slate-700 mb-1 block">Descripción / Biografía del Canal</label>
-                <input maxLength={160} value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Cuéntale a tu comunidad qué talento compartes..." className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs outline-none focus:border-blue-600" />
-              </div>
-            </div>
-            <button disabled={guardando} type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"><Save className="w-4 h-4" /> {guardando ? "Guardando..." : "Guardar Diseño del Canal"}</button>
-          </form>
+
+              <button
+                type="submit"
+                disabled={guardando}
+                className="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black inline-flex items-center gap-2 shadow transition disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>{guardando ? "Guardando..." : "Guardar Cambios"}</span>
+              </button>
+            </form>
+          )}
         </div>
       </div>
 
-      {editandoVideo && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <form onSubmit={guardarEdicionVideo} className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-black text-base text-slate-900">Editar Video Publicado</h3>
-              <button type="button" onClick={() => setEditandoVideo(null)} className="p-1.5 rounded-full bg-slate-100 text-slate-600 cursor-pointer"><X className="w-4 h-4" /></button>
-            </div>
-            <div><label className="text-xs font-bold text-slate-700 mb-1 block">Título (Mín. 10 / Máx. 80)</label><input required minLength={10} maxLength={80} value={editandoVideo.titulo} onChange={(e) => setEditandoVideo({ ...editandoVideo, titulo: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs" /></div>
-            <div><label className="text-xs font-bold text-slate-700 mb-1 block">Descripción</label><textarea rows={3} maxLength={1000} value={editandoVideo.descripcion || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, descripcion: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-xs resize-none" /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs font-bold text-slate-700 mb-1 block">Etiquetas</label><input value={editandoVideo.etiquetas || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, etiquetas: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" /></div>
-              <div><label className="text-xs font-bold text-slate-700 mb-1 block">Hashtags</label><input value={editandoVideo.hashtags || ""} onChange={(e) => setEditandoVideo({ ...editandoVideo, hashtags: e.target.value })} className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs" /></div>
-            </div>
-            <button disabled={guardando} type="submit" className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-extrabold py-2.5 rounded-xl text-xs cursor-pointer">{guardando ? "Guardando cambios..." : "Guardar Cambios del Video"}</button>
-          </form>
-        </div>
-      )}
+      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+        <h3 className="text-base font-black text-slate-900">
+          Mis Videos Publicados ({videos.length})
+        </h3>
 
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
-        <h3 className="font-black text-base text-slate-900">Mis Videos Publicados ({videosCanal.length})</h3>
-        {videosCanal.length === 0 ? (
-          <p className="text-xs text-slate-500">Aún no has subido videos en este canal. Toca el botón superior <strong>Subir Video</strong> para publicar tu primer talento.</p>
+        {videos.length === 0 ? (
+          <p className="text-xs sm:text-sm text-slate-500 py-4">
+            Aún no has subido videos en este canal. Toca el botón superior{" "}
+            <strong className="text-slate-700">Subir Video</strong> para publicar tu primer talento.
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {videosCanal.map((v) => (
-              <div key={v.id} className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50">
-                <div onClick={() => onAbrirVideo(v)} className="relative aspect-video bg-slate-900 flex items-center justify-center cursor-pointer">
-                  <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
-                  <Play className="absolute w-9 h-9 text-white fill-white" />
-                </div>
-                <div className="p-3 space-y-2">
-                  <p className="font-bold text-xs line-clamp-1">{v.titulo}</p>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" /> {v.vistas || 0} • <Sparkles className="w-3.5 h-3.5 text-blue-600" /> {v.likes || 0}</span>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => setEditandoVideo(v)} title="Editar video" className="text-blue-600 hover:bg-blue-50 p-1 rounded-lg cursor-pointer"><Pencil className="w-3.5 h-3.5" /></button>
-                      <button onClick={() => borrarVideo(v.id)} title="Eliminar video" className="text-rose-600 hover:bg-rose-50 p-1 rounded-lg cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
+            {videos.map((v) => (
+              <div
+                key={v.id}
+                onClick={() => onAbrirVideo(v)}
+                className="group border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:shadow-md transition bg-slate-50"
+              >
+                <div className="relative aspect-video bg-slate-950">
+                  <video
+                    src={v.video_url}
+                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
+                    muted
+                    playsInline
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+                    <div className="w-10 h-10 rounded-full bg-white/90 text-slate-900 flex items-center justify-center shadow">
+                      <Play className="w-4 h-4 fill-current ml-0.5" />
                     </div>
                   </div>
+                </div>
+                <div className="p-3">
+                  <p className="text-xs font-extrabold text-slate-900 line-clamp-1">{v.titulo}</p>
+                  <p className="text-[11px] font-bold text-slate-500 mt-1 flex items-center gap-1">
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>{(v.vistas || 0).toLocaleString()} visualizaciones</span>
+                  </p>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {modalInfoCanal && (
+        <div
+          onClick={() => setModalInfoCanal(false)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-5"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-slate-900">Información del canal</h3>
+              <button
+                type="button"
+                onClick={() => setModalInfoCanal(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm text-slate-700">
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-semibold">Fecha de creación</span>
+                <span className="font-extrabold text-slate-900">
+                  Se unió el{" "}
+                  {perfil.created_at
+                    ? new Date(perfil.created_at).toLocaleDateString("es-ES", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "24 de noviembre de 2026"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                <span className="text-slate-500 font-semibold">Suscriptores totales</span>
+                <span className="font-extrabold text-slate-900">
+                  {seguidores.toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-slate-500 font-semibold">Visualizaciones totales</span>
+                <span className="font-extrabold text-slate-900">
+                  {vistasTotales.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setModalInfoCanal(false)}
+              className="w-full py-2.5 rounded-full bg-slate-900 text-white text-xs font-black"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export function ModalCompartir({
+  titulo,
+  videoId,
+  onCerrar,
+}: {
+  titulo: string;
+  videoId: string;
+  onCerrar: () => void;
+}) {
+  const url = `https://vercel.app{videoId}`;
+  const copiar = () => {
+    navigator.clipboard?.writeText(url);
+    alert("Enlace copiado al portapapeles");
+    onCerrar();
+  };
+
+  return (
+    <div
+      onClick={onCerrar}
+      className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-black text-slate-900">Compartir talento</h3>
+          <button
+            type="button"
+            onClick={onCerrar}
+            className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+        <p className="text-xs text-slate-600 line-clamp-2">{titulo}</p>
+        <div className="p-2.5 bg-slate-100 rounded-xl text-[11px] font-mono text-slate-700 truncate">
+          {url}
+        </div>
+        <button
+          type="button"
+          onClick={copiar}
+          className="w-full py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black"
+        >
+          Copiar enlace para compartir
+        </button>
+      </div>
+    </div>
+  );
+}
+
+ 

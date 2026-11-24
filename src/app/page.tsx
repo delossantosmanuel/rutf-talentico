@@ -8,6 +8,7 @@ import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
 import { BarraInstitucional } from "../institucional";
 import { CampanaNotificaciones, reproducirSonidoRUTF } from "../notificaciones";
 import { PanelMonetizacion } from "../monetizacion";
+import { iniciarNotificacionesCreadores } from "../notificacionesNativas";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
@@ -92,6 +93,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
 
   useEffect(() => {
     cargarDatos();
+    iniciarNotificacionesCreadores(() => setTab("subir"));
     const iniciarSesion = async () => {
       const { data: authData } = await supabase.auth.getUser();
       if (authData?.user?.email) {

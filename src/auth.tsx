@@ -15,15 +15,19 @@ type Props = {
   supabase: any;
   onLogin: (u: UsuarioRUTF) => void;
   onCerrar: () => void;
+  googleNuevo?: { id: string; email: string; nombreSugerido: string } | null;
 };
 
-export default function AuthModal({ supabase, onLogin, onCerrar }: Props) {
+export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: Props) {
   const [modo, setModo] = useState<"login" | "registro">("registro");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [claveFundador, setClaveFundador] = useState("");
   const [cargando, setCargando] = useState(false);
+
+  const [nombreVisible, setNombreVisible] = useState(googleNuevo?.nombreSugerido || "");
+  const [handleDisponible, setHandleDisponible] = useState<"idle" | "verificando" | "disponible" | "ocupado">("idle");
 
   const limpiarHandle = (raw: string) => {
     const limpio = raw.trim().replace(/[^a-zA-Z0-9_]/g, "");
@@ -114,11 +118,131 @@ export default function AuthModal({ supabase, onLogin, onCerrar }: Props) {
       setCargando(false);
     }
   };
+  const verificarDisponibilidadHandle = async (valor: string) => {
+    setUsername(valor);
+    const limpio = limpiarHandle(valor);
+    if (limpio.length < 4) {
+      setHandleDisponible("idle");
+      return;
+    }
+    setHandleDisponible("verificando");
+    const { data } = await supabase
+      .from("usuarios_rutf")
+      .select("id")
+      .ilike("username", limpio)
+      .maybeSingle();
+    setHandleDisponible(data ? "ocupado" : "disponible");
+  };
+
+  const guardarCanalNuevoGoogle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googleNuevo) return;
+    const handleFinal = limpiarHandle(username);
+    if (handleFinal.length < 4) {
+      alert("El @usuario debe tener al menos 3 letras o números.");
+      return;
+    }
+    if (handleDisponible === "ocupado") {
+      alert("Ese @usuario ya está en uso. Elige otro.");
+      return;
+    }
+    setCargando(true);
+    const { data: dup } = await supabase
+      .from("usuarios_rutf")
+      .select("id")
+      .ilike("username", handleFinal)
+      .maybeSingle();
+    if (dup) {
+      setHandleDisponible("ocupado");
+      setCargando(false);
+      return;
+    }
+    const esFundador = googleNuevo.email.toLowerCase() === "delossantosmanuel892@gmail.com";
+    const nuevoPerfil = {
+      id: googleNuevo.id,
+      username: handleFinal,
+      email: googleNuevo.email.toLowerCase(),
+      es_fundador: esFundador,
+    };
+    const { data: guardado, error } = await supabase
+      .from("usuarios_rutf")
+      .upsert(nuevoPerfil)
+      .select("*")
+      .single();
+    if (error) {
+      alert("No se pudo guardar tu canal: " + error.message);
+      setCargando(false);
+      return;
+    }
+    if (nombreVisible.trim()) {
+      await supabase.auth.updateUser({ data: { full_name: nombreVisible.trim() } });
+    }
+    localStorage.setItem("rutf_sesion", JSON.stringify(guardado));
+    setCargando(false);
+    onLogin(guardado);
+    onCerrar();
+  };
 
     return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative space-y-4">
         <button onClick={onCerrar} className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 cursor-pointer"><X className="w-4 h-4" /></button>
+        {googleNuevo ? (
+          <form onSubmit={guardarCanalNuevoGoogle} className="space-y-4">
+            <div className="text-center space-y-1">
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black flex items-center justify-center text-base shadow">
+                RT
+              </div>
+              <h2 className="text-xl font-black text-slate-900">Completa tu Canal Único</h2>
+              <p className="text-xs text-slate-500">Elige tu identidad única para publicar y monetizar en RUTF Talentico.</p>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700">Nombre de Canal Único (@Usuario)</label>
+              <div className="relative flex items-center">
+                <AtSign className="w-4 h-4 text-slate-400 absolute left-3" />
+                <input
+                  type="text"
+                  required
+                  value={username}
+                  onChange={(e) => verificarDisponibilidadHandle(e.target.value)}
+                  placeholder="Ej: RUTF_Talentico o TuNombre"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600"
+                />
+              </div>
+              {handleDisponible === "verificando" && (
+                <p className="text-[11px] text-slate-400 font-semibold">Verificando disponibilidad...</p>
+              )}
+              {handleDisponible === "disponible" && (
+                <p className="text-[11px] text-emerald-600 font-bold">✓ {limpiarHandle(username)} está disponible</p>
+              )}
+              {handleDisponible === "ocupado" && (
+                <p className="text-[11px] text-red-600 font-bold">✕ Ese @usuario ya está ocupado</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-slate-700">Nombre visible de tu canal</label>
+              <input
+                type="text"
+                required
+                value={nombreVisible}
+                onChange={(e) => setNombreVisible(e.target.value)}
+                placeholder="Tu nombre o nombre artístico"
+                className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={cargando || handleDisponible === "ocupado"}
+              className="w-full py-3 rounded-xl text-sm font-black text-white bg-gradient-to-r from-blue-600 to-orange-500 shadow-md disabled:opacity-50"
+            >
+              {cargando ? "Guardando canal..." : "Guardar y Entrar a mi Canal"}
+            </button>
+          </form>
+        ) : (
+          <>
 
         <div className="text-center space-y-1">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center mx-auto shadow-sm">RT</div>
@@ -127,7 +251,15 @@ export default function AuthModal({ supabase, onLogin, onCerrar }: Props) {
         </div>
 
         <button type="button" onClick={entrarConGoogle} disabled={cargando} className="w-full flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold py-2.5 rounded-xl text-xs shadow-2xs cursor-pointer transition">
-          <span className="font-black text-sm text-blue-600">G</span> Continuar con Google
+                       <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z" />
+                <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z" />
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z" />
+              </svg>
+              Continuar con Google
+       
+
         </button>
 
         <div className="flex items-center gap-2 text-[11px] text-slate-400">
@@ -176,6 +308,9 @@ export default function AuthModal({ supabase, onLogin, onCerrar }: Props) {
             <UserCheck className="w-4 h-4" /> {cargando ? "Verificando..." : modo === "registro" ? "Registrar mi Canal Único" : "Entrar a mi Cuenta"}
           </button>
         </form>
+                  </>
+        )}
+
       </div>
     </div>
   );

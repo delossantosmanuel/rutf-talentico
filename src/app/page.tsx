@@ -25,6 +25,8 @@ export default function Home() {
   const [busqueda, setBusqueda] = useState("");
   const [usuario, setUsuario] = useState<PerfilCanal | null>(null);
   const [mostrarAuth, setMostrarAuth] = useState(false);
+  const [googleNuevo, setGoogleNuevo] = useState<{ id: string; email: string; nombreSugerido: string } | null>(null);
+
   const [videoCompartir, setVideoCompartir] = useState<Video | null>(null);
   const [votos, setVotos] = useState<Record<string, "like" | "dislike">>({});
   const [suscritos, setSuscritos] = useState<Record<string, boolean>>({});
@@ -130,31 +132,34 @@ const [menuCuenta, setMenuCuenta] = useState(false);
       const { data: authData } = await supabase.auth.getUser();
       if (authData?.user?.email) {
         const emailGoogle = authData.user.email.toLowerCase();
-        const { data: existente } = await supabase.from("usuarios_rutf").select("*").eq("email", emailGoogle).maybeSingle();
+        const { data: existente } = await supabase
+          .from("usuarios_rutf")
+          .select("*")
+          .eq("email", emailGoogle)
+          .maybeSingle();
+
         if (existente) {
           localStorage.setItem("rutf_sesion", JSON.stringify(existente));
           setUsuario(existente);
+          setGoogleNuevo(null);
+          setMostrarAuth(false);
           cargarActividadUsuario(existente.id);
           return;
-        } else {
-          const base = emailGoogle.split("@").at(0)?.replace(/[^a-zA-Z0-9_]/g, "") || "Talento";
-          let handle = `@${base}`;
-          if (handle.toLowerCase() === "@rutf_talentico") handle = `@${base}_rd`;
-          const { data: creado } = await supabase.from("usuarios_rutf").insert([{
-            username: handle,
-            username_lower: handle.toLowerCase(),
-            email: emailGoogle,
-            password_hash: "google_oauth",
-            es_fundador: false,
-          }]).select("*").single();
-          if (creado) {
-            localStorage.setItem("rutf_sesion", JSON.stringify(creado));
-            setUsuario(creado);
-            cargarActividadUsuario(creado.id);
-            return;
-          }
         }
+
+        const nombreGoogle =
+          authData.user.user_metadata?.full_name ||
+          authData.user.user_metadata?.name ||
+          emailGoogle.split("@")[0];
+        setGoogleNuevo({
+          id: authData.user.id,
+          email: emailGoogle,
+          nombreSugerido: nombreGoogle,
+        });
+        setMostrarAuth(true);
+        return;
       }
+
       const sesion = localStorage.getItem("rutf_sesion");
       if (sesion) {
         const u = JSON.parse(sesion);
@@ -162,6 +167,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
         cargarActividadUsuario(u.id);
       }
     };
+
     iniciarSesion();
   }, []);
   const cerrarSesion = async () => {
@@ -288,13 +294,23 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
   const seguidoresTotales = Object.values(conteoSeguidores).reduce((a, b) => a + (b || 0), 0);
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-900">
-      {mostrarAuth && (
-        <AuthModal
-          supabase={supabase}
-          onLogin={(u) => { setUsuario(u); setMostrarAuth(false); cargarActividadUsuario(u.id); }}
-          onCerrar={() => setMostrarAuth(false)}
-        />
-      )}
+              {mostrarAuth && (
+          <AuthModal
+            supabase={supabase}
+            googleNuevo={googleNuevo}
+            onLogin={(u) => {
+              setUsuario(u);
+              setGoogleNuevo(null);
+              setMostrarAuth(false);
+              cargarActividadUsuario(u.id);
+            }}
+            onCerrar={() => {
+              setGoogleNuevo(null);
+              setMostrarAuth(false);
+            }}
+          />
+        )}
+
 
       {videoCompartir && (
         <ModalCompartir titulo={videoCompartir.titulo} videoId={videoCompartir.id} onCerrar={() => setVideoCompartir(null)} />

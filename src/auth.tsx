@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { UserCheck, Lock, Mail, AtSign, ShieldCheck, X } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 
 export type UsuarioRUTF = {
   id: string;
@@ -32,7 +33,12 @@ export default function AuthModal({ supabase, onLogin, onCerrar }: Props) {
     setCargando(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: typeof window !== "undefined" ? window.location.origin : undefined },
+           options: {
+        redirectTo: Capacitor.isNativePlatform()
+          ? "com.rutftalentico.app://login-callback"
+          : (typeof window !== "undefined" ? window.location.origin : undefined),
+      },
+
     });
     if (error) {
       alert("Para activar Google OAuth, habilítalo en Authentication > Providers > Google en Supabase. Mientras tanto puedes entrar con tu correo y @usuario único.");

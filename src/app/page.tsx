@@ -9,6 +9,7 @@ import { BarraInstitucional } from "../institucional";
 import { CampanaNotificaciones, reproducirSonidoRUTF } from "../notificaciones";
 import { PanelMonetizacion } from "../monetizacion";
 import { iniciarNotificacionesCreadores } from "../notificacionesNativas";
+import { App as CapApp } from "@capacitor/app";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
@@ -94,6 +95,21 @@ const [menuCuenta, setMenuCuenta] = useState(false);
   useEffect(() => {
     cargarDatos();
     iniciarNotificacionesCreadores(() => setTab("subir"));
+        CapApp.addListener("appUrlOpen", async ({ url }) => {
+      if (url.includes("access_token") || url.includes("code=")) {
+        const hashPart = url.split("#")[1];
+        if (hashPart) {
+          const params = new URLSearchParams(hashPart);
+          const access_token = params.get("access_token");
+          const refresh_token = params.get("refresh_token");
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token });
+            iniciarSesion();
+          }
+        }
+      }
+    });
+
     const iniciarSesion = async () => {
       const { data: authData } = await supabase.auth.getUser();
       if (authData?.user?.email) {

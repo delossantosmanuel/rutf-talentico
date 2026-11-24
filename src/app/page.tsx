@@ -219,14 +219,15 @@ const [menuCuenta, setMenuCuenta] = useState(false);
     cargarComentarios(v.id);
   };
 
-  const registrarVistaCalificada = async (v: Video, segundosVistos: number) => {
+    const registrarVistaCalificada = async (v: Video, segundosVistos: number) => {
     if (segundosVistos < 6 || vistaContadaRef.current[v.id]) return;
     vistaContadaRef.current[v.id] = true;
     const nuevasVistas = (v.vistas || 0) + 1;
     setVideoActivo((prev) => (prev && prev.id === v.id ? { ...prev, vistas: nuevasVistas } : prev));
-    await supabase.from("videos").update({ vistas: nuevasVistas }).eq("id", v.id);
+    await supabase.rpc("incrementar_vista_atomica", { p_video_id: v.id });
     cargarDatos();
   };
+
 
     const reaccionar = async (v: Video, tipoReaccion: "like" | "dislike") => {
     if (!usuario) return setMostrarAuth(true);
@@ -315,6 +316,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
       {videoCompartir && (
         <ModalCompartir titulo={videoCompartir.titulo} videoId={videoCompartir.id} onCerrar={() => setVideoCompartir(null)} />
       )}
+ {!(tab === "canal" && usuario) && <>
 
            <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-md pb-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col gap-2">
@@ -458,6 +460,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
       </header>
 
       <BarraInstitucional usuario={usuario} onAbrirAuth={() => setMostrarAuth(true)} />
+ </>}
 
 
       <main className="max-w-6xl mx-auto px-4 py-6">
@@ -850,17 +853,28 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
      )}
 
 
-        {tab === "canal" && usuario && (
+                  {tab === "canal" && usuario && (
           <EstudioCanal
             supabase={supabase}
             perfil={usuario}
-            videosCanal={lista.filter((v) => v.creador.toLowerCase() === usuario.username.toLowerCase())}
+            videos={lista.filter((v) => v.creador.toLowerCase() === usuario.username.toLowerCase())}
             seguidores={conteoSeguidores[usuario.username] || 0}
-            onActualizarPerfil={(p) => setUsuario(p)}
-            onAbrirVideo={(v) => { setTab("inicio"); abrirVideo(v); }}
+            onActualizarPerfil={(u) => setUsuario(u)}
+            onAbrirVideo={(v) => {
+              const completo = lista.find((item) => item.id === v.id);
+              setTab("inicio");
+              if (completo) abrirVideo(completo);
+            }}
             onRecargar={cargarDatos}
+            onVolver={() => setTab("inicio")}
+            onAbrirSubir={abrirSubir}
+            onCerrarSesion={cerrarSesion}
           />
         )}
+
+          
+      
+
 
         {tab === "subir" && usuario && (
           <SubirVideoForm supabase={supabase} canalActual={usuario.username} onPublicado={async () => { await cargarDatos(); setTab("inicio"); }} />

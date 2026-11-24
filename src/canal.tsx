@@ -13,7 +13,10 @@ export type PerfilCanal = {
   avatar_url?: string;
   banner_url?: string;
   tema_banner?: string;
+  created_at?: string;
+
 };
+
 
 const TEMAS_BANNER = [
   { id: "from-blue-600 via-indigo-600 to-orange-500", nombre: "Oficial RUTF" },
@@ -112,6 +115,8 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
   const [zoom, setZoom] = useState(inicial.zoom);
   const [abrirEditorBanner, setAbrirEditorBanner] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [barraActualizada, setBarraActualizada] = useState(false);
+
   const [editandoVideo, setEditandoVideo] = useState<any | null>(null);
   const inputAvatarRef = useRef<HTMLInputElement>(null);
   const inputBannerRef = useRef<HTMLInputElement>(null);
@@ -151,7 +156,9 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
     localStorage.setItem("rutf_sesion", JSON.stringify(actualizado));
     onActualizarPerfil(actualizado);
     setAbrirEditorBanner(false);
-    alert("¡Diseño y encuadre de tu canal guardados con éxito!");
+       setBarraActualizada(true);
+    setTimeout(() => setBarraActualizada(false), 3500);
+
   };
 
   const guardarEdicionVideo = async (e: React.FormEvent) => {
@@ -177,6 +184,13 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
   const vistasCanal = videosCanal.reduce((a, b) => a + (b.vistas || 0), 0);
     return (
     <div className="max-w-4xl mx-auto space-y-6">
+            {barraActualizada && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 text-white text-xs font-black py-2 px-4 text-center shadow-lg flex items-center justify-center gap-2">
+          <span className="inline-block w-2 h-2 rounded-full bg-white animate-ping" />
+          <span>✓ Canal actualizado correctamente • Ya puedes explorar Para Ti o subir videos</span>
+        </div>
+      )}
+
       <input id="input-banner-rutf" type="file" accept="image/*" onChange={(e) => subirImagen(e, "banner")} className="hidden" />
       <input id="input-avatar-rutf" type="file" accept="image/*" onChange={(e) => subirImagen(e, "avatar")} className="hidden" />
 
@@ -245,6 +259,33 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
                   {perfil.username.toLowerCase() === "@rutf_talentico" && <CheckCircle2 className="w-5 h-5 text-blue-600 fill-blue-100" />}
                 </h2>
                 <p className="text-xs font-bold text-blue-600">{perfil.username} • <span className="text-slate-500">{seguidores} suscriptores • {vistasCanal} vistas</span></p>
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-bold text-slate-500">
+              <span>
+                📅 Canal creado el{" "}
+                <strong className="text-slate-700">
+                  {perfil.created_at
+                    ? new Date(perfil.created_at).toLocaleDateString("es-ES", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "2026"}
+                </strong>
+              </span>
+              <span>•</span>
+              <span>
+                👁️ Alcance total: <strong className="text-slate-700">{vistasCanal.toLocaleString()} vistas</strong>
+              </span>
+              <span>•</span>
+              <span>
+                👥 <strong className="text-slate-700">{seguidores.toLocaleString()}</strong> suscriptores
+              </span>
+              <span>•</span>
+              <span>
+                🎬 <strong className="text-slate-700">{videosCanal.length}</strong> videos
+              </span>
+            </div>
+
               </div>
             </div>
           </div>

@@ -13,7 +13,8 @@ export type UsuarioRUTF = {
 
 type Props = {
   supabase: any;
-  onLogin: (u: UsuarioRUTF) => void;
+ onLogin: (u: UsuarioRUTF, esNuevo?: boolean) => void;
+
   onCerrar: () => void;
   googleNuevo?: { id: string; email: string; nombreSugerido: string } | null;
 };
@@ -96,7 +97,8 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
 
         if (error) throw new Error("Ese nombre de usuario ya fue tomado por otra persona.");
         localStorage.setItem("rutf_sesion", JSON.stringify(data));
-        onLogin(data);
+        onLogin(data, true);
+
       } else {
         const { data, error } = await supabase
           .from("usuarios_rutf")
@@ -179,7 +181,8 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     }
     localStorage.setItem("rutf_sesion", JSON.stringify(guardado));
     setCargando(false);
-    onLogin(guardado);
+   onLogin(guardado, true);
+
     onCerrar();
   };
 

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { UserCheck, Lock, Mail, AtSign, ShieldCheck, X } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 
 export type UsuarioRUTF = {
   id: string;
@@ -31,20 +32,27 @@ export default function AuthModal({ supabase, onLogin, onCerrar }: Props) {
 
   const entrarConGoogle = async () => {
     setCargando(true);
-    const { error } = await supabase.auth.signInWithOAuth({
+    const esNativo = Capacitor.isNativePlatform();
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-           options: {
-        redirectTo: Capacitor.isNativePlatform()
+      options: {
+        redirectTo: esNativo
           ? "com.rutftalentico.app://login-callback"
           : (typeof window !== "undefined" ? window.location.origin : undefined),
+        skipBrowserRedirect: esNativo,
       },
-
     });
     if (error) {
-      alert("Para activar Google OAuth, habilítalo en Authentication > Providers > Google en Supabase. Mientras tanto puedes entrar con tu correo y @usuario único.");
+      alert("Error al iniciar con Google: " + error.message);
+      setCargando(false);
+      return;
+    }
+    if (esNativo && data?.url) {
+      await Browser.open({ url: data.url });
       setCargando(false);
     }
   };
+
 
   const manejarEnvio = async (e: React.FormEvent) => {
     e.preventDefault();

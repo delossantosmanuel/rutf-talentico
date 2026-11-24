@@ -10,6 +10,7 @@ import { CampanaNotificaciones, reproducirSonidoRUTF } from "../notificaciones";
 import { PanelMonetizacion } from "../monetizacion";
 import { iniciarNotificacionesCreadores } from "../notificacionesNativas";
 import { App as CapApp } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
@@ -95,20 +96,35 @@ const [menuCuenta, setMenuCuenta] = useState(false);
   useEffect(() => {
     cargarDatos();
     iniciarNotificacionesCreadores(() => setTab("subir"));
-        CapApp.addListener("appUrlOpen", async ({ url }) => {
-      if (url.includes("access_token") || url.includes("code=")) {
-        const hashPart = url.split("#")[1];
-        if (hashPart) {
-          const params = new URLSearchParams(hashPart);
-          const access_token = params.get("access_token");
-          const refresh_token = params.get("refresh_token");
-          if (access_token && refresh_token) {
-            await supabase.auth.setSession({ access_token, refresh_token });
-            iniciarSesion();
+           CapApp.addListener("appUrlOpen", async ({ url }) => {
+      if (url.startsWith("com.rutftalentico.app://login-callback")) {
+        try {
+          if (url.includes("code=")) {
+            const urlObj = new URL(url);
+            const code = urlObj.searchParams.get("code");
+            if (code) {
+              await supabase.auth.exchangeCodeForSession(code);
+            }
+          } else if (url.includes("access_token")) {
+            const hashPart = url.split("#")[1];
+            if (hashPart) {
+              const params = new URLSearchParams(hashPart);
+              const access_token = params.get("access_token");
+              const refresh_token = params.get("refresh_token");
+              if (access_token && refresh_token) {
+                await supabase.auth.setSession({ access_token, refresh_token });
+              }
+            }
           }
+          await Browser.close();
+          await iniciarSesion();
+          setTab("parati");
+        } catch (err) {
+          console.error("Error procesando callback OAuth:", err);
         }
       }
     });
+
 
     const iniciarSesion = async () => {
       const { data: authData } = await supabase.auth.getUser();

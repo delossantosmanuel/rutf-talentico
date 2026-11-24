@@ -187,7 +187,8 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
             {barraActualizada && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-600 text-white text-xs font-black py-2 px-4 text-center shadow-lg flex items-center justify-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-white animate-ping" />
-          <span>✓ Canal actualizado correctamente • Ya puedes explorar Para Ti o subir videos</span>
+          <span>Cambios guardados correctamente</span>
+
         </div>
       )}
 
@@ -246,49 +247,72 @@ export default function EstudioCanal({ supabase, perfil, videosCanal, seguidores
             </div>
           </div>
         )}
-        <div className="px-6 pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 relative z-10">
-            <div className="flex items-end gap-4">
-              <div onClick={() => inputAvatarRef.current?.click()} title="Cambiar foto de perfil" className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-600 to-orange-500 border-4 border-white shadow-md overflow-hidden flex items-center justify-center text-white font-black text-2xl cursor-pointer group">
-                {avatarUrl ? <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : perfil.username.replace("@", "").slice(0, 2).toUpperCase()}
-                <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition"><Camera className="w-6 h-6" /></div>
-              </div>
-              <div className="pb-1">
-                <h2 className="text-xl font-black text-slate-900 flex items-center gap-1.5">
-                  {nombreCanal || perfil.username}
-                  {perfil.username.toLowerCase() === "@rutf_talentico" && <CheckCircle2 className="w-5 h-5 text-blue-600 fill-blue-100" />}
-                </h2>
-                <p className="text-xs font-bold text-blue-600">{perfil.username} • <span className="text-slate-500">{seguidores} suscriptores • {vistasCanal} vistas</span></p>
-                            <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-bold text-slate-500">
-              <span>
-                📅 Canal creado el{" "}
-                <strong className="text-slate-700">
-                  {perfil.created_at
-                    ? new Date(perfil.created_at).toLocaleDateString("es-ES", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : "2026"}
-                </strong>
-              </span>
-              <span>•</span>
-              <span>
-                👁️ Alcance total: <strong className="text-slate-700">{vistasCanal.toLocaleString()} vistas</strong>
-              </span>
-              <span>•</span>
-              <span>
-                👥 <strong className="text-slate-700">{seguidores.toLocaleString()}</strong> suscriptores
-              </span>
-              <span>•</span>
-              <span>
-                🎬 <strong className="text-slate-700">{videosCanal.length}</strong> videos
-              </span>
-            </div>
-
+             <div className="px-6 pb-6">
+        <div className="flex flex-col items-start gap-3 -mt-10 relative z-10">
+          <div className="flex items-end gap-4">
+            <div
+              onClick={() => inputAvatarRef.current?.click()}
+              title="Cambiar foto de perfil"
+              className="relative w-20 h-20 aspect-square rounded-full border-4 border-white shadow-md overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                perfil.username.replace("@", "").slice(0, 2).toUpperCase()
+              )}
+              <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                <Camera className="w-5 h-5 text-white" />
               </div>
             </div>
           </div>
+
+          <div className="pt-1 w-full">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h2 className="text-xl font-black text-slate-900 truncate">
+                {nombreCanal || perfil.username}
+              </h2>
+              {perfil.username.toLowerCase() === "@rutf_talentico" && (
+                <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
+              )}
+            </div>
+            <p className="text-xs font-bold text-slate-500 mt-0.5">{perfil.username}</p>
+
+            <p className="text-xs sm:text-sm text-slate-700 mt-2.5 leading-relaxed">
+              {perfil.bio || "Creador oficial en RUTF Talentico."}
+            </p>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+              <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+                Información del Canal
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
+                <span>
+                  Se unió el{" "}
+                  <strong className="text-slate-800">
+                    {perfil.created_at
+                      ? new Date(perfil.created_at).toLocaleDateString("es-ES", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      : "24 de noviembre de 2026"}
+                  </strong>
+                </span>
+                <span className="text-slate-300">|</span>
+                <span>
+                  Suscriptores totales:{" "}
+                  <strong className="text-slate-800">{seguidores.toLocaleString()}</strong>
+                </span>
+                <span className="text-slate-300">|</span>
+                <span>
+                  Visualizaciones totales:{" "}
+                  <strong className="text-slate-800">{vistasCanal.toLocaleString()}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
           <form onSubmit={guardarCambios} className="mt-6 pt-5 border-t border-slate-100 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">

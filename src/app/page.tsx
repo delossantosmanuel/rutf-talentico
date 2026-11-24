@@ -266,7 +266,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         <ModalCompartir titulo={videoCompartir.titulo} videoId={videoCompartir.id} onCerrar={() => setVideoCompartir(null)} />
       )}
 
-            <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+           <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-md pb-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col gap-2">
           {/* Fila 1: Logo a la izquierda + Entrar / Crear Canal compacto arriba a la derecha */}
           <div className="flex items-center justify-between gap-2">

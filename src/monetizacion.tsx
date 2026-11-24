@@ -39,10 +39,10 @@ function AnilloProgreso({
         />
       </div>
 
-      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-        <span className="text-slate-700">{actual}</span>
-        <span>{meta}</span>
+               <div className="pt-0.5 text-[11px] font-bold text-slate-600 text-center">
+        <span>{actual}</span>
       </div>
+
     </div>
   );
 }
@@ -73,7 +73,9 @@ export function PanelMonetizacion({
 
   const META_SUSCRIPTORES = 100;
   const META_VISTAS = 1000;
-  const esFundador = usuario?.username?.toLowerCase() === "@manueldigitalidad";
+    const esFundador =
+    usuario?.email?.toLowerCase() === "delossantosmanuel892@gmail.com";
+
 
   const pctSuscriptores = Math.min(100, Math.round((suscriptoresReales / META_SUSCRIPTORES) * 100));
   const pctVistas = Math.min(100, Math.round((vistasReales / META_VISTAS) * 100));
@@ -178,7 +180,7 @@ export function PanelMonetizacion({
     {
       pregunta: "¿Cómo funciona la monetización y los pagos?",
       respuesta:
-        "Una vez que tu canal alcanza 100 suscriptores reales y 1,000 vistas calificadas (+15 segundos continuos) y es aprobado, comienzas a generar ingresos por tus reproducciones válidas. Al acumular el umbral mínimo de $10.00 USD, puedes recibir tu retiro en PayPal en ciclos semanales de 7 días.",
+        "Una vez que tu canal alcanza 100 suscriptores reales y 1,000 vistas calificadas (+15 segundos continuos) y es aprobado, comienzas a generar ingresos por tus reproducciones válidas. Al acumular el umbral mínimo de $5.00 USD, puedes recibir tu retiro en PayPal en ciclos semanales de 7 días.",
     },
     {
       pregunta: "¿Qué tiempo toma en aceptarse mi solicitud de canal?",
@@ -188,7 +190,7 @@ export function PanelMonetizacion({
     {
       pregunta: "¿Qué tiempo duran los pagos en procesarse?",
       respuesta:
-        "Una vez emitido el pago semanal tras alcanzar el mínimo de $10.00 USD, la transferencia a tu correo de PayPal suele acreditarse en un plazo de 24 a 48 horas. Ten en cuenta que PayPal aplica su comisión estándar por recepción internacional según tu país.",
+        "Una vez emitido el pago semanal tras alcanzar el mínimo de $5.00 USD, la transferencia a tu correo de PayPal suele acreditarse en un plazo de 24 a 48 horas. Ten en cuenta que PayPal aplica su comisión estándar por recepción internacional según tu país.",
     },
     {
       pregunta: "¿Cómo veo mis ingresos y vistas calificadas?",
@@ -231,7 +233,7 @@ export function PanelMonetizacion({
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-2.5 text-left sm:text-right shrink-0">
           <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700">Saldo Estimado</p>
           <p className="text-xl font-black text-slate-900">${saldoEstimado} <span className="text-xs text-emerald-600">USD</span></p>
-          <p className="text-[10px] text-slate-500">Retiro mínimo: $10.00 USD • PayPal</p>
+          <p className="text-[10px] text-slate-500">Retiro mínimo: $5.00 USD • PayPal</p>
         </div>
       </div>
 
@@ -269,7 +271,8 @@ export function PanelMonetizacion({
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-black text-slate-900">Requisitos de Calificación</h3>
-            <p className="text-xs text-slate-500">Los círculos avanzan automáticamente con cada suscriptor y vista (+15 seg).</p>
+                        <p className="text-xs text-slate-500">Las barras avanzan automáticamente con cada suscriptor y vista (+15 seg).</p>
+
           </div>
           <span className={`px-3 py-1 rounded-full text-[11px] font-black ${cumpleRequisitos ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-blue-700"}`}>
             {cumpleRequisitos ? "¡Listo para revisar!" : "En progreso"}
@@ -279,14 +282,16 @@ export function PanelMonetizacion({
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <AnilloProgreso
             porcentaje={pctSuscriptores}
-            actual={`${suscriptoresReales} actuales`}
+                        actual={`${suscriptoresReales} / ${META_SUSCRIPTORES} suscriptores`}
+
             meta={`Meta: ${META_SUSCRIPTORES} suscriptores`}
             titulo="Suscriptores Reales"
             colorHex="#2563eb"
           />
           <AnilloProgreso
             porcentaje={pctVistas}
-            actual={`${vistasReales} públicas`}
+                      actual={`${vistasReales.toLocaleString()} / ${META_VISTAS.toLocaleString()} vistas (+15s)`}
+
             meta={`Meta: ${META_VISTAS.toLocaleString()} vistas (+15s)`}
             titulo="Vistas Calificadas"
             colorHex="#059669"
@@ -296,7 +301,7 @@ export function PanelMonetizacion({
                  {solicitudActual?.estado === "aprobado" || solicitudActual?.estado === "pagado" ? (
           <div className="w-full py-3.5 px-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-black flex items-center justify-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Canal Monetizado Activo • Retiros a PayPal desde $10.00 USD cada 7 días</span>
+            <span>Canal Monetizado Activo • Retiros a PayPal desde $5.00 USD cada 7 días</span>
           </div>
         ) : solicitudActual?.estado === "rechazado" ? (
           <div className="w-full py-3.5 px-4 rounded-2xl bg-red-50 border border-red-300 text-red-800 text-xs font-black flex items-center justify-center gap-2">
@@ -366,7 +371,7 @@ export function PanelMonetizacion({
           <CreditCard className="w-5 h-5 text-blue-600" />
           <div>
             <h3 className="text-base font-black text-slate-900">Método de Pago y Verificación</h3>
-            <p className="text-xs text-slate-500">Vincula tu correo de PayPal (retiro mínimo $10.00 USD) y teléfono.</p>
+            <p className="text-xs text-slate-500">Vincula tu correo de PayPal (retiro mínimo $5.00 USD) y teléfono.</p>
           </div>
         </div>
 

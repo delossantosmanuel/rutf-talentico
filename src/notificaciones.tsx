@@ -116,7 +116,7 @@ export function CampanaNotificaciones({
           });
         }
       });
-      if (usuario.username.toLowerCase() === "@manueldigitalidad") {
+      if (usuario.email?.toLowerCase() === "delossantosmanuel892@gmail.com") {
         const { data: sols } = await supabase
           .from("solicitudes_monetizacion")
           .select("*")

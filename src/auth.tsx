@@ -160,12 +160,15 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
       return;
     }
     const esFundador = googleNuevo.email.toLowerCase() === "delossantosmanuel892@gmail.com";
-    const nuevoPerfil = {
+        const nuevoPerfil = {
       id: googleNuevo.id,
       username: handleFinal,
+      username_lower: handleFinal.toLowerCase(),
+      nombre_canal: nombreVisible.trim() || handleFinal.replace("@", ""),
       email: googleNuevo.email.toLowerCase(),
       es_fundador: esFundador,
     };
+
     const { data: guardado, error } = await supabase
       .from("usuarios_rutf")
       .upsert(nuevoPerfil)

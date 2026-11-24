@@ -55,7 +55,8 @@ type Props = {
   onCerrarSesion?: () => void;
 };
 
-async function comprimirImagen(archivo: File, maxAncho: number, calidad = 0.84): Promise<Blob> {
+async function comprimirImagen(archivo: File, maxAncho: number, calidad = 0.84, encuadreBanner?: { x: number; y: number }): Promise<Blob> {
+
   return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(archivo);
@@ -117,6 +118,15 @@ export default function EstudioCanal({
   const [menuOpciones, setMenuOpciones] = useState(false);
   const [modalInfoCanal, setModalInfoCanal] = useState(false);
   const [bannerPendiente, setBannerPendiente] = useState<{ archivo: File; preview: string } | null>(null);
+  const [vistaDispositivo, setVistaDispositivo] = useState<"tv" | "pc" | "movil">("movil");
+  const [bannerOffset, setBannerOffset] = useState({ x: 50, y: 50 });
+  const arrastreRef = useRef<{ activo: boolean; startX: number; startY: number; origX: number; origY: number }>({
+    activo: false,
+    startX: 0,
+    startY: 0,
+    origX: 50,
+    origY: 50,
+  });
 
   const inputAvatarRef = useRef<HTMLInputElement>(null);
   const inputBannerRef = useRef<HTMLInputElement>(null);
@@ -613,32 +623,105 @@ export default function EstudioCanal({
               </button>
             </div>
 
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200">
+                        <div
+              onPointerDown={(e) => {
+                (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+                arrastreRef.current = {
+                  activo: true,
+                  startX: e.clientX,
+                  startY: e.clientY,
+                  origX: bannerOffset.x,
+                  origY: bannerOffset.y,
+                };
+              }}
+              onPointerMove={(e) => {
+                if (!arrastreRef.current.activo) return;
+                const dx = ((e.clientX - arrastreRef.current.startX) / 220) * 100;
+                const dy = ((e.clientY - arrastreRef.current.startY) / 140) * 100;
+                const nx = Math.max(0, Math.min(100, Math.round(arrastreRef.current.origX - dx)));
+                const ny = Math.max(0, Math.min(100, Math.round(arrastreRef.current.origY - dy)));
+                setBannerOffset({ x: nx, y: ny });
+              }}
+              onPointerUp={() => {
+                arrastreRef.current.activo = false;
+              }}
+              className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 touch-none select-none cursor-grab active:cursor-grabbing"
+            >
               <img
                 src={bannerPendiente.preview}
                 alt="Vista previa banner"
-                className="w-full h-full object-cover"
+                draggable={false}
+                style={{ objectPosition: `${bannerOffset.x}% ${bannerOffset.y}%` }}
+                className="w-full h-full object-cover pointer-events-none"
               />
-              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-24 border-y border-dashed border-white/70 bg-black/20 flex items-center justify-center">
-                <div className="w-3/5 h-full border-x border-white/90 flex items-center justify-center">
-                  <span className="px-2 py-0.5 rounded bg-slate-950/75 text-white text-[10px] font-bold">
-                    Visible en todos los dispositivos
+
+              <div
+                className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-all duration-200 ${
+                  vistaDispositivo === "tv"
+                    ? "border-2 border-red-500 bg-red-500/10"
+                    : "bg-black/25"
+                }`}
+              >
+                <div
+                  className={`transition-all duration-200 flex items-center justify-center ${
+                    vistaDispositivo === "movil"
+                      ? "w-3/5 h-24 border-2 border-red-500 bg-red-500/15 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]"
+                      : vistaDispositivo === "pc"
+                      ? "w-full h-24 border-2 border-red-500 bg-red-500/15 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]"
+                      : "w-full h-full"
+                  }`}
+                >
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-600/90 text-white text-[10px] font-black shadow">
+                    {vistaDispositivo === "movil"
+                      ? "Área visible en Móvil"
+                      : vistaDispositivo === "pc"
+                      ? "Área visible en Escritorio"
+                      : "Área visible en TV (16:9)"}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-4 text-[11px] font-bold text-slate-500">
-              <span className="inline-flex items-center gap-1">
-                <Tv className="w-3.5 h-3.5 text-slate-700" /> TV (16:9)
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Monitor className="w-3.5 h-3.5 text-slate-700" /> Escritorio
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Smartphone className="w-3.5 h-3.5 text-slate-700" /> Móvil
-              </span>
+            <p className="text-center text-[11px] font-bold text-slate-500">
+              Desliza la imagen con tu dedo para encuadrarla y toca un dispositivo para ver el recorte en rojo
+            </p>
+
+            <div className="flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setVistaDispositivo("tv")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
+                  vistaDispositivo === "tv"
+                    ? "bg-red-600 text-white border-red-600 shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <Tv className="w-3.5 h-3.5" /> TV (16:9)
+              </button>
+              <button
+                type="button"
+                onClick={() => setVistaDispositivo("pc")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
+                  vistaDispositivo === "pc"
+                    ? "bg-red-600 text-white border-red-600 shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <Monitor className="w-3.5 h-3.5" /> Escritorio
+              </button>
+              <button
+                type="button"
+                onClick={() => setVistaDispositivo("movil")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
+                  vistaDispositivo === "movil"
+                    ? "bg-red-600 text-white border-red-600 shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5" /> Móvil
+              </button>
             </div>
+
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <button

@@ -345,14 +345,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
               {usuario ? (
                 <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setMenuCuenta(!menuCuenta)}
-                    title={usuario.username}
-                    className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white text-xs font-black flex items-center justify-center uppercase shadow-sm ring-2 ring-white hover:scale-105 transition"
-                  >
-                    {usuario.username.replace("@", "").charAt(0)}
-                  </button>
+                 
 
                   {menuCuenta && (
                     <div className="absolute right-0 top-10 z-50 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 text-xs font-bold">

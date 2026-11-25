@@ -1,6 +1,103 @@
 "use client";
 import React, { useState } from "react";
-import { Upload, Hash, Tag, FileText, Type, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, Hash, Tag, FileText, Type, AlertCircle, CheckCircle2, Image as ImageIcon, Sparkles } from "lucide-react";
+
+async function comprimirAWebP(fuente: HTMLImageElement | HTMLVideoElement, esVertical: boolean): Promise<Blob | null> {
+  const anchoObj = esVertical ? 540 : 960;
+  const altoObj = esVertical ? 960 : 540;
+  const canvas = document.createElement("canvas");
+  canvas.width = anchoObj;
+  canvas.height = altoObj;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const wOrig = fuente instanceof HTMLVideoElement ? fuente.videoWidth : fuente.naturalWidth;
+  const hOrig = fuente instanceof HTMLVideoElement ? fuente.videoHeight : fuente.naturalHeight;
+  if (!wOrig || !hOrig) return null;
+
+  const ratioOrigen = wOrig / hOrig;
+  const ratioDestino = anchoObj / altoObj;
+  let sx = 0, sy = 0, sw = wOrig, sh = hOrig;
+  if (ratioOrigen > ratioDestino) {
+    sw = hOrig * ratioDestino;
+    sx = (wOrig - sw) / 2;
+  } else {
+    sh = wOrig / ratioDestino;
+    sy = (hOrig - sh) / 2;
+  }
+
+  ctx.drawImage(fuente, sx, sy, sw, sh, 0, 0, anchoObj, altoObj);
+  return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/webp", 0.78));
+}
+
+async function extraerMejorFotograma(file: File, esVertical: boolean): Promise<{ blob: Blob; preview: string } | null> {
+  return new Promise((resolve) => {
+    const urlTemp = URL.createObjectURL(file);
+    const vid = document.createElement("video");
+    vid.src = urlTemp;
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.preload = "auto";
+
+    vid.onloadedmetadata = async () => {
+      const dur = vid.duration && isFinite(vid.duration) ? vid.duration : 2;
+      const puntos = [Math.min(0.6, dur * 0.15), dur * 0.35, dur * 0.65];
+      let mejorPuntaje = -1;
+      let mejorBlob: Blob | null = null;
+
+      const testCanvas = document.createElement("canvas");
+      testCanvas.width = 64;
+      testCanvas.height = 64;
+      const testCtx = testCanvas.getContext("2d");
+
+      for (const t of puntos) {
+        await new Promise<void>((resSeek) => {
+          vid.currentTime = Math.max(0.1, Math.min(t, Math.max(0.2, dur - 0.1)));
+          vid.onseeked = () => resSeek();
+          setTimeout(() => resSeek(), 900);
+        });
+
+        let puntaje = 1;
+        if (testCtx) {
+          testCtx.drawImage(vid, 0, 0, 64, 64);
+          const data = testCtx.getImageData(0, 0, 64, 64).data;
+          let sumaBrillo = 0;
+          let variacion = 0;
+          for (let i = 0; i < data.length; i += 16) {
+            const lum = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            sumaBrillo += lum;
+            if (i >= 16) variacion += Math.abs(lum - (data[i - 16] + data[i - 15] + data[i - 14]) / 3);
+          }
+          const brilloMedio = sumaBrillo / (data.length / 16);
+          if (brilloMedio > 18 && brilloMedio < 245) {
+            puntaje = variacion + brilloMedio * 0.3;
+          }
+        }
+
+        if (puntaje > mejorPuntaje) {
+          const blob = await comprimirAWebP(vid, esVertical);
+          if (blob) {
+            mejorPuntaje = puntaje;
+            mejorBlob = blob;
+          }
+        }
+      }
+
+      URL.revokeObjectURL(urlTemp);
+      if (mejorBlob) {
+        resolve({ blob: mejorBlob, preview: URL.createObjectURL(mejorBlob) });
+      } else {
+        resolve(null);
+      }
+    };
+
+    vid.onerror = () => {
+      URL.revokeObjectURL(urlTemp);
+      resolve(null);
+    };
+  });
+}
+
 
 type Props = {
   supabase: any;
@@ -15,10 +112,13 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
   const [hashtags, setHashtags] = useState("");
   const [tipo, setTipo] = useState<"largo" | "vertical">("largo");
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [miniaturaBlob, setMiniaturaBlob] = useState<Blob | null>(null);
+  const [miniaturaPreview, setMiniaturaPreview] = useState<string>("");
+  const [miniaturaManual, setMiniaturaManual] = useState(false);
+  const [analizandoFrame, setAnalizandoFrame] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [progreso, setProgreso] = useState(0);
-    const [aceptaCopyright, setAceptaCopyright] = useState(false);
-
+  const [aceptaCopyright, setAceptaCopyright] = useState(false);
 
   const seleccionarArchivo = (file: File | null) => {
     if (!file) return;
@@ -30,12 +130,57 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     const urlTemp = URL.createObjectURL(file);
     const vid = document.createElement("video");
     vid.preload = "metadata";
-    vid.onloadedmetadata = () => {
-      if (vid.videoHeight > vid.videoWidth) setTipo("vertical");
-      else setTipo("largo");
+    vid.onloadedmetadata = async () => {
+      const esVert = vid.videoHeight > vid.videoWidth;
+      setTipo(esVert ? "vertical" : "largo");
       URL.revokeObjectURL(urlTemp);
+
+      if (!miniaturaManual) {
+        setAnalizandoFrame(true);
+        const auto = await extraerMejorFotograma(file, esVert);
+        setAnalizandoFrame(false);
+        if (auto) {
+          setMiniaturaBlob(auto.blob);
+          setMiniaturaPreview(auto.preview);
+        }
+      }
     };
     vid.src = urlTemp;
+  };
+
+  const seleccionarMiniaturaManual = (file: File | null) => {
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      alert("Formato no válido. Usa JPG, PNG o WebP.");
+      return;
+    }
+    if (file.size / (1024 * 1024) > 5) {
+      alert("La imagen de miniatura no debe superar los 5 MB.");
+      return;
+    }
+    const urlTemp = URL.createObjectURL(file);
+    const img = new window.Image();
+    img.onload = async () => {
+      const esVert = tipo === "vertical";
+      if (!esVert && img.naturalHeight > img.naturalWidth) {
+        URL.revokeObjectURL(urlTemp);
+        alert("Para un Video Horizontal (16:9), la miniatura debe ser horizontal (más ancha que alta).");
+        return;
+      }
+      if (esVert && img.naturalWidth > img.naturalHeight) {
+        URL.revokeObjectURL(urlTemp);
+        alert("Para un Short Vertical (9:16), la miniatura debe ser vertical (más alta que ancha).");
+        return;
+      }
+      const comprimida = await comprimirAWebP(img, esVert);
+      URL.revokeObjectURL(urlTemp);
+      if (comprimida) {
+        setMiniaturaBlob(comprimida);
+        setMiniaturaPreview(URL.createObjectURL(comprimida));
+        setMiniaturaManual(true);
+      }
+    };
+    img.src = urlTemp;
   };
 
   const publicar = async (e: React.FormEvent) => {
@@ -43,14 +188,31 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     if (titulo.trim().length < 10) return alert("El título debe tener al menos 10 caracteres.");
     if (descripcion.trim().length < 20) return alert("La descripción debe tener al menos 20 caracteres.");
     if (!archivo) return alert("Selecciona un archivo de video (.mp4)");
-        if (!aceptaCopyright) return alert("Debes confirmar que este video es original y no infringe derechos de autor.");
-
+    if (!aceptaCopyright) return alert("Debes confirmar que este video es original y no infringe derechos de autor.");
 
     setSubiendo(true);
     setProgreso(12);
     const intervalo = setInterval(() => setProgreso((p) => (p < 88 ? p + 7 : p)), 350);
 
     try {
+      let miniaturaUrlFinal: string | null = null;
+      let blobFinal = miniaturaBlob;
+      if (!blobFinal) {
+        const auto = await extraerMejorFotograma(archivo, tipo === "vertical");
+        if (auto) blobFinal = auto.blob;
+      }
+
+      if (blobFinal) {
+        const nombreMini = `miniaturas/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
+        const { error: miniErr } = await supabase.storage
+          .from("videos-rutf")
+          .upload(nombreMini, blobFinal, { contentType: "image/webp" });
+        if (!miniErr) {
+          const { data: miniPub } = supabase.storage.from("videos-rutf").getPublicUrl(nombreMini);
+          miniaturaUrlFinal = miniPub.publicUrl;
+        }
+      }
+
       const nombre = `${Date.now()}-${archivo.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
       const { error: upErr } = await supabase.storage.from("videos-rutf").upload(nombre, archivo);
       clearInterval(intervalo);
@@ -65,19 +227,22 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         .map((h) => (h.startsWith("#") ? h : `#${h}`))
         .join(" ");
 
-      const { error: dbErr } = await supabase.from("videos").insert([{
-        titulo: titulo.trim(),
-        descripcion: descripcion.trim(),
-        etiquetas: etiquetas.trim(),
-        hashtags: tagsLimpios,
-        creador: canalActual,
-        nivel: "Semilla",
-        tipo,
-        video_url: pubData.publicUrl,
-        vistas: 0,
-        likes: 0,
-        dislikes: 0,
-      }]);
+      const { error: dbErr } = await supabase.from("videos").insert([
+        {
+          titulo: titulo.trim(),
+          descripcion: descripcion.trim(),
+          etiquetas: etiquetas.trim(),
+          hashtags: tagsLimpios,
+          creador: canalActual,
+          nivel: "Semilla",
+          tipo,
+          video_url: pubData.publicUrl,
+          miniatura_url: miniaturaUrlFinal,
+          vistas: 0,
+          likes: 0,
+          dislikes: 0,
+        },
+      ]);
       if (dbErr) throw new Error(dbErr.message);
 
       setProgreso(100);
@@ -93,74 +258,214 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       setProgreso(0);
     }
   };
-
-    return (
+  return (
     <form onSubmit={publicar} className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
       <div className="border-b border-slate-100 pb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-black text-slate-900">Publicar en RUTF Talentico</h2>
           <p className="text-xs text-slate-500 mt-0.5">Publicando como canal único protegido</p>
         </div>
-        <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full text-xs font-extrabold">
+        <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-extrabold">
           {canalActual}
-          {canalActual.toLowerCase() === "@rutf_talentico" && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
+          {canalActual.toLowerCase() === "@rutftalentico" && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
         </span>
       </div>
 
       <div>
         <label className="text-xs font-bold text-slate-700 mb-1 block">Formato del Video</label>
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => setTipo("largo")} className={`py-2.5 rounded-xl text-xs font-bold border cursor-pointer ${tipo === "largo" ? "border-blue-600 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-600"}`}>Largo (16:9)</button>
-          <button type="button" onClick={() => setTipo("vertical")} className={`py-2.5 rounded-xl text-xs font-bold border cursor-pointer ${tipo === "vertical" ? "border-orange-500 bg-orange-50 text-orange-700" : "border-slate-200 text-slate-600"}`}>Vertical (9:16)</button>
+          <button
+            type="button"
+            onClick={() => setTipo("largo")}
+            className={`py-2.5 rounded-xl text-xs font-bold border ${
+              tipo === "largo" ? "bg-blue-600 text-white border-blue-600" : "bg-slate-50 text-slate-700 border-slate-200"
+            }`}
+          >
+            Video Horizontal (16:9)
+          </button>
+          <button
+            type="button"
+            onClick={() => setTipo("vertical")}
+            className={`py-2.5 rounded-xl text-xs font-bold border ${
+              tipo === "vertical" ? "bg-orange-500 text-white border-orange-500" : "bg-slate-50 text-slate-700 border-slate-200"
+            }`}
+          >
+            Short Vertical (9:16)
+          </button>
         </div>
       </div>
 
       <div>
         <div className="flex justify-between text-xs font-bold mb-1">
-          <span className="flex items-center gap-1 text-slate-700"><Type className="w-3.5 h-3.5 text-blue-600" /> Título del Video (Mín. 10 / Máx. 80)</span>
+          <span className="flex items-center gap-1 text-slate-700">
+            <Type className="w-3.5 h-3.5 text-blue-600" /> Título del Talento
+          </span>
           <span className={titulo.length < 10 ? "text-orange-500" : "text-emerald-600"}>{titulo.length} / 80</span>
         </div>
-        <input required minLength={10} maxLength={80} value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Ej: Mi presentación acústica en vivo..." className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-600" />
+        <input
+          required
+          minLength={10}
+          maxLength={80}
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          placeholder="Ej: Mi presentación acústica en vivo..."
+          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600"
+        />
       </div>
 
       <div>
         <div className="flex justify-between text-xs font-bold mb-1">
-          <span className="flex items-center gap-1 text-slate-700"><FileText className="w-3.5 h-3.5 text-blue-600" /> Descripción Detallada (Mín. 20 / Máx. 1,000)</span>
-          <span className={descripcion.length < 20 ? "text-orange-500" : "text-emerald-600"}>{descripcion.length} / 1,000</span>
+          <span className="flex items-center gap-1 text-slate-700">
+            <FileText className="w-3.5 h-3.5 text-blue-600" /> Descripción Completa
+          </span>
+          <span className={descripcion.length < 20 ? "text-orange-500" : "text-emerald-600"}>{descripcion.length} / 1000</span>
         </div>
-        <textarea required minLength={20} maxLength={1000} rows={3} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Cuenta de qué trata tu video, créditos o historia..." className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-600 resize-none" />
+        <textarea
+          required
+          minLength={20}
+          maxLength={1000}
+          rows={3}
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          placeholder="Cuenta de qué trata tu talento, quién participa y qué lo hace único..."
+          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600"
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1"><Tag className="w-3.5 h-3.5 text-orange-500" /> Etiquetas (separadas por coma)</label>
-          <input maxLength={200} value={etiquetas} onChange={(e) => setEtiquetas(e.target.value)} placeholder="música, talento, en vivo" className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-600" />
+          <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1">
+            <Tag className="w-3.5 h-3.5 text-blue-600" /> Etiquetas (separadas por coma)
+          </label>
+          <input
+            maxLength={200}
+            value={etiquetas}
+            onChange={(e) => setEtiquetas(e.target.value)}
+            placeholder="música, canto, talento..."
+            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-blue-600"
+          />
         </div>
         <div>
-          <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1"><Hash className="w-3.5 h-3.5 text-blue-600" /> Hashtags Oficiales</label>
-          <input maxLength={150} value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="#RUTFTalentico #TalentoRD" className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-blue-600" />
+          <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1">
+            <Hash className="w-3.5 h-3.5 text-blue-600" /> Hashtags
+          </label>
+          <input
+            maxLength={150}
+            value={hashtags}
+            onChange={(e) => setHashtags(e.target.value)}
+            placeholder="#RUTFTalentico #TalentoReal"
+            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-blue-600"
+          />
         </div>
       </div>
 
-      <label className={`flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-5 cursor-pointer transition ${archivo ? "border-emerald-500 bg-emerald-50/50" : "border-slate-300 hover:bg-slate-50"}`}>
+      <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-5 cursor-pointer hover:bg-slate-50 border-slate-300 transition">
         <Upload className={`w-7 h-7 mb-1.5 ${archivo ? "text-emerald-600" : "text-blue-600"}`} />
-        <span className="text-xs font-extrabold text-slate-800 text-center">{archivo ? `Video listo: ${archivo.name} (${(archivo.size / (1024 * 1024)).toFixed(1)} MB)` : "Seleccionar archivo de video (.mp4 máx. 50 MB)"}</span>
-        <span className="text-[11px] text-slate-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Límite actual de lanzamiento: 50 MB por archivo</span>
-        <input type="file" accept="video/*" required onChange={(e) => seleccionarArchivo(e.target.files ? e.target.files[0] : null)} className="hidden" />
+        <span className="text-xs font-extrabold text-slate-800 text-center">
+          {archivo ? `Video listo: ${archivo.name}` : "Toca aquí para elegir tu video (.mp4 / .mov)"}
+        </span>
+        <span className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3 text-blue-500" /> Máximo 50 MB • Alta definición recomendada
+        </span>
+        <input
+          type="file"
+          accept="video/*"
+          required
+        onChange={(e) => seleccionarArchivo(e.target.files?.item(0) ?? null)}
+
+
+
+          className="hidden"
+        />
       </label>
+
+      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs font-extrabold text-slate-800 inline-flex items-center gap-1.5">
+            <ImageIcon className="w-4 h-4 text-blue-600" />
+            Miniatura / Portada del Video (Opcional)
+          </span>
+          <span className="text-[11px] font-bold text-blue-700 inline-flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5" />
+            {miniaturaManual ? "Miniatura personalizada lista" : "Auto-selección inteligente de mejor escena"}
+          </span>
+        </div>
+
+        <p className="text-[11px] text-slate-600 leading-relaxed">
+          <strong>Requisitos:</strong> JPG, PNG o WebP (máx. 5 MB) con orientación{" "}
+          <strong>{tipo === "largo" ? "Horizontal 16:9 (1280×720)" : "Vertical 9:16 (720×1280)"}</strong>. Se optimiza
+          automáticamente a menos de 120 KB. Si no subes una, RUTF Talentico analiza tu video y elige la mejor escena.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="px-3.5 py-2 rounded-xl bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 text-xs font-extrabold cursor-pointer transition">
+            Subir miniatura propia
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => seleccionarMiniaturaManual(e.target.files?.item(0) ?? null)}
+
+
+
+              className="hidden"
+            />
+          </label>
+
+          {miniaturaManual && archivo && (
+            <button
+              type="button"
+              onClick={async () => {
+                setMiniaturaManual(false);
+                setAnalizandoFrame(true);
+                const auto = await extraerMejorFotograma(archivo, tipo === "vertical");
+                setAnalizandoFrame(false);
+                if (auto) {
+                  setMiniaturaBlob(auto.blob);
+                  setMiniaturaPreview(auto.preview);
+                }
+              }}
+              className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold transition"
+            >
+              Usar mejor escena automática
+            </button>
+          )}
+        </div>
+
+        {analizandoFrame && (
+          <p className="text-xs font-bold text-blue-600 animate-pulse">
+            Analizando escenas del video para capturar la mejor portada...
+          </p>
+        )}
+
+        {miniaturaPreview && !analizandoFrame && (
+          <div className="pt-1">
+            <img
+              src={miniaturaPreview}
+              alt="Vista previa de miniatura"
+              className={`rounded-xl border border-slate-300 shadow-xs object-cover ${
+                tipo === "vertical" ? "w-28 h-48" : "w-56 h-32"
+              }`}
+            />
+          </div>
+        )}
+      </div>
 
       {subiendo && (
         <div className="space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
           <div className={`flex justify-between text-xs font-extrabold ${progreso > 50 ? "text-emerald-600" : "text-blue-600"}`}>
-            <span>{progreso > 50 ? "¡Ya casi listo! Publicando en RUTF Talentico..." : "Subiendo video a la nube..."}</span>
+            <span>{progreso > 50 ? "¡Ya casi listo! Publicando en RUTF Talentico..." : "Subiendo video y miniatura..."}</span>
             <span>{progreso}%</span>
           </div>
           <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-            <div className={`h-full transition-all duration-300 rounded-full ${progreso > 50 ? "bg-emerald-500" : "bg-blue-600"}`} style={{ width: `${progreso}%` }} />
+            <div
+              style={{ width: `${progreso}%` }}
+              className={`h-full transition-all duration-300 rounded-full ${progreso > 50 ? "bg-emerald-500" : "bg-blue-600"}`}
+            />
           </div>
         </div>
       )}
-      <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer select-none">
+
+      <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
         <input
           type="checkbox"
           checked={aceptaCopyright}
@@ -168,14 +473,19 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shrink-0"
         />
         <span className="text-xs text-slate-700 leading-relaxed">
-          Declaro que este video y su audio son de mi <strong>autoría original</strong> (o cuento con derechos legítimos de difusión) y cumplen las normas de <strong>RUTF Talentico</strong>.
+          Declaro que este video y su audio son de mi <strong>autoría original</strong> (o cuento con derechos legales
+          de uso) y no infringen normas de derechos de autor de terceros.
         </span>
       </label>
 
-           <button disabled={subiendo || !aceptaCopyright} type="submit" className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-black py-3 rounded-xl shadow hover:opacity-95 transition disabled:opacity-50">
-
+      <button
+        disabled={subiendo || !aceptaCopyright}
+        type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 disabled:opacity-50 text-white font-black py-3.5 rounded-2xl shadow-md hover:opacity-95 transition text-sm"
+      >
         {subiendo ? `Subiendo video (${progreso}%)...` : archivo ? "Publicar Video Ahora" : "Selecciona un video para publicar"}
       </button>
     </form>
   );
 }
+

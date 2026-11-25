@@ -15,6 +15,7 @@ export async function generateMetadata({
   let descripcion =
     "Comparte tu talento original, haz crecer tu comunidad y monetiza tus videos en RUTF Talentico.";
   let url = baseUrl;
+  let imagen = `${baseUrl}/logo-rutf.png`;
 
   if (
     videoId &&
@@ -25,7 +26,7 @@ export async function generateMetadata({
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/videos?id=eq.${encodeURIComponent(
           videoId
-        )}&select=titulo,creador,descripcion`,
+        )}&select=titulo,creador,descripcion,miniatura_url`,
         {
           headers: {
             apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -35,12 +36,14 @@ export async function generateMetadata({
         }
       );
       const rows = await res.json();
-      if (Array.isArray(rows) && rows.length > 0 && rows[0]) {
-        titulo = `${rows[0].titulo} • ${rows[0].creador} | RUTF Talentico`;
+      const vRow = Array.isArray(rows) ? rows.at(0) : null;
+      if (vRow) {
+        titulo = `${vRow.titulo} • ${vRow.creador} | RUTF Talentico`;
         descripcion =
-          rows[0].descripcion?.trim() ||
-          `Mira este talento original publicado por ${rows[0].creador} en RUTF Talentico.`;
+          vRow.descripcion?.trim() ||
+          `Mira este talento original publicado por ${vRow.creador} en RUTF Talentico.`;
         url = `${baseUrl}/?v=${videoId}`;
+        if (vRow.miniatura_url) imagen = vRow.miniatura_url;
       }
     } catch {}
   }
@@ -62,9 +65,9 @@ export async function generateMetadata({
       url,
       images: [
         {
-          url: `${baseUrl}/logo-rutf.png`,
-          width: 512,
-          height: 512,
+          url: imagen,
+          width: 960,
+          height: 540,
           alt: titulo,
         },
       ],
@@ -73,15 +76,13 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: titulo,
       description: descripcion,
-      images: [`${baseUrl}/logo-rutf.png`],
+      images: [imagen],
     },
     appleWebApp: {
       title: "RUTF Talentico",
     },
   };
 }
-
-
 
 export const viewport: Viewport = {
   themeColor: "#dc2626",

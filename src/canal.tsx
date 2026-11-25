@@ -946,12 +946,12 @@ export function ModalCompartir({
     return () => clearTimeout(t);
   }, [videoId]);
 
-  const url = ["https://rutf-talentico.vercel.app/", "?v=", videoId].join("");
+  const url = "https://vercel.app" + "?v=" + videoId;
   const texto = `Mira "${titulo}" en RUTF Talentico:`;
-  const waHref = ["https://whatsapp.com", "?text=", encodeURIComponent(`${texto} ${url}`)].join("");
-  const fbHref = ["https://facebook.com", "?u=", encodeURIComponent(url), "&quote=", encodeURIComponent(texto)].join("");
-  const twHref = ["https://twitter.com", "?text=", encodeURIComponent(texto), "&url=", encodeURIComponent(url)].join("");
-  const tgHref = ["https://t.me", "?url=", encodeURIComponent(url), "&text=", encodeURIComponent(texto)].join("");
+  const waHref = "https://wa.me" + "?text=" + encodeURIComponent(`${texto} ${url}`);
+  const fbHref = "https://facebook.com" + "/sharer/sharer.php" + "?u=" + encodeURIComponent(url);
+  const twHref = "https://twitter.com" + "/intent/tweet" + "?text=" + encodeURIComponent(texto) + "&url=" + encodeURIComponent(url);
+  const tgHref = "https://t.me" + "/share/url" + "?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(texto);
 
   const copiar = () => {
     navigator.clipboard?.writeText(url);
@@ -976,6 +976,16 @@ export function ModalCompartir({
       }
     } catch {}
     copiar();
+  };
+
+  const abrirRed = (e: React.MouseEvent, href: string) => {
+    if (Capacitor.isNativePlatform()) {
+      e.preventDefault();
+      compartirNativo();
+      return;
+    }
+    window.open(href, "_blank", "noopener,noreferrer");
+    e.preventDefault();
   };
 
   return (
@@ -1021,32 +1031,28 @@ export function ModalCompartir({
             <div className="grid grid-cols-3 gap-2 text-[11px] font-extrabold">
               <a
                 href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => abrirRed(e, waHref)}
                 className="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-center transition"
               >
                 WhatsApp
               </a>
               <a
                 href={fbHref}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => abrirRed(e, fbHref)}
                 className="py-2 px-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-center transition"
               >
                 Facebook
               </a>
               <a
                 href={twHref}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => abrirRed(e, twHref)}
                 className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 text-center transition"
               >
                 X / Twitter
               </a>
               <a
                 href={tgHref}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => abrirRed(e, tgHref)}
                 className="py-2 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-center transition"
               >
                 Telegram

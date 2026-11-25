@@ -68,9 +68,10 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
         if (handle.length < 4) throw new Error("El usuario debe tener al menos 3 letras o números.");
         const lower = handle.toLowerCase();
 
-        if (lower === "@rutf_talentico" && claveFundador !== "RUTF2026") {
-          throw new Error("El canal @RUTF_Talentico está reservado para el fundador. Ingresa la clave de fundador o elige otro @usuario.");
-        }
+              if (lower === "@rutftalentico" && claveFundador !== "RUTF2026") {
+        throw new Error("El canal @RUTFTalentico está reservado para el fundador oficial.");
+      }
+
 
         const { data: existe } = await supabase
           .from("usuarios_rutf")
@@ -82,7 +83,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
           throw new Error("Este @usuario o correo ya está registrado. Nadie puede repetir un nombre existente.");
         }
 
-        const esFundador = lower === "@rutf_talentico" && claveFundador === "RUTF2026";
+        const esFundador = lower === "@rutftalentico" && claveFundador === "RUTF2026";
         const { data, error } = await supabase
           .from("usuarios_rutf")
           .insert([{

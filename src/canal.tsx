@@ -407,7 +407,9 @@ export default function EstudioCanal({
               <h2 className="text-xl font-black text-slate-900 truncate">
                 {nombreCanal || perfil.username}
               </h2>
-              {perfil.username.toLowerCase() === "@rutf_talentico" && (
+                           {(perfil.es_fundador ||
+                perfil.username.toLowerCase() === "@rutftalentico") && (
+
                 <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
               )}
             </div>

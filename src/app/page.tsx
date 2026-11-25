@@ -277,7 +277,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
   const renderCreador = (nombre: string) => (
     <span className="inline-flex items-center gap-1 text-blue-600 font-bold">
       {nombre}
-      {nombre.toLowerCase() === "@rutf_talentico" && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 fill-blue-100" />}
+      {nombre.toLowerCase() === "@rutftalentico" && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 fill-blue-100" />}
     </span>
   );
 

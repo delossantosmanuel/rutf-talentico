@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, FileText, Trash2, HeartHandshake, Sparkles, X } from "lucide-react";
+import { Shield, FileText, Trash2, HeartHandshake, Sparkles, X, AlertTriangle } from "lucide-react";
 
 export function BarraInstitucional({
   usuario,
@@ -110,24 +110,58 @@ export function PieLegal({
   onCuentaEliminada: () => void;
 }) {
   const [docActivo, setDocActivo] = useState<"privacidad" | "terminos" | null>(null);
+  const [modalEliminar, setModalEliminar] = useState(false);
+  const [aceptaTerminosBaja, setAceptaTerminosBaja] = useState(false);
   const [eliminando, setEliminando] = useState(false);
 
-  const eliminarCuenta = async () => {
+  const abrirModalEliminar = () => {
     if (!usuario) {
       alert("Inicia sesión en la cuenta que deseas eliminar.");
       return;
     }
-    const confirmar = window.confirm(
-      `¿Seguro que deseas eliminar permanentemente tu cuenta ${usuario.username} y todos tus datos? Esta acción no se puede deshacer.`
-    );
-    if (!confirmar) return;
+    setAceptaTerminosBaja(false);
+    setModalEliminar(true);
+  };
 
+  const ejecutarEliminacionDefinitiva = async () => {
+    if (!usuario || !aceptaTerminosBaja) return;
     setEliminando(true);
     try {
+      const { data: misVideos } = await supabase
+        .from("videos")
+        .select("id, video_url")
+        .eq("creador", usuario.username);
+
+      if (misVideos && misVideos.length > 0) {
+        const rutasVideos = misVideos
+          .map((v: any) => {
+            const p = String(v.video_url || "").split("/videos/").at(1);
+            return p ? decodeURIComponent(p.split("?").at(0) || "") : "";
+          })
+          .filter(Boolean);
+        if (rutasVideos.length > 0) {
+          await supabase.storage.from("videos").remove(rutasVideos);
+        }
+      }
+
+      const rutasPerfil: string[] = [];
+      for (const u of [usuario.avatar_url, usuario.banner_url]) {
+        const p = String(u || "").split("/perfiles/").at(1);
+        if (p) rutasPerfil.push(decodeURIComponent(p.split("?").at(0) || ""));
+      }
+      if (rutasPerfil.length > 0) {
+        await supabase.storage.from("perfiles").remove(rutasPerfil);
+      }
+
       await supabase.from("suscripciones_usuarios").delete().eq("usuario_id", usuario.id);
+      await supabase.from("suscripciones_usuarios").delete().eq("creador", usuario.username);
+      await supabase.from("votos_usuarios").delete().eq("usuario_id", usuario.id);
+      await supabase.from("comentarios").delete().eq("usuario_id", usuario.id);
       await supabase.from("videos").delete().eq("creador", usuario.username);
       await supabase.from("usuarios_rutf").delete().eq("id", usuario.id);
+
       localStorage.removeItem("rutf_sesion");
+      setModalEliminar(false);
       onCuentaEliminada();
     } finally {
       setEliminando(false);
@@ -166,7 +200,7 @@ export function PieLegal({
 
           <button
             type="button"
-            onClick={eliminarCuenta}
+            onClick={abrirModalEliminar}
             disabled={eliminando}
             className="text-red-600 hover:underline inline-flex items-center gap-1 disabled:opacity-50"
           >
@@ -270,6 +304,79 @@ export function PieLegal({
           </div>
         </div>
       )}
+            {modalEliminar && usuario && (
+        <div
+          onClick={() => !eliminando && setModalEliminar(false)}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4 text-left"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="text-base font-black text-slate-900">
+                  Eliminar Cuenta y Canal
+                </h3>
+              </div>
+              <button
+                type="button"
+                disabled={eliminando}
+                onClick={() => setModalEliminar(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-900 space-y-1.5 leading-relaxed">
+              <p className="font-black">
+                Advertencia: Esta acción es permanente e irreversible.
+              </p>
+              <p>
+                Al eliminar tu cuenta <strong>{usuario.username}</strong>, se borrarán de forma
+                definitiva tu canal, foto de perfil, banner, todos tus videos publicados,
+                suscriptores, comentarios e historial de monetización. Una vez eliminada,{" "}
+                <strong>no podrás volver a acceder ni recuperar estos datos</strong>.
+              </p>
+            </div>
+
+            <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={aceptaTerminosBaja}
+                onChange={(e) => setAceptaTerminosBaja(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500 shrink-0"
+              />
+              <span className="text-xs text-slate-700 leading-relaxed">
+                He leído y acepto los términos de eliminación definitiva de{" "}
+                <strong>RUTF Talentico</strong>, entendiendo que mi canal se borrará por completo.
+              </span>
+            </label>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={eliminando}
+                onClick={() => setModalEliminar(false)}
+                className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-xs font-extrabold hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={!aceptaTerminosBaja || eliminando}
+                onClick={ejecutarEliminacionDefinitiva}
+                className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-black shadow disabled:opacity-40 transition"
+              >
+                {eliminando ? "Borrando canal..." : "Borrar mi canal definitivamente"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }

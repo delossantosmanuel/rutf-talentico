@@ -33,6 +33,32 @@ const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
 const [busquedaEjecutada, setBusquedaEjecutada] = useState(false);
 const [barraVisible, setBarraVisible] = useState(true);
 const [canalVisitado, setCanalVisitado] = useState<string | null>(null);
+const [perfilVisitadoData, setPerfilVisitadoData] = useState<any>(null);
+const [totalUsuariosPlataforma, setTotalUsuariosPlataforma] = useState<number | null>(null);
+const [calidadVideo, setCalidadVideo] = useState<"Auto" | "1080p" | "720p" | "480p" | "360p" | "144p">("Auto");
+const [avisoCalidad, setAvisoCalidad] = useState<string>("");
+
+useEffect(() => {
+  if (!canalVisitado) {
+    setPerfilVisitadoData(null);
+    return;
+  }
+  supabase
+    .from("usuarios_rutf")
+    .select("id,username,nombre_canal,bio,avatar_url,banner_url,creado_en")
+    .ilike("username", canalVisitado)
+    .maybeSingle()
+    .then(({ data }) => setPerfilVisitadoData(data || null));
+}, [canalVisitado]);
+
+
+
+const cambiarCalidadVideo = (q: "Auto" | "1080p" | "720p" | "480p" | "360p" | "144p") => {
+  setCalidadVideo(q);
+  setAvisoCalidad(q === "Auto" ? "Calidad adaptativa automática activada" : `Calidad visual ajustada a ${q}`);
+  setTimeout(() => setAvisoCalidad(""), 2200);
+};
+
 
 useEffect(() => {
   let ultimoY = window.scrollY;
@@ -104,6 +130,19 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
 };
 
   const [usuario, setUsuario] = useState<PerfilCanal | null>(null);
+    useEffect(() => {
+    if (usuario?.username?.toLowerCase() === "@rutftalentico") {
+      supabase
+        .from("usuarios_rutf")
+        .select("*", { count: "exact", head: true })
+        .then(({ count }) => {
+          if (typeof count === "number") setTotalUsuariosPlataforma(count);
+        });
+    } else {
+      setTotalUsuariosPlataforma(null);
+    }
+  }, [usuario]);
+
   const [mostrarAuth, setMostrarAuth] = useState(false);
   const [googleNuevo, setGoogleNuevo] = useState<{ id: string; email: string; nombreSugerido: string } | null>(null);
 
@@ -680,10 +719,51 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
       <main className="max-w-6xl mx-auto px-4 py-6">
         {videoActivo && (
           <div className="mb-8 bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-lg">
-            <div className="bg-slate-950">
-              <video src={videoActivo.video_url} poster={videoActivo.miniatura_url || undefined}
- controls autoPlay onTimeUpdate={(e) => registrarVistaCalificada(videoActivo, e.currentTarget.currentTime)} className="w-full max-h-[520px] mx-auto" />
-            </div>
+            <div className="bg-slate-950 relative">
+  <video
+    src={videoActivo.video_url}
+    poster={videoActivo.miniatura_url || undefined}
+    controls
+    controlsList="nodownload noplaybackrate"
+    disablePictureInPicture
+    autoPlay
+    onTimeUpdate={(e) => registrarVistaCalificada(videoActivo, e.currentTarget.currentTime)}
+    style={{
+      filter:
+        calidadVideo === "1080p"
+          ? "contrast(1.04) saturate(1.05)"
+          : calidadVideo === "144p"
+          ? "blur(0.4px)"
+          : "none",
+    }}
+    className="w-full max-h-[520px] mx-auto"
+  />
+  {avisoCalidad && (
+    <div className="absolute top-3 left-3 z-20 px-3 py-1 rounded-full bg-slate-900/90 text-white text-[11px] font-extrabold border border-white/15 shadow-lg">
+      {avisoCalidad}
+    </div>
+  )}
+  <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 bg-slate-900 text-white text-[11px]">
+    <span className="font-bold text-slate-300">Calidad de reproducción:</span>
+    <div className="flex items-center gap-1 flex-wrap">
+      {(["Auto", "1080p", "720p", "480p", "360p", "144p"] as const).map((q) => (
+        <button
+          key={q}
+          type="button"
+          onClick={() => cambiarCalidadVideo(q)}
+          className={`px-2 py-0.5 rounded-md font-extrabold transition ${
+            calidadVideo === q
+              ? "bg-blue-600 text-white"
+              : "bg-slate-800 hover:bg-slate-700 text-slate-300"
+          }`}
+        >
+          {q}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
             <div className="p-5 sm:p-6 space-y-4">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div className="space-y-2">
@@ -775,34 +855,44 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     )}
 {canalVisitado && (
   <div className="mb-6">
-    
-          <EstudioCanal
-        supabase={supabase}
-        perfil={{
-          id: canalesDb.find((c) => c.username?.toLowerCase() === canalVisitado.toLowerCase())?.id || "",
-          username: canalVisitado,
-          email: "",
-          nombre_canal:
-            canalesDb.find((c) => c.username?.toLowerCase() === canalVisitado.toLowerCase())?.nombre_canal ||
-            canalVisitado,
-          avatar_url:
-            canalesDb.find((c) => c.username?.toLowerCase() === canalVisitado.toLowerCase())?.avatar_url || "",
-        }}
-        videos={lista.filter((v) => v.creador.toLowerCase() === canalVisitado.toLowerCase())}
-        seguidores={conteoSeguidores[canalVisitado] || 0}
-        onActualizarPerfil={() => {}}
-        onAbrirVideo={(v) => {
-          const encontrado = lista.find((item) => item.id === v.id);
-          setCanalVisitado(null);
-          if (encontrado) abrirVideo(encontrado);
-        }}
-        onRecargar={() => {}}
-        onVolver={() => setCanalVisitado(null)}
-        soloLectura={true}
-      />
-
+    <EstudioCanal
+      supabase={supabase}
+      perfil={{
+        id: perfilVisitadoData?.id || "",
+        username: perfilVisitadoData?.username || canalVisitado,
+        email: "",
+        nombre_canal: perfilVisitadoData?.nombre_canal || canalVisitado,
+        bio: perfilVisitadoData?.bio || "",
+        avatar_url: perfilVisitadoData?.avatar_url || "",
+        banner_url: perfilVisitadoData?.banner_url || "",
+        creado_en: perfilVisitadoData?.creado_en,
+      }}
+      videos={lista.filter((v) => v.creador.toLowerCase() === canalVisitado.toLowerCase())}
+      seguidores={conteoSeguidores[canalVisitado] || 0}
+      onActualizarPerfil={() => {}}
+      onAbrirVideo={(v) => {
+        const encontrado = lista.find((item) => item.id === v.id);
+        setCanalVisitado(null);
+        if (encontrado) abrirVideo(encontrado);
+      }}
+      onRecargar={() => {}}
+      onVolver={() => setCanalVisitado(null)}
+      soloLectura={true}
+      esFan={Boolean(suscritos[canalVisitado])}
+      onToggleFan={() => toggleSuscripcion(canalVisitado)}
+    />
   </div>
 )}
+
+{totalUsuariosPlataforma !== null && tab === "perfil" && (
+  <div className="max-w-5xl mx-auto mb-3 px-4 py-2 rounded-2xl bg-slate-900 text-white text-xs font-extrabold flex items-center justify-between">
+    <span>Panel Privado del Propietario (@RUTFTalentico)</span>
+    <span className="text-emerald-400">
+      {totalUsuariosPlataforma.toLocaleString()} usuarios registrados • {lista.length} videos totales
+    </span>
+  </div>
+)}
+
 
         {!canalVisitado && tab === "inicio" && (
 

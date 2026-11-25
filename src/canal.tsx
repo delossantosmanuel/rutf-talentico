@@ -17,6 +17,9 @@ import {
   Tv,
   Monitor,
   Smartphone,
+    Trash2,
+  Share2,
+
 } from "lucide-react";
 
 
@@ -117,6 +120,10 @@ export default function EstudioCanal({
   const [editorAbierto, setEditorAbierto] = useState(false);
   const [menuOpciones, setMenuOpciones] = useState(false);
   const [modalInfoCanal, setModalInfoCanal] = useState(false);
+    const [menuVideoId, setMenuVideoId] = useState<string | null>(null);
+  const [videoAEliminar, setVideoAEliminar] = useState<VideoCanal | null>(null);
+  const [eliminandoVideo, setEliminandoVideo] = useState(false);
+
   const [bannerPendiente, setBannerPendiente] = useState<{ archivo: File; preview: string } | null>(null);
   const [vistaDispositivo, setVistaDispositivo] = useState<"tv" | "pc" | "movil">("movil");
   const [bannerOffset, setBannerOffset] = useState({ x: 50, y: 50 });
@@ -504,12 +511,14 @@ export default function EstudioCanal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {videos.map((v) => (
-              <div
+                           <div
                 key={v.id}
-                onClick={() => onAbrirVideo(v)}
-                className="group border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:shadow-md transition bg-slate-50"
+                className="group relative border border-slate-200 rounded-2xl overflow-visible hover:shadow-md transition bg-slate-50"
               >
-                <div className="relative aspect-video bg-slate-950">
+                <div
+                  onClick={() => onAbrirVideo(v)}
+                  className="relative aspect-video bg-slate-950 rounded-t-2xl overflow-hidden cursor-pointer"
+                >
                   <video
                     src={v.video_url}
                     className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
@@ -522,14 +531,51 @@ export default function EstudioCanal({
                     </div>
                   </div>
                 </div>
-                <div className="p-3">
-                  <p className="text-xs font-extrabold text-slate-900 line-clamp-1">{v.titulo}</p>
-                  <p className="text-[11px] font-bold text-slate-500 mt-1 flex items-center gap-1">
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>{(v.vistas || 0).toLocaleString()} visualizaciones</span>
-                  </p>
+
+                <div className="p-3 flex items-start justify-between gap-2">
+                  <div onClick={() => onAbrirVideo(v)} className="min-w-0 flex-1 cursor-pointer">
+                    <p className="text-xs font-extrabold text-slate-900 line-clamp-1">{v.titulo}</p>
+                    <p className="text-[11px] font-bold text-slate-500 mt-1 flex items-center gap-1">
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{(v.vistas || 0).toLocaleString()} visualizaciones</span>
+                    </p>
+                  </div>
+
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      aria-label="Opciones del video"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuVideoId(menuVideoId === v.id ? null : v.id);
+                      }}
+                      className="p-1.5 rounded-full hover:bg-slate-200 text-slate-600 transition"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+
+                    {menuVideoId === v.id && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 bottom-8 w-44 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMenuVideoId(null);
+                            setVideoAEliminar(v);
+                          }}
+                          className="w-full px-3 py-2 text-left text-xs font-extrabold text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Eliminar video</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
+
             ))}
           </div>
         )}
@@ -597,6 +643,71 @@ export default function EstudioCanal({
           </div>
         </div>
       )}
+            {videoAEliminar && (
+        <div
+          onClick={() => !eliminandoVideo && setVideoAEliminar(null)}
+          className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4"
+          >
+            <div className="flex items-center gap-2.5 text-red-600">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-black text-slate-900">¿Eliminar video?</h3>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Estás a punto de eliminar <strong>“{videoAEliminar.titulo}”</strong> de forma permanente.
+              Se borrarán también sus comentarios, likes y el archivo de video de nuestros servidores.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={eliminandoVideo}
+                onClick={() => setVideoAEliminar(null)}
+                className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-xs font-extrabold hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={eliminandoVideo}
+                onClick={async () => {
+                  setEliminandoVideo(true);
+                  try {
+                    await supabase.from("comentarios").delete().eq("video_id", videoAEliminar.id);
+                    await supabase.from("votos_usuarios").delete().eq("video_id", videoAEliminar.id);
+                    const { error } = await supabase.from("videos").delete().eq("id", videoAEliminar.id);
+                    if (error) {
+                      alert("No se pudo eliminar el video: " + error.message);
+                      return;
+                    }
+                                      const partes = videoAEliminar.video_url.split("/videos/");
+                    const segundo = partes.at(1);
+                    if (segundo) {
+                      const rutaArchivo = decodeURIComponent(segundo.split("?").at(0) || "");
+                      if (rutaArchivo) await supabase.storage.from("videos").remove([rutaArchivo]);
+                    }
+
+                    setVideoAEliminar(null);
+                    onRecargar();
+                  } finally {
+                    setEliminandoVideo(false);
+                  }
+                }}
+                className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-black shadow"
+              >
+                {eliminandoVideo ? "Eliminando..." : "Aceptar y Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
             {bannerPendiente && (
         <div
           onClick={() => {
@@ -764,24 +875,42 @@ export function ModalCompartir({
   videoId: string;
   onCerrar: () => void;
 }) {
-  const url = `https://vercel.app{videoId}`;
+  const [copiado, setCopiado] = useState(false);
+    const url = "https://vercel.app" + videoId;
+  const texto = "Mira este talento en RUTF Talentico: " + titulo;
+  const qrUrl = "https://qrserver.com" + encodeURIComponent(url);
+  const waHref = "https://wa.me" + encodeURIComponent(texto + " " + url);
+  const fbHref = "https://facebook.com" + encodeURIComponent(url);
+  const twHref = "https://twitter.com" + encodeURIComponent(texto) + "&url=" + encodeURIComponent(url);
+  const tgHref = "https://t.me" + encodeURIComponent(url) + "&text=" + encodeURIComponent(texto);
+
   const copiar = () => {
     navigator.clipboard?.writeText(url);
-    alert("Enlace copiado al portapapeles");
-    onCerrar();
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2200);
+  };
+
+  const compartirNativo = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: titulo, text: texto, url });
+      } catch {}
+    } else {
+      copiar();
+    }
   };
 
   return (
     <div
       onClick={onCerrar}
-      className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 space-y-4"
+        className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4"
       >
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-slate-900">Compartir talento</h3>
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 className="text-base font-black text-slate-900">Compartir talento</h3>
           <button
             type="button"
             onClick={onCerrar}
@@ -790,17 +919,76 @@ export function ModalCompartir({
             <X className="w-4 h-4" />
           </button>
         </div>
-        <p className="text-xs text-slate-600 line-clamp-2">{titulo}</p>
-        <div className="p-2.5 bg-slate-100 rounded-xl text-[11px] font-mono text-slate-700 truncate">
-          {url}
+
+        <p className="text-xs font-bold text-slate-700 line-clamp-2">{titulo}</p>
+
+        <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <img
+            src={qrUrl}
+            alt="Código QR del video"
+            className="w-32 h-32 rounded-xl bg-white p-1.5 border border-slate-200 shadow-xs"
+          />
+          <span className="text-[11px] font-bold text-slate-500 mt-1.5">
+            Escanea el código QR para abrir directo en cualquier teléfono
+          </span>
         </div>
-        <button
-          type="button"
-          onClick={copiar}
-          className="w-full py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black"
-        >
-          Copiar enlace para compartir
-        </button>
+
+        <div className="grid grid-cols-3 gap-2 text-[11px] font-extrabold">
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-center transition"
+          >
+            WhatsApp
+          </a>
+          <a
+            href={fbHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="py-2 px-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-center transition"
+          >
+            Facebook
+          </a>
+          <a
+            href={twHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 text-center transition"
+          >
+            X / Twitter
+          </a>
+          <a
+            href={tgHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="py-2 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-center transition"
+          >
+            Telegram
+          </a>
+
+          <button
+            type="button"
+            onClick={compartirNativo}
+            className="col-span-2 py-2 px-2 rounded-xl bg-gradient-to-r from-pink-50 to-orange-50 hover:from-pink-100 hover:to-orange-100 text-pink-800 border border-pink-200 inline-flex items-center justify-center gap-1.5 transition"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Instagram / Más apps</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 p-2 bg-slate-100 rounded-xl border border-slate-200">
+          <span className="text-[11px] font-mono text-slate-700 truncate flex-1 px-1">{url}</span>
+          <button
+            type="button"
+            onClick={copiar}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-black text-white shrink-0 transition ${
+              copiado ? "bg-emerald-600" : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {copiado ? "Copiado ✓" : "Copiar"}
+          </button>
+        </div>
       </div>
     </div>
   );

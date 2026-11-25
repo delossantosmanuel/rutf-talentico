@@ -34,6 +34,8 @@ export type PerfilCanal = {
   banner_url?: string;
   tema_banner?: string;
   created_at?: string;
+    creado_en?: string;
+
 };
 
 type VideoCanal = {
@@ -327,9 +329,14 @@ export default function EstudioCanal({
 
                <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
         <div className="relative h-36 sm:h-48 bg-gradient-to-r from-blue-950 via-blue-800 to-slate-900">
-          {bannerUrl && (
-            <img src={bannerUrl} alt="Banner del canal" className="w-full h-full object-cover" />
-          )}
+                  {(bannerUrl || perfil.username.toLowerCase() === "@rutftalentico") && (
+          <img
+            src={bannerUrl || "/banner-oficial.svg"}
+            alt="Banner del canal"
+            className="w-full h-full object-cover"
+          />
+        )}
+
 
           <input
             id="input-banner-canal"
@@ -382,11 +389,16 @@ export default function EstudioCanal({
               title="Cambiar foto de perfil"
               className="relative w-20 h-20 aspect-square rounded-full border-4 border-white shadow-md overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
             >
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                inicialesCanal
-              )}
+                         {avatarUrl || perfil.username.toLowerCase() === "@rutftalentico" ? (
+              <img
+                src={avatarUrl || "/logo-rutf.png"}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              inicialesCanal
+            )}
+
               <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
                 <Camera className="w-5 h-5 text-white" />
               </div>
@@ -610,13 +622,15 @@ export default function EstudioCanal({
 
                                 Se unió el{" "}
                                 
-                  {perfil.created_at
-                    ? new Date(perfil.created_at).toLocaleDateString("es-ES", {
+                                   {(perfil.creado_en || perfil.created_at)
+                    ? new Date((perfil.creado_en || perfil.created_at) as string).toLocaleDateString("es-ES", {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
                       })
-                    : "24 de noviembre de 2026"}
+                    : "Miembro fundador"}
+              
+
                 </span>
               </div>
 

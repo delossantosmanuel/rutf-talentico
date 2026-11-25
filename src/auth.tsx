@@ -93,7 +93,8 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
             password_hash: btoa(password),
             es_fundador: esFundador,
           }])
-          .select("id, username, email, es_fundador")
+                  .select("id, username, email, es_fundador, avatar_url, banner_url, nombre_canal, creado_en")
+
           .single();
 
         if (error) throw new Error("Ese nombre de usuario ya fue tomado por otra persona.");
@@ -103,7 +104,8 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
       } else {
         const { data, error } = await supabase
           .from("usuarios_rutf")
-          .select("id, username, email, es_fundador, password_hash")
+                  .select("id, username, email, es_fundador, avatar_url, banner_url, nombre_canal, creado_en, password_hash")
+
           .eq("email", email.trim().toLowerCase())
           .maybeSingle();
 
@@ -174,7 +176,8 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
 
     const { data: guardado, error } = await supabase
       .from("usuarios_rutf")
-      .upsert(nuevoPerfil)
+            .insert(nuevoPerfil)
+
       .select("*")
       .single();
     if (error) {

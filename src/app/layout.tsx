@@ -2,25 +2,85 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AdMobManager from "./AdMobManager";
 
-export const metadata: Metadata = {
-  title: "RUTF Talentico — Tu talento vale, paso a paso",
-  description:
-    "Comparte tu talento original, haz crecer tu comunidad y monetiza tus videos en RUTF Talentico.",
-  icons: {
-    icon: "/logo-rutf.png",
-    shortcut: "/logo-rutf.png",
-    apple: "/logo-rutf.png",
-  },
-  openGraph: {
-    title: "RUTF Talentico — Tu talento vale, paso a paso",
-    description:
-      "Plataforma global de videos y talentos originales. Publica tu arte y monetiza tu contenido.",
-    images: ["/logo-rutf.png"],
-  },
-  appleWebApp: {
-    title: "RUTF Talentico",
-  },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams?: Promise<{ v?: string }>;
+}): Promise<Metadata> {
+  const baseUrl = "https://vercel.app";
+  const resolved = searchParams ? await searchParams : undefined;
+  const videoId = resolved?.v;
+
+  let titulo = "RUTF Talentico — Tu talento vale, paso a paso";
+  let descripcion =
+    "Comparte tu talento original, haz crecer tu comunidad y monetiza tus videos en RUTF Talentico.";
+  let url = baseUrl;
+
+  if (
+    videoId &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/videos?id=eq.${encodeURIComponent(
+          videoId
+        )}&select=titulo,creador,descripcion`,
+        {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          },
+          next: { revalidate: 60 },
+        }
+      );
+      const rows = await res.json();
+      if (Array.isArray(rows) && rows.length > 0 && rows[0]) {
+        titulo = `${rows[0].titulo} • ${rows[0].creador} | RUTF Talentico`;
+        descripcion =
+          rows[0].descripcion?.trim() ||
+          `Mira este talento original publicado por ${rows[0].creador} en RUTF Talentico.`;
+        url = `${baseUrl}/?v=${videoId}`;
+      }
+    } catch {}
+  }
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: titulo,
+    description: descripcion,
+    icons: {
+      icon: "/logo-rutf.png",
+      shortcut: "/logo-rutf.png",
+      apple: "/logo-rutf.png",
+    },
+    openGraph: {
+      type: "website",
+      siteName: "RUTF Talentico",
+      title: titulo,
+      description: descripcion,
+      url,
+      images: [
+        {
+          url: `${baseUrl}/logo-rutf.png`,
+          width: 512,
+          height: 512,
+          alt: titulo,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: titulo,
+      description: descripcion,
+      images: [`${baseUrl}/logo-rutf.png`],
+    },
+    appleWebApp: {
+      title: "RUTF Talentico",
+    },
+  };
+}
+
 
 
 export const viewport: Viewport = {

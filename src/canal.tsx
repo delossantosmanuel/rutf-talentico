@@ -939,10 +939,17 @@ export function ModalCompartir({
   onCerrar: () => void;
 }) {
   const [copiado, setCopiado] = useState(false);
-  const url = ["https://rutftalentico.com", "?v=", videoId].join("");
-  const texto = "Mira este talento en RUTF Talentico: " + titulo;
-  const waHref = ["https://wa.me", "?text=", encodeURIComponent(texto + " " + url)].join("");
-  const fbHref = ["https://facebook.com", "?u=", encodeURIComponent(url)].join("");
+  const [preparando, setPreparando] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setPreparando(false), 750);
+    return () => clearTimeout(t);
+  }, [videoId]);
+
+  const url = ["https://rutf-talentico.vercel.app/", "?v=", videoId].join("");
+  const texto = `Mira "${titulo}" en RUTF Talentico:`;
+  const waHref = ["https://whatsapp.com", "?text=", encodeURIComponent(`${texto} ${url}`)].join("");
+  const fbHref = ["https://facebook.com", "?u=", encodeURIComponent(url), "&quote=", encodeURIComponent(texto)].join("");
   const twHref = ["https://twitter.com", "?text=", encodeURIComponent(texto), "&url=", encodeURIComponent(url)].join("");
   const tgHref = ["https://t.me", "?url=", encodeURIComponent(url), "&text=", encodeURIComponent(texto)].join("");
 
@@ -993,70 +1000,81 @@ export function ModalCompartir({
 
         <p className="text-xs font-bold text-slate-700 line-clamp-2">{titulo}</p>
 
-        <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <div className="p-2.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-            <QRCodeSVG value={url} size={136} bgColor="#ffffff" fgColor="#0f172a" level="M" />
+        {preparando ? (
+          <div className="py-12 flex flex-col items-center justify-center gap-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-extrabold text-slate-700">
+              Generando enlace directo del video y código QR...
+            </p>
           </div>
-          <span className="text-[11px] font-bold text-slate-500 mt-2 text-center">
-            Escanea el código QR para abrir este talento en cualquier teléfono
-          </span>
-        </div>
+        ) : (
+          <>
+            <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+              <div className="p-2.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
+                <QRCodeSVG value={url} size={136} bgColor="#ffffff" fgColor="#0f172a" level="M" />
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 mt-2 text-center">
+                Escanea con tu cámara para abrir este video al instante
+              </span>
+            </div>
 
-        <div className="grid grid-cols-3 gap-2 text-[11px] font-extrabold">
-          <a
-            href={waHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-center transition"
-          >
-            WhatsApp
-          </a>
-          <a
-            href={fbHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-2 px-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-center transition"
-          >
-            Facebook
-          </a>
-          <a
-            href={twHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 text-center transition"
-          >
-            X / Twitter
-          </a>
-          <a
-            href={tgHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-2 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-center transition"
-          >
-            Telegram
-          </a>
-          <button
-            type="button"
-            onClick={compartirNativo}
-            className="col-span-2 py-2 px-2 rounded-xl bg-gradient-to-r from-pink-50 to-orange-50 hover:from-pink-100 hover:to-orange-100 text-pink-800 border border-pink-200 inline-flex items-center justify-center gap-1.5 transition"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            <span>Instagram / Más apps</span>
-          </button>
-        </div>
+            <div className="grid grid-cols-3 gap-2 text-[11px] font-extrabold">
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-center transition"
+              >
+                WhatsApp
+              </a>
+              <a
+                href={fbHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2 px-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-center transition"
+              >
+                Facebook
+              </a>
+              <a
+                href={twHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 text-center transition"
+              >
+                X / Twitter
+              </a>
+              <a
+                href={tgHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2 px-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 text-center transition"
+              >
+                Telegram
+              </a>
+              <button
+                type="button"
+                onClick={compartirNativo}
+                className="col-span-2 py-2 px-2 rounded-xl bg-gradient-to-r from-pink-50 to-orange-50 hover:from-pink-100 hover:to-orange-100 text-pink-800 border border-pink-200 inline-flex items-center justify-center gap-1.5 transition"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Instagram / Más apps</span>
+              </button>
+            </div>
 
-        <div className="flex items-center gap-2 p-2 bg-slate-100 rounded-xl border border-slate-200">
-          <span className="text-[11px] font-mono text-slate-700 truncate flex-1 px-1">{url}</span>
-          <button
-            type="button"
-            onClick={copiar}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-black text-white shrink-0 transition ${
-              copiado ? "bg-emerald-600" : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {copiado ? "Copiado ✓" : "Copiar"}
-          </button>
-        </div>
+            <div className="flex items-center gap-2 p-2 bg-slate-100 rounded-xl border border-slate-200">
+              <span className="text-[11px] font-mono text-slate-700 truncate flex-1 px-1">{url}</span>
+              <button
+                type="button"
+                onClick={copiar}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-black text-white shrink-0 transition ${
+                  copiado ? "bg-emerald-600" : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {copiado ? "Copiado ✓" : "Copiar"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

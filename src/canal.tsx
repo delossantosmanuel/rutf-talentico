@@ -331,7 +331,8 @@ export default function EstudioCanal({
           </div>
         </div>
 
-        {onAbrirSubir && (
+        {!soloLectura && onAbrirSubir && (
+
           <div className="flex justify-end pt-0.5">
             <button
               type="button"
@@ -390,8 +391,10 @@ export default function EstudioCanal({
         ) : null}
  
 
-
+{!soloLectura && (<>
           <input
+    
+
             id="input-banner-canal"
             type="file"
             accept="image/*"
@@ -421,6 +424,9 @@ export default function EstudioCanal({
             <Camera className="w-3.5 h-3.5" />
             <span>{subiendoImg === "banner" ? "Subiendo..." : "Cambiar Banner"}</span>
           </label>
+          </>)}
+
+
         </div>
 
         <div className="px-5 sm:px-6 pb-6">
@@ -438,8 +444,10 @@ export default function EstudioCanal({
             />
 
             <div
-              onClick={() => inputAvatarRef.current?.click()}
-              title="Cambiar foto de perfil"
+              onClick={() => { if (!soloLectura) inputAvatarRef.current?.click(); }}
+
+              title={soloLectura ? perfil.username : "Cambiar foto de perfil"}
+
               className="relative w-20 h-20 aspect-square rounded-full border-4 border-white shadow-md overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
             >
                          {avatarUrl || perfil.username.toLowerCase() === "@rutftalentico" ? (
@@ -452,10 +460,16 @@ export default function EstudioCanal({
               inicialesCanal
             )}
 
+              {!soloLectura && (
+
               <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
                 <Camera className="w-5 h-5 text-white" />
               </div>
+              )}
+
             </div>
+
+{!soloLectura && (
 
             <button
               type="button"
@@ -465,6 +479,8 @@ export default function EstudioCanal({
               <Edit3 className="w-3.5 h-3.5" />
               <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
             </button>
+            )}
+
           </div>
 
           <div className="mt-3 space-y-1">
@@ -558,15 +574,18 @@ export default function EstudioCanal({
 
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
         <h3 className="text-base font-black text-slate-900">
-          Mis Videos Publicados ({videos.length})
+         {soloLectura ? `Videos Publicados (${videos.length})` : `Mis Videos Publicados (${videos.length})`}
+
         </h3>
 
               {videos.length === 0 ? (
           <div className="py-3 flex flex-col items-center text-center gap-2.5">
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm">
-              Sube tu primer video y empieza a monetizar tu talento
+            {soloLectura ? "Este canal aún no ha publicado videos." : "Sube tu primer video y empieza a monetizar tu talento"}
+
             </p>
-            {onAbrirSubir && (
+          {!soloLectura && onAbrirSubir && (
+
               <button
                 type="button"
                 onClick={onAbrirSubir}

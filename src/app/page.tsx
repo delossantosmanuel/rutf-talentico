@@ -775,15 +775,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     )}
 {canalVisitado && (
   <div className="mb-6">
-    <div className="mb-3 flex items-center justify-between">
-      <button
-        type="button"
-        onClick={() => setCanalVisitado(null)}
-        className="px-3.5 py-1.5 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-extrabold transition"
-      >
-        ← Volver al inicio
-      </button>
-    </div>
+    
           <EstudioCanal
         supabase={supabase}
         perfil={{
@@ -812,7 +804,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
   </div>
 )}
 
-        {tab === "inicio" && (
+        {!canalVisitado && tab === "inicio" && (
+
           <div className="space-y-8">
             <section>
               <h3 className="font-extrabold mb-3 text-blue-600">Recomendados para Ti</h3>

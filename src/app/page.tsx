@@ -101,6 +101,14 @@ const [menuCuenta, setMenuCuenta] = useState(false);
     cargarDatos();
     iniciarNotificacionesCreadores(() => setTab("subir"));
            CapApp.addListener("appUrlOpen", async ({ url }) => {
+                    if (url.includes("?v=")) {
+          const vidId = new URL(url).searchParams.get("v");
+          if (vidId) {
+            const { data: vUnico } = await supabase.from("videos").select("*").eq("id", vidId).maybeSingle();
+            if (vUnico) abrirVideo(vUnico);
+          }
+        }
+
       if (url.startsWith("com.rutftalentico.app://login-callback")) {
         try {
           if (url.includes("code=")) {
@@ -493,35 +501,36 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   <h2 className="font-black text-lg sm:text-xl text-slate-900">{videoActivo.titulo}</h2>
                   <div className="flex flex-wrap items-center gap-2.5 text-xs">
                     {renderCreador(videoActivo.creador)}
-                    <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} suscriptores • {videoActivo.vistas} {videoActivo.vistas === 1 ? "vista calificada" : "vistas calificadas"}</span>
+                                        <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} Fans • {videoActivo.vistas || 0} vistas calificadas</span>
+           
 
-                                         {suscritos[videoActivo.creador] ? (
-                      <div className="relative flex items-center gap-1.5">
-                        <button type="button" onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} className="bg-slate-900 text-white text-xs font-extrabold px-3.5 py-2 rounded-full flex items-center gap-1.5">
-                          <span>Suscrito</span>
-                        </button>
-                        <button type="button" onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} className="p-2 rounded-full border border-slate-200 hover:bg-slate-100 text-slate-600" title="Preferencias de notificaciones">
-                          <Settings className="w-4 h-4 text-blue-600" />
-                        </button>
-                        {menuEngranaje === videoActivo.creador && (
-                          <div className="absolute left-0 top-10 z-30 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 text-xs font-bold">
-                            <button type="button" onClick={() => cambiarNotificacion(videoActivo.creador, "todas")} className={`w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 ${notifCreador[videoActivo.creador] !== "ninguna" ? "text-blue-600 font-black" : ""}`}>
-                              Recibir todas las notificaciones
-                            </button>
-                            <button type="button" onClick={() => cambiarNotificacion(videoActivo.creador, "ninguna")} className={`w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 ${notifCreador[videoActivo.creador] === "ninguna" ? "text-blue-600 font-black" : ""}`}>
-                              No recibir notificaciones
-                            </button>
-                            <button type="button" onClick={() => toggleSuscripcion(videoActivo.creador)} className="w-full text-left px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 border-t border-slate-100 mt-1 pt-2">
-                              Anular suscripción
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => toggleSuscripcion(videoActivo.creador)} className="bg-red-600 hover:bg-red-700 text-white text-xs font-black px-4 py-2 rounded-full shadow-sm">
-                        Suscripción
+                  {suscritos[videoActivo.creador] ? (
+                    <div className="relative flex items-center gap-1.5">
+                      <button type="button" onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} className="px-3.5 py-1.5 rounded-full bg-slate-900 text-white text-xs font-extrabold inline-flex items-center gap-1.5 shadow-xs">
+                        <span>Eres Fan ✓</span>
                       </button>
-                    )}
+                      <button type="button" onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 transition">
+                        <Settings className="w-4 h-4 text-blue-600" />
+                      </button>
+                      {menuEngranaje === videoActivo.creador && (
+                        <div className="absolute left-0 top-10 z-30 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 text-xs">
+                          <button type="button" onClick={() => cambiarNotificacion(videoActivo.creador, "todas")} className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 font-bold text-slate-700">
+                            Recibir todas las notificaciones
+                          </button>
+                          <button type="button" onClick={() => cambiarNotificacion(videoActivo.creador, "ninguna")} className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 font-bold text-slate-700">
+                            No recibir notificaciones
+                          </button>
+                          <button type="button" onClick={() => toggleSuscripcion(videoActivo.creador)} className="w-full text-left px-3 py-2 rounded-xl hover:bg-red-50 font-extrabold text-red-600">
+                            Dejar de ser Fan
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => toggleSuscripcion(videoActivo.creador)} className="px-4 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs font-black tracking-wide shadow-sm transition">
+                      Hazte Fan
+                    </button>
+                  )}
 
                     
                   </div>

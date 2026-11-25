@@ -48,7 +48,7 @@ const PREGUNTAS_FRECUENTES = [
   {
     pregunta: "¿Cómo funcionan los pagos por PayPal?",
     respuesta:
-      "Al alcanzar los 100 suscriptores reales y las 1,000 vistas calificadas de 15 segundos, se desbloquea el formulario para vincular tu correo de PayPal, tu nombre completo y tu número de teléfono de contacto. Los pagos se procesan de forma mensual una vez superado el mínimo de retiro.",
+      "Al alcanzar los 100 Fans reales y las 1,000 vistas calificadas de 15 segundos, se desbloquea el formulario para vincular tu correo de PayPal, tu nombre completo y tu número de teléfono de contacto. Los pagos se procesan de forma mensual una vez superado el mínimo de retiro.",
   },
   {
     pregunta: "¿Cuánto tarda la revisión cuando cumplo los requisitos?",
@@ -58,7 +58,7 @@ const PREGUNTAS_FRECUENTES = [
   {
     pregunta: "¿Qué ocurre si se detectan bots o contenido resubido?",
     respuesta:
-      "Cualquier intento de manipulación artificial de suscriptores, vistas automatizadas o resubida de videos ajenos conlleva el rechazo o suspensión permanente del programa de monetización.",
+      "Cualquier intento de manipulación artificial de Fans, vistas automatizadas o resubida de videos ajenos conlleva el rechazo o suspensión permanente del programa de monetización.",
   },
 ];
 
@@ -212,12 +212,12 @@ export default function PanelMonetizacion({
           )}
         </div>
 
-        {/* Barra 1: Suscriptores reales */}
+        {/* Barra 1: Fans reales */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs font-extrabold">
             <span className="flex items-center gap-1.5 text-slate-700">
               <Users className="w-4 h-4 text-blue-600" />
-              <span>Suscriptores reales del canal</span>
+              <span>Fans reales del canal</span>
             </span>
             <span className="text-slate-900">
               {seguidoresCanal.toLocaleString()} / {META_SEGUIDORES.toLocaleString()} ({pctSeguidores}%)
@@ -359,7 +359,7 @@ export default function PanelMonetizacion({
 
           <p className="text-xs text-slate-600 leading-relaxed max-w-lg mx-auto">
             Sigue publicando videos originales y compartiendo tu canal. Al alcanzar{" "}
-            <strong>100 suscriptores reales</strong> y{" "}
+            <strong>100 Fans reales</strong> y{" "}
             <strong>1,000 vistas calificadas (≥ 15s)</strong>, se desbloqueará tu formulario de cobro.
           </p>
 

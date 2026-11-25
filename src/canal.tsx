@@ -21,6 +21,9 @@ import {
   Share2,
 
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { Share } from "@capacitor/share";
+import { Capacitor } from "@capacitor/core";
 
 
 export type PerfilCanal = {
@@ -468,7 +471,8 @@ export default function EstudioCanal({
 
             <p className="text-xs font-bold text-slate-500">
               {perfil.username} • {seguidores.toLocaleString()}{" "}
-              {seguidores === 1 ? "suscriptor" : "suscriptores"}
+              {seguidores === 1 ? "Fan" : "Fans"}
+
             </p>
 
             {perfil.bio && (
@@ -678,7 +682,7 @@ export default function EstudioCanal({
               </div>
 
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
-                <span className="text-slate-500 font-semibold">Suscriptores totales</span>
+                <span className="text-slate-500 font-semibold">Fans totales</span>
                 <span className="font-extrabold text-slate-900">
                   {seguidores.toLocaleString()}
                 </span>
@@ -935,13 +939,12 @@ export function ModalCompartir({
   onCerrar: () => void;
 }) {
   const [copiado, setCopiado] = useState(false);
-    const url = "https://vercel.app" + videoId;
+  const url = ["https://rutftalentico.com", "?v=", videoId].join("");
   const texto = "Mira este talento en RUTF Talentico: " + titulo;
-  const qrUrl = "https://qrserver.com" + encodeURIComponent(url);
-  const waHref = "https://wa.me" + encodeURIComponent(texto + " " + url);
-  const fbHref = "https://facebook.com" + encodeURIComponent(url);
-  const twHref = "https://twitter.com" + encodeURIComponent(texto) + "&url=" + encodeURIComponent(url);
-  const tgHref = "https://t.me" + encodeURIComponent(url) + "&text=" + encodeURIComponent(texto);
+  const waHref = ["https://wa.me", "?text=", encodeURIComponent(texto + " " + url)].join("");
+  const fbHref = ["https://facebook.com", "?u=", encodeURIComponent(url)].join("");
+  const twHref = ["https://twitter.com", "?text=", encodeURIComponent(texto), "&url=", encodeURIComponent(url)].join("");
+  const tgHref = ["https://t.me", "?url=", encodeURIComponent(url), "&text=", encodeURIComponent(texto)].join("");
 
   const copiar = () => {
     navigator.clipboard?.writeText(url);
@@ -950,13 +953,22 @@ export function ModalCompartir({
   };
 
   const compartirNativo = async () => {
-    if (navigator.share) {
-      try {
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Share.share({
+          title: titulo,
+          text: texto,
+          url,
+          dialogTitle: "Compartir talento en RUTF Talentico",
+        });
+        return;
+      }
+      if (navigator.share) {
         await navigator.share({ title: titulo, text: texto, url });
-      } catch {}
-    } else {
-      copiar();
-    }
+        return;
+      }
+    } catch {}
+    copiar();
   };
 
   return (
@@ -981,14 +993,12 @@ export function ModalCompartir({
 
         <p className="text-xs font-bold text-slate-700 line-clamp-2">{titulo}</p>
 
-        <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-          <img
-            src={qrUrl}
-            alt="Código QR del video"
-            className="w-32 h-32 rounded-xl bg-white p-1.5 border border-slate-200 shadow-xs"
-          />
-          <span className="text-[11px] font-bold text-slate-500 mt-1.5">
-            Escanea el código QR para abrir directo en cualquier teléfono
+        <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div className="p-2.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
+            <QRCodeSVG value={url} size={136} bgColor="#ffffff" fgColor="#0f172a" level="M" />
+          </div>
+          <span className="text-[11px] font-bold text-slate-500 mt-2 text-center">
+            Escanea el código QR para abrir este talento en cualquier teléfono
           </span>
         </div>
 
@@ -1025,7 +1035,6 @@ export function ModalCompartir({
           >
             Telegram
           </a>
-
           <button
             type="button"
             onClick={compartirNativo}

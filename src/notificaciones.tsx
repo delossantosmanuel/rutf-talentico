@@ -91,7 +91,7 @@ export function CampanaNotificaciones({
           listaGenerada.push({
             id: notifId,
             tipo: "suscripcion",
-            titulo: "Nuevo suscriptor en tu canal",
+            titulo: "Nuevo Fan en tu canal",
             mensaje: `${nombreSeguidor} se suscribió a tu canal`,
             leida: Boolean(leidasGuardadas[notifId]),
             fecha: s.creado_en ? new Date(s.creado_en).toLocaleDateString() : "Reciente",
@@ -130,7 +130,7 @@ export function CampanaNotificaciones({
             id: notifId,
             tipo: "suscripcion",
             titulo: `Solicitud de Monetización: ${s.username}`,
-            mensaje: `${s.suscriptores} subs • ${s.vistas} vistas (+15s) • PayPal: ${s.paypal_email}`,
+            mensaje: `${s.Fanes} subs • ${s.vistas} vistas (+15s) • PayPal: ${s.paypal_email}`,
             leida: Boolean(leidasGuardadas[notifId]),
             fecha: s.creado_en ? new Date(s.creado_en).toLocaleDateString() : "Hoy",
           });
@@ -209,7 +209,7 @@ export function CampanaNotificaciones({
           <div className="bg-gradient-to-r from-blue-600 to-orange-500 text-white px-3.5 py-2.5 flex items-center justify-between">
             <div>
               <p className="text-xs font-black">Notificaciones RUTF</p>
-              <p className="text-[10px] text-white/90">Suscriptores y nuevos talentos</p>
+              <p className="text-[10px] text-white/90">Fans y nuevos talentos</p>
             </div>
             {sinLeer > 0 && (
               <button

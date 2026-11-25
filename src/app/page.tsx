@@ -940,7 +940,13 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         creado_en: perfilVisitadoData?.creado_en,
       }}
       videos={lista.filter((v) => v.creador.toLowerCase() === canalVisitado.toLowerCase())}
-      seguidores={conteoSeguidores[canalVisitado] || 0}
+     seguidores={
+  conteoSeguidores[canalVisitado] ??
+  conteoSeguidores[perfilVisitadoData?.username || ""] ??
+  Object.entries(conteoSeguidores).find(([k]) => k.toLowerCase() === canalVisitado.toLowerCase())?.[1] ??
+  0
+}
+
       onActualizarPerfil={() => {}}
       onAbrirVideo={(v) => {
         const encontrado = lista.find((item) => item.id === v.id);
@@ -956,7 +962,9 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
   </div>
 )}
 
-{totalUsuariosPlataforma !== null && tab === "perfil" && (
+{!canalVisitado && totalUsuariosPlataforma !== null && tab === "perfil" && (
+
+
   <div className="max-w-5xl mx-auto mb-3 px-4 py-2 rounded-2xl bg-slate-900 text-white text-xs font-extrabold flex items-center justify-between">
     <span>Panel Privado del Propietario (@RUTFTalentico)</span>
     <span className="text-emerald-400">

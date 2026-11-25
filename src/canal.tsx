@@ -514,21 +514,25 @@ onToggleFan,
 
             </p>
 
-            {perfil.bio && (
-              <p className="text-xs sm:text-sm text-slate-700 pt-1.5 leading-relaxed line-clamp-2">
-                {perfil.bio}
-              </p>
-            )}
+                         <div className="pt-1.5 flex items-end gap-1.5">
+                {perfil.bio ? (
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed line-clamp-2 flex-1">
+                    {perfil.bio}
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-400 italic flex-1">
+                    Sin descripción pública aún
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setModalInfoCanal(true)}
+                  className="text-xs font-black text-blue-600 hover:text-blue-700 shrink-0 pb-0.5"
+                >
+                  ... más
+                </button>
+              </div>
 
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setModalInfoCanal(true)}
-                className="text-xs font-extrabold text-blue-600 hover:text-blue-700 inline-flex items-center gap-0.5 transition"
-              >
-                <span>Información del canal ›</span>
-              </button>
-            </div>
           </div>
 
           {editorAbierto && (
@@ -585,29 +589,44 @@ onToggleFan,
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
-        <h3 className="text-base font-black text-slate-900">
-          Mis Videos Publicados ({videos.length})
-        </h3>
-
-              {videos.length === 0 ? (
-          <div className="py-3 flex flex-col items-center text-center gap-2.5">
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm">
-              Sube tu primer video y empieza a monetizar tu talento
+             {soloLectura && videos.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm flex flex-col items-center justify-center text-center gap-2.5">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
+             <Play className="w-6 h-6" />
+            </div>
+            <p className="text-sm font-extrabold text-slate-800">
+              Este canal aún no ha publicado videos.
             </p>
-            {onAbrirSubir && (
-              <button
-                type="button"
-                onClick={onAbrirSubir}
-                className="group relative overflow-hidden inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-sm hover:shadow-md active:scale-95 transition-all duration-200"
-              >
-                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-                <PlusCircle className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-90" />
-                <span>Subir</span>
-              </button>
-            )}
+            <p className="text-xs text-slate-500 max-w-xs">
+              Cuando este creador comparta su primer talento aparecerá aquí automáticamente.
+            </p>
           </div>
         ) : (
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
+            <h3 className="text-base font-black text-slate-900">
+             {soloLectura ? `Videos Publicados (${videos.length})` : `Mis Videos Publicados (${videos.length})`}
+
+            </h3>
+
+            {videos.length === 0 ? (
+              <div className="py-3 flex flex-col items-center text-center gap-2.5">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm">
+                  Sube tu primer video y empieza a monetizar tu talento
+                </p>
+                {!soloLectura && onAbrirSubir && (
+                  <button
+                    type="button"
+                    onClick={onAbrirSubir}
+                    className="group relative overflow-hidden inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-extrabold shadow-sm hover:opacity-95 transition"
+                  >
+                    <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                    <PlusCircle className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-90" />
+                    <span>Subir</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {videos.map((v) => (
@@ -640,7 +659,7 @@ onToggleFan,
                       <span>{(v.vistas || 0).toLocaleString()} visualizaciones</span>
                     </p>
                   </div>
-
+{!soloLectura && (
                   <div className="relative shrink-0">
                     <button
                       type="button"
@@ -670,16 +689,21 @@ onToggleFan,
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Eliminar video</span>
                         </button>
-                      </div>
-                    )}
+                                                </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-
-            ))}
+            )}
           </div>
         )}
-      </div>
+
+
+
+
 
       {modalInfoCanal && (
         <div
@@ -688,7 +712,8 @@ onToggleFan,
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-5"
+           className="w-full max-w-md max-h-[82vh] overflow-y-auto bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-5"
+
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900">Información del canal</h3>
@@ -701,22 +726,26 @@ onToggleFan,
               </button>
             </div>
 
-            <div className="space-y-3 text-sm text-slate-700">
+                      <div className="space-y-3 text-sm text-slate-700">
+              {perfil.bio && (
+                <div className="py-1.5 border-b border-slate-100 space-y-1">
+                  <span className="text-slate-500 font-semibold block">Descripción del canal</span>
+                  <p className="text-slate-800 leading-relaxed whitespace-pre-line">{perfil.bio}</p>
+                </div>
+              )}
+
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-semibold">Fecha de creación</span>
-                                <span className="font-extrabold text-slate-900">
-
-                                Se unió el{" "}
-                                
-                                   {(perfil.creado_en || perfil.created_at)
-                    ? new Date((perfil.creado_en || perfil.created_at) as string).toLocaleDateString("es-ES", {
+                <span className="font-extrabold text-slate-900">
+                  {perfil.username.toLowerCase() === "@rutftalentico"
+                    ? "Miembro fundador"
+                    : `Se unió el ${new Date(
+                        (perfil.creado_en || perfil.created_at || new Date().toISOString()) as string
+                      ).toLocaleDateString("es-ES", {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
-                      })
-                    : "Miembro fundador"}
-              
-
+                      })}`}
                 </span>
               </div>
 
@@ -734,6 +763,7 @@ onToggleFan,
                 </span>
               </div>
             </div>
+
 
             <button
               type="button"

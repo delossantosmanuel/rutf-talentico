@@ -17,6 +17,8 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
   const [archivo, setArchivo] = useState<File | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [progreso, setProgreso] = useState(0);
+    const [aceptaCopyright, setAceptaCopyright] = useState(false);
+
 
   const seleccionarArchivo = (file: File | null) => {
     if (!file) return;
@@ -41,6 +43,8 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     if (titulo.trim().length < 10) return alert("El título debe tener al menos 10 caracteres.");
     if (descripcion.trim().length < 20) return alert("La descripción debe tener al menos 20 caracteres.");
     if (!archivo) return alert("Selecciona un archivo de video (.mp4)");
+        if (!aceptaCopyright) return alert("Debes confirmar que este video es original y no infringe derechos de autor.");
+
 
     setSubiendo(true);
     setProgreso(12);
@@ -156,8 +160,20 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           </div>
         </div>
       )}
+      <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={aceptaCopyright}
+          onChange={(e) => setAceptaCopyright(e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shrink-0"
+        />
+        <span className="text-xs text-slate-700 leading-relaxed">
+          Declaro que este video y su audio son de mi <strong>autoría original</strong> (o cuento con derechos legítimos de difusión) y cumplen las normas de <strong>RUTF Talentico</strong>.
+        </span>
+      </label>
 
-      <button disabled={subiendo} type="submit" className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-extrabold py-3 rounded-xl text-sm shadow-sm cursor-pointer disabled:opacity-50">
+           <button disabled={subiendo || !aceptaCopyright} type="submit" className="w-full bg-gradient-to-r from-blue-600 to-orange-500 text-white font-black py-3 rounded-xl shadow hover:opacity-95 transition disabled:opacity-50">
+
         {subiendo ? `Subiendo video (${progreso}%)...` : archivo ? "Publicar Video Ahora" : "Selecciona un video para publicar"}
       </button>
     </form>

@@ -513,12 +513,15 @@ export default function EstudioCanal({
                     Descripción / Biografía del Canal
                   </label>
                   <span className="text-[11px] font-bold text-slate-400">
-                    {bio.length}/160
+                 {bio.length}/1000
+
                   </span>
                 </div>
                 <textarea
                   rows={3}
-                  maxLength={160}
+                    maxLength={1000}
+
+
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Cuéntale a tu comunidad qué talento compartes..."

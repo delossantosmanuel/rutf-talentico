@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Bell, UserPlus, PlayCircle, CheckCheck } from "lucide-react";
+import { notificarEventoEnTelefono } from "./notificacionesNativas";
 
 export type NotificacionRUTF = {
   id: string;
@@ -135,14 +136,22 @@ export function CampanaNotificaciones({
           });
         });
       }
-
       const noLeidas = listaGenerada.filter((n) => !n.leida).length;
       if (noLeidas > ultimoTotalRef.current) {
         reproducirSonidoRUTF();
+        const primeraNueva = listaGenerada.find((n) => !n.leida);
+        if (primeraNueva && ultimoTotalRef.current > 0) {
+          notificarEventoEnTelefono(
+            primeraNueva.titulo,
+            primeraNueva.mensaje,
+            primeraNueva.videoId
+          );
+        }
       }
       ultimoTotalRef.current = noLeidas;
       setItems(listaGenerada);
     };
+
 
     cargarNotificacionesReales();
   }, [usuario, videos, suscritos, notifCreador, supabase]);
@@ -183,14 +192,16 @@ export function CampanaNotificaciones({
             : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-600"
         }`}
       >
-        <Bell className="w-3.5 h-3.5" />
-        {sinLeer > 0 && (
-          <span className="flex items-center gap-0.5 pr-0.5" aria-label={`${sinLeer} notificaciones`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-          </span>
-        )}
+                   <Bell className="w-3.5 h-3.5" />
+            {sinLeer > 0 && (
+              <span
+                aria-label={`${sinLeer} notificaciones`}
+                className="inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-600 text-white text-[10px] font-black leading-none"
+              >
+                {sinLeer}
+              </span>
+            )}
+
       </button>
 
       {abierto && (

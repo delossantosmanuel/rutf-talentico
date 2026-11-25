@@ -60,3 +60,29 @@ export async function iniciarNotificacionesCreadores(alAbrirSubir: () => void) {
     console.warn("Notificaciones nativas no disponibles:", error);
   }
 }
+
+export async function notificarEventoEnTelefono(
+  titulo: string,
+  mensaje: string,
+  videoId?: string
+) {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const permiso = await LocalNotifications.checkPermissions();
+    if (permiso.display !== "granted") return;
+
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: Math.floor(2000 + Math.random() * 80000),
+          title: titulo,
+          body: mensaje,
+          smallIcon: "ic_launcher",
+          largeIcon: "ic_launcher",
+          schedule: { at: new Date(Date.now() + 800) },
+          extra: videoId ? { destino: "video", videoId } : { destino: "inicio" },
+        },
+      ],
+    });
+  } catch {}
+}

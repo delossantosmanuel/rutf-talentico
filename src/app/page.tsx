@@ -18,7 +18,8 @@ const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-type Video = { id: string; titulo: string; descripcion?: string; etiquetas?: string; hashtags?: string; creador: string; nivel: string; tipo: "largo" | "vertical"; video_url: string; vistas: number; likes: number; dislikes?: number; creado_en?: string; };
+type Video = { id: string; titulo: string; descripcion?: string; etiquetas?: string; hashtags?: string; creador: string; nivel: string; tipo: "largo" | "vertical"; video_url: string; vistas: number; likes: number; dislikes?: number; creado_en?: string;miniatura_url?: string | null;
+  };
 type Comentario = { id: string; usuario: string; texto: string; creado_en: string; };
 
 export default function Home() {
@@ -197,6 +198,8 @@ const [menuCuenta, setMenuCuenta] = useState(false);
 
   const toggleSuscripcion = async (canal: string) => {
     if (!usuario) return setMostrarAuth(true);
+        if (usuario.username.toLowerCase() === canal.toLowerCase()) return;
+
     if (usuario.username.toLowerCase() === canal.toLowerCase()) return;
 
     const yaSuscrito = !!suscritos[canal];
@@ -493,7 +496,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
         {videoActivo && (
           <div className="mb-8 bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-lg">
             <div className="bg-slate-950">
-              <video src={videoActivo.video_url} controls autoPlay onTimeUpdate={(e) => registrarVistaCalificada(videoActivo, e.currentTarget.currentTime)} className="w-full max-h-[520px] mx-auto" />
+              <video src={videoActivo.video_url} poster={videoActivo.miniatura_url || undefined}
+ controls autoPlay onTimeUpdate={(e) => registrarVistaCalificada(videoActivo, e.currentTarget.currentTime)} className="w-full max-h-[520px] mx-auto" />
             </div>
             <div className="p-5 sm:p-6 space-y-4">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -503,8 +507,13 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     {renderCreador(videoActivo.creador)}
                                         <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} Fans • {videoActivo.vistas || 0} vistas calificadas</span>
            
+{esMiCanal(videoActivo.creador) ? (
+  <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-extrabold border border-blue-200">
+    Tu canal oficial
+  </span>
+) : suscritos[videoActivo.creador] ? (
 
-                  {suscritos[videoActivo.creador] ? (
+            
                     <div className="relative flex items-center gap-1.5">
                       <button type="button" onClick={() => setMenuEngranaje(menuEngranaje === videoActivo.creador ? null : videoActivo.creador)} className="px-3.5 py-1.5 rounded-full bg-slate-900 text-white text-xs font-extrabold inline-flex items-center gap-1.5 shadow-xs">
                         <span>Eres Fan ✓</span>
@@ -587,16 +596,43 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {recomendados.filter(v => v.tipo === "largo").map(v => (
                   <div key={v.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                    <div onClick={() => abrirVideo(v)} className="relative aspect-video bg-slate-900 flex items-center justify-center cursor-pointer">
-                      <video src={v.video_url} className="w-full h-full object-cover opacity-85" />
-                      <Play className="absolute w-12 h-12 text-white fill-white drop-shadow" />
+                                      <div onClick={() => abrirVideo(v)} className="relative aspect-video bg-slate-900 flex items-center justify-center cursor-pointer overflow-hidden">
+                    {v.miniatura_url ? (
+                      <img src={v.miniatura_url} alt={v.titulo} className="w-full h-full object-cover" />
+                    ) : (
+                      <video
+                        src={`${v.video_url}#t=0.5`}
+                        preload="metadata"
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover opacity-90"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
+                      <Play className="w-12 h-12 text-white fill-white drop-shadow" />
                     </div>
-                    <div className="p-4 space-y-2">
-                      <h4 onClick={() => abrirVideo(v)} className="font-bold text-sm line-clamp-1 cursor-pointer hover:text-blue-600">{v.titulo}</h4>
-                      <div className="flex items-center justify-between text-xs text-slate-500">
-                        {renderCreador(v.creador)}
-                        {esMiCanal(v.creador) ? <span className="text-[11px] font-bold text-blue-600">Tu Canal</span> : <button onClick={() => toggleSuscripcion(v.creador)} className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold cursor-pointer ${suscritos[v.creador] ? "bg-slate-900 text-white" : "bg-orange-500 text-white"}`}>{suscritos[v.creador] ? "Suscrito âœ“" : "Si te gusta, suscríbete"}</button>}
-                      </div>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <h4 onClick={() => abrirVideo(v)} className="font-bold text-sm line-clamp-1 cursor-pointer">{v.titulo}</h4>
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      {renderCreador(v.creador)}
+                      {esMiCanal(v.creador) ? (
+                        <span className="text-[11px] font-bold text-blue-600">Tu Canal</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => toggleSuscripcion(v.creador)}
+                          className={`px-3 py-1 rounded-full text-[11px] font-black transition ${
+                            suscritos[v.creador]
+                              ? "bg-slate-900 text-white"
+                              : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-xs"
+                          }`}
+                        >
+                          {suscritos[v.creador] ? "Eres Fan ✓" : "Hazte Fan"}
+                        </button>
+                      )}
+                    </div>
+
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                         <div className="flex gap-1.5">
                           <button onClick={() => reaccionar(v, "like")} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${votos[v.id] === "like" ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700"}`}><Sparkles className="w-3.5 h-3.5" /> ({v.likes || 0})</button>

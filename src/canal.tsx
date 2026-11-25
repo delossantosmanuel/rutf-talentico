@@ -946,7 +946,8 @@ export function ModalCompartir({
     return () => clearTimeout(t);
   }, [videoId]);
 
-  const url = "https://vercel.app" + "?v=" + videoId;
+ const url = ["https://", "rutf-talentico", ".vercel.app/", "?v=", videoId].join("");
+
   const texto = `Mira "${titulo}" en RUTF Talentico:`;
   const waHref = "https://wa.me" + "?text=" + encodeURIComponent(`${texto} ${url}`);
   const fbHref = "https://facebook.com" + "/sharer/sharer.php" + "?u=" + encodeURIComponent(url);

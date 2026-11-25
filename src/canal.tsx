@@ -329,13 +329,48 @@ export default function EstudioCanal({
 
                <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
         <div className="relative h-36 sm:h-48 bg-gradient-to-r from-blue-950 via-blue-800 to-slate-900">
-                  {(bannerUrl || perfil.username.toLowerCase() === "@rutftalentico") && (
-          <img
-            src={bannerUrl || "/banner-oficial.svg"}
-            alt="Banner del canal"
-            className="w-full h-full object-cover"
-          />
-        )}
+                       {bannerUrl ? (
+          <img src={bannerUrl} alt="Banner del canal" className="w-full h-full object-cover" />
+        ) : perfil.username.toLowerCase() === "@rutftalentico" ? (
+          <div className="w-full h-full relative bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 flex items-center justify-between px-4 sm:px-10 overflow-hidden select-none">
+            <svg viewBox="0 0 180 180" className="hidden sm:block w-28 h-28 md:w-36 md:h-36 shrink-0 opacity-90">
+              <circle cx="90" cy="90" r="82" fill="#ffffff" fillOpacity="0.06" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="2" />
+              <circle cx="78" cy="56" r="20" fill="#f8fafc" />
+              <path d="M44 148 C44 108, 112 108, 112 148 Z" fill="#e2e8f0" />
+              <rect x="124" y="64" width="8" height="68" rx="4" fill="#cbd5e1" />
+              <circle cx="128" cy="58" r="12" fill="#ffffff" stroke="#0f172a" strokeWidth="3" />
+              <circle cx="34" cy="36" r="18" fill="#10b981" />
+              <text x="34" y="43" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="20" fill="#ffffff">$</text>
+            </svg>
+
+            <div className="text-center mx-auto z-10 px-2">
+              <span className="inline-block px-3 py-0.5 rounded-full bg-blue-900/80 border border-blue-400/40 text-blue-200 text-[10px] sm:text-xs font-extrabold tracking-widest uppercase">
+                Canal Oficial • Official Channel
+              </span>
+              <h3 className="text-xl sm:text-3xl md:text-4xl font-black text-white tracking-wide mt-1">
+                RUTF TALENTICO
+              </h3>
+              <p className="text-[11px] sm:text-sm font-extrabold text-slate-100 mt-0.5">
+                Comparte tu talento real y monetiza tu creatividad
+              </p>
+              <p className="text-[10px] sm:text-xs font-bold text-blue-300 tracking-wider uppercase mt-0.5">
+                SHARE YOUR ORIGINAL TALENT • GROW &amp; EARN WORLDWIDE
+              </p>
+            </div>
+
+            <svg viewBox="0 0 180 180" className="hidden sm:block w-28 h-28 md:w-36 md:h-36 shrink-0 opacity-90">
+              <circle cx="90" cy="90" r="82" fill="#ffffff" fillOpacity="0.06" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="2" />
+              <circle cx="105" cy="56" r="20" fill="#f8fafc" />
+              <path d="M71 148 C71 108, 139 108, 139 148 Z" fill="#e2e8f0" />
+              <rect x="30" y="54" width="46" height="82" rx="9" fill="#0f172a" stroke="#ffffff" strokeWidth="3" />
+              <rect x="35" y="63" width="36" height="44" rx="4" fill="#2563eb" />
+              <polygon points="49,77 49,93 62,85" fill="#ffffff" />
+              <rect x="118" y="24" width="42" height="26" rx="13" fill="#2563eb" />
+              <text x="139" y="42" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="14" fill="#ffffff">♥ +$</text>
+            </svg>
+          </div>
+        ) : null}
+ 
 
 
           <input

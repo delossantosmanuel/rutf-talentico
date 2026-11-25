@@ -359,15 +359,16 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
               title={usuario.username}
               className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full overflow-hidden bg-gradient-to-r from-blue-600 to-orange-500 text-white font-black text-xs flex items-center justify-center shadow shrink-0 cursor-pointer"
             >
-              {usuario.avatar_url ? (
+                          {usuario.avatar_url || usuario.username.toLowerCase() === "@rutftalentico" ? (
                 <img
-                  src={usuario.avatar_url}
+                  src={usuario.avatar_url || "/logo-rutf.png"}
                   alt={usuario.username}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 usuario.username.replace("@", "").slice(0, 2).toUpperCase()
               )}
+
             </button>
 
 

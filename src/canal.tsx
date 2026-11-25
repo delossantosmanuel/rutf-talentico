@@ -465,43 +465,47 @@ onToggleFan,
               inicialesCanal
             )}
 
-              <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                <Camera className="w-5 h-5 text-white" />
+                             {!soloLectura && (
+                  <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                    <Camera className="w-5 h-5 text-white" />
+                  </div>
+                )}
               </div>
+
+              {!soloLectura && (
+                <button
+                  type="button"
+                  onClick={() => setEditorAbierto(!editorAbierto)}
+                  className="px-4 py-2 rounded-full border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-extrabold inline-flex items-center gap-1.5 transition"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
+                </button>
+              )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setEditorAbierto(!editorAbierto)}
-              className="px-4 py-2 rounded-full border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-extrabold inline-flex items-center gap-1.5 transition"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
-            </button>
-          </div>
-
-          <div className="mt-3 space-y-1">
-           <div className="flex items-center gap-2.5 flex-wrap">
-  <h2 className="text-xl font-black text-slate-900 truncate">
-    {nombreCanal || perfil.username}
-  </h2>
-  {perfil.username.toLowerCase() === "@rutftalentico" && (
-    <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
-  )}
-  {soloLectura && onToggleFan && (
-    <button
-      type="button"
-      onClick={onToggleFan}
-      className={`px-4 py-1.5 rounded-full text-xs font-black transition shadow-xs ${
-        esFan
-          ? "bg-slate-900 text-white"
-          : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
-      }`}
-    >
-      {esFan ? "Eres Fan ✓" : "Hazte Fan"}
-    </button>
-  )}
-</div>
+            <div className="mt-3 space-y-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h2 className="text-xl font-black text-slate-900 truncate">
+                  {nombreCanal || perfil.username}
+                </h2>
+                {perfil.username.toLowerCase() === "@rutftalentico" && (
+                  <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
+                )}
+                {soloLectura && onToggleFan && (
+                  <button
+                    type="button"
+                    onClick={onToggleFan}
+                    className={`px-4 py-1.5 rounded-full text-xs font-black transition shadow-xs ${
+                      esFan
+                        ? "bg-slate-900 text-white"
+                        : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
+                    }`}
+                  >
+                    {esFan ? "Eres Fan ✓" : "Hazte Fan"}
+                  </button>
+                )}
+              </div>
 
 
             <p className="text-xs font-bold text-slate-500">
@@ -697,26 +701,22 @@ onToggleFan,
               </button>
             </div>
 
-                       <div className="space-y-3 text-sm text-slate-700">
-              {perfil.bio && (
-                <div className="py-1.5 border-b border-slate-100 space-y-1">
-                  <span className="text-slate-500 font-semibold block">Descripción del canal</span>
-                  <p className="text-slate-800 leading-relaxed whitespace-pre-line">{perfil.bio}</p>
-                </div>
-              )}
-
+            <div className="space-y-3 text-sm text-slate-700">
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-semibold">Fecha de creación</span>
-                <span className="font-extrabold text-slate-900">
-                  {perfil.username.toLowerCase() === "@rutftalentico"
-                    ? "Miembro fundador"
-                    : `Se unió el ${new Date(
-                        (perfil.creado_en || perfil.created_at || new Date().toISOString()) as string
-                      ).toLocaleDateString("es-ES", {
+                                <span className="font-extrabold text-slate-900">
+
+                                Se unió el{" "}
+                                
+                                   {(perfil.creado_en || perfil.created_at)
+                    ? new Date((perfil.creado_en || perfil.created_at) as string).toLocaleDateString("es-ES", {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
-                      })}`}
+                      })
+                    : "Miembro fundador"}
+              
+
                 </span>
               </div>
 

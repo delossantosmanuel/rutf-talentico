@@ -62,6 +62,9 @@ type Props = {
   onAbrirSubir?: () => void;
   onCerrarSesion?: () => void;
   soloLectura?: boolean;
+  esFan?: boolean;
+onToggleFan?: () => void;
+
 
 };
 
@@ -115,6 +118,9 @@ export default function EstudioCanal({
   onAbrirSubir,
   onCerrarSesion,
   soloLectura = false,
+  esFan = false,
+onToggleFan,
+
 
 }: Props) {
   const [nombreCanal, setNombreCanal] = useState(
@@ -446,8 +452,7 @@ export default function EstudioCanal({
             <div
               onClick={() => { if (!soloLectura) inputAvatarRef.current?.click(); }}
 
-              title={soloLectura ? perfil.username : "Cambiar foto de perfil"}
-
+          
               className="relative w-20 h-20 aspect-square rounded-full border-4 border-white shadow-md overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
             >
                          {avatarUrl || perfil.username.toLowerCase() === "@rutftalentico" ? (
@@ -460,16 +465,10 @@ export default function EstudioCanal({
               inicialesCanal
             )}
 
-              {!soloLectura && (
-
               <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
                 <Camera className="w-5 h-5 text-white" />
               </div>
-              )}
-
             </div>
-
-{!soloLectura && (
 
             <button
               type="button"
@@ -479,21 +478,31 @@ export default function EstudioCanal({
               <Edit3 className="w-3.5 h-3.5" />
               <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
             </button>
-            )}
-
           </div>
 
           <div className="mt-3 space-y-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <h2 className="text-xl font-black text-slate-900 truncate">
-                {nombreCanal || perfil.username}
-              </h2>
-                           {(perfil.es_fundador ||
-                perfil.username.toLowerCase() === "@rutftalentico") && (
+           <div className="flex items-center gap-2.5 flex-wrap">
+  <h2 className="text-xl font-black text-slate-900 truncate">
+    {nombreCanal || perfil.username}
+  </h2>
+  {perfil.username.toLowerCase() === "@rutftalentico" && (
+    <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
+  )}
+  {soloLectura && onToggleFan && (
+    <button
+      type="button"
+      onClick={onToggleFan}
+      className={`px-4 py-1.5 rounded-full text-xs font-black transition shadow-xs ${
+        esFan
+          ? "bg-slate-900 text-white"
+          : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
+      }`}
+    >
+      {esFan ? "Eres Fan ✓" : "Hazte Fan"}
+    </button>
+  )}
+</div>
 
-                <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
-              )}
-            </div>
 
             <p className="text-xs font-bold text-slate-500">
               {perfil.username} • {seguidores.toLocaleString()}{" "}
@@ -574,18 +583,15 @@ export default function EstudioCanal({
 
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
         <h3 className="text-base font-black text-slate-900">
-         {soloLectura ? `Videos Publicados (${videos.length})` : `Mis Videos Publicados (${videos.length})`}
-
+          Mis Videos Publicados ({videos.length})
         </h3>
 
               {videos.length === 0 ? (
           <div className="py-3 flex flex-col items-center text-center gap-2.5">
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm">
-            {soloLectura ? "Este canal aún no ha publicado videos." : "Sube tu primer video y empieza a monetizar tu talento"}
-
+              Sube tu primer video y empieza a monetizar tu talento
             </p>
-          {!soloLectura && onAbrirSubir && (
-
+            {onAbrirSubir && (
               <button
                 type="button"
                 onClick={onAbrirSubir}
@@ -691,22 +697,26 @@ export default function EstudioCanal({
               </button>
             </div>
 
-            <div className="space-y-3 text-sm text-slate-700">
+                       <div className="space-y-3 text-sm text-slate-700">
+              {perfil.bio && (
+                <div className="py-1.5 border-b border-slate-100 space-y-1">
+                  <span className="text-slate-500 font-semibold block">Descripción del canal</span>
+                  <p className="text-slate-800 leading-relaxed whitespace-pre-line">{perfil.bio}</p>
+                </div>
+              )}
+
               <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500 font-semibold">Fecha de creación</span>
-                                <span className="font-extrabold text-slate-900">
-
-                                Se unió el{" "}
-                                
-                                   {(perfil.creado_en || perfil.created_at)
-                    ? new Date((perfil.creado_en || perfil.created_at) as string).toLocaleDateString("es-ES", {
+                <span className="font-extrabold text-slate-900">
+                  {perfil.username.toLowerCase() === "@rutftalentico"
+                    ? "Miembro fundador"
+                    : `Se unió el ${new Date(
+                        (perfil.creado_en || perfil.created_at || new Date().toISOString()) as string
+                      ).toLocaleDateString("es-ES", {
                         day: "numeric",
                         month: "long",
                         year: "numeric",
-                      })
-                    : "Miembro fundador"}
-              
-
+                      })}`}
                 </span>
               </div>
 

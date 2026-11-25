@@ -61,6 +61,8 @@ type Props = {
   onVolver?: () => void;
   onAbrirSubir?: () => void;
   onCerrarSesion?: () => void;
+  soloLectura?: boolean;
+
 };
 
 async function comprimirImagen(archivo: File, maxAncho: number, calidad = 0.84, encuadreBanner?: { x: number; y: number }): Promise<Blob> {
@@ -112,6 +114,8 @@ export default function EstudioCanal({
   onVolver,
   onAbrirSubir,
   onCerrarSesion,
+  soloLectura = false,
+
 }: Props) {
   const [nombreCanal, setNombreCanal] = useState(
     perfil.nombre_canal || perfil.username.replace("@", "")
@@ -290,7 +294,11 @@ export default function EstudioCanal({
                   >
                     <Info className="w-4 h-4 text-blue-600" />
                     <span>Información del canal</span>
+                 
+
                   </button>
+                  {!soloLectura && (
+
                   <button
                     type="button"
                     onClick={() => {
@@ -302,6 +310,8 @@ export default function EstudioCanal({
                     <Edit3 className="w-4 h-4 text-slate-600" />
                     <span>{editorAbierto ? "Cerrar edición" : "Editar canal"}</span>
                   </button>
+                  )}
+
                   {onCerrarSesion && (
                     <button
                       type="button"

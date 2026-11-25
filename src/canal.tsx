@@ -253,11 +253,16 @@ export default function EstudioCanal({
 
           <div className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 aspect-square rounded-full overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xs flex items-center justify-center shrink-0">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Cuenta" className="w-full h-full object-cover" />
+                           {avatarUrl || perfil.username.toLowerCase() === "@rutftalentico" ? (
+                <img
+                  src={avatarUrl || "/logo-rutf.png"}
+                  alt="Cuenta"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 inicialesCanal
               )}
+
             </div>
 
             <div className="relative">

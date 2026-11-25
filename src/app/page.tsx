@@ -26,6 +26,83 @@ export default function Home() {
   const [tab, setTab] = useState("inicio");
   const [lista, setLista] = useState<Video[]>([]);
   const [busqueda, setBusqueda] = useState("");
+  const [resultadosDb, setResultadosDb] = useState<Video[]>([]);
+const [canalesDb, setCanalesDb] = useState<any[]>([]);
+const [buscandoDb, setBuscandoDb] = useState(false);
+const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+const [busquedaEjecutada, setBusquedaEjecutada] = useState(false);
+const [barraVisible, setBarraVisible] = useState(true);
+const [canalVisitado, setCanalVisitado] = useState<string | null>(null);
+
+useEffect(() => {
+  let ultimoY = window.scrollY;
+  const alDesplazar = () => {
+    const actualY = window.scrollY;
+    if (actualY <= 25) {
+      setBarraVisible(true);
+    } else if (busquedaEjecutada && actualY > ultimoY + 12) {
+      setBarraVisible(false);
+      setMostrarSugerencias(false);
+    } else if (actualY < ultimoY - 12) {
+      setBarraVisible(true);
+    }
+    ultimoY = actualY;
+  };
+  window.addEventListener("scroll", alDesplazar, { passive: true });
+  return () => window.removeEventListener("scroll", alDesplazar);
+}, [busquedaEjecutada]);
+
+useEffect(() => {
+  const q = busqueda.trim();
+  if (!q) {
+    setResultadosDb([]);
+    setCanalesDb([]);
+    setBusquedaEjecutada(false);
+    return;
+  }
+  const timer = setTimeout(async () => {
+    setBuscandoDb(true);
+    try {
+      const limpio = q.replace(/[%_]/g, "");
+      const palabras = limpio.split(/\s+/).filter((w) => w.length >= 2).slice(0, 4);
+      const filtros = [
+        `titulo.ilike.%${limpio}%`,
+        `descripcion.ilike.%${limpio}%`,
+        `creador.ilike.%${limpio}%`,
+        `etiquetas.ilike.%${limpio}%`,
+        `hashtags.ilike.%${limpio}%`,
+        ...palabras.flatMap((p) => [`titulo.ilike.%${p}%`, `etiquetas.ilike.%${p}%`]),
+      ].join(",");
+
+      const [{ data: vids }, { data: cans }] = await Promise.all([
+        supabase.from("videos").select("*").or(filtros).order("vistas", { ascending: false }).limit(24),
+        supabase
+          .from("usuarios_rutf")
+          .select("id,username,nombre_canal,avatar_url")
+          .or(`username.ilike.%${limpio}%,nombre_canal.ilike.%${limpio}%`)
+          .limit(6),
+      ]);
+
+      setResultadosDb(vids || []);
+      setCanalesDb(cans || []);
+    } catch {}
+    setBuscandoDb(false);
+  }, 250);
+  return () => clearTimeout(timer);
+}, [busqueda]);
+
+const ejecutarBusqueda = (e?: React.FormEvent) => {
+  if (e) e.preventDefault();
+  if (!busqueda.trim()) return;
+  setBusquedaEjecutada(true);
+  setMostrarSugerencias(false);
+  setTab("inicio");
+  setVideoActivo(null);
+  setTimeout(() => {
+    if (window.scrollY > 40) setBarraVisible(false);
+  }, 250);
+};
+
   const [usuario, setUsuario] = useState<PerfilCanal | null>(null);
   const [mostrarAuth, setMostrarAuth] = useState(false);
   const [googleNuevo, setGoogleNuevo] = useState<{ id: string; email: string; nombreSugerido: string } | null>(null);
@@ -200,8 +277,6 @@ const [menuCuenta, setMenuCuenta] = useState(false);
     if (!usuario) return setMostrarAuth(true);
         if (usuario.username.toLowerCase() === canal.toLowerCase()) return;
 
-    if (usuario.username.toLowerCase() === canal.toLowerCase()) return;
-
     const yaSuscrito = !!suscritos[canal];
     if (yaSuscrito) {
       setSuscritos({ ...suscritos, [canal]: false });
@@ -297,17 +372,30 @@ const [menuCuenta, setMenuCuenta] = useState(false);
   const puntajeAlgoritmo = (v: Video) => {
     const horas = v.creado_en ? (Date.now() - new Date(v.creado_en).getTime()) / 3600000 : 72;
     const impulsoNuevo = horas < 48 ? 25 : 0;
-    const suscriptoresCanal = conteoSeguidores[v.creador] || 0;
-    return (v.vistas || 0) * 2 + (v.likes || 0) * 5 + suscriptoresCanal * 3 - (v.dislikes || 0) * 2 + impulsoNuevo;
+    const fansCanal = conteoSeguidores[v.creador] || 0;
+    return (v.vistas || 0) * 2 + (v.likes || 0) * 5 + fansCanal * 3 - (v.dislikes || 0) * 2 + impulsoNuevo;
   };
 
-  const recomendados = [...lista]
-    .filter((v) => {
-      const q = busqueda.toLowerCase().trim();
-      if (!q) return true;
-      return [v.titulo, v.creador, v.etiquetas, v.hashtags, v.descripcion].some((c) => c?.toLowerCase().includes(q));
-    })
-    .sort((a, b) => puntajeAlgoritmo(b) - puntajeAlgoritmo(a));
+   const qBusq = busqueda.toLowerCase().trim();
+  const coincidenciasExactas = (() => {
+    if (!qBusq) return [...lista];
+    const mapa = new Map<string, Video>();
+    [...resultadosDb, ...lista].forEach((v) => {
+      const campos = [v.titulo, v.creador, v.etiquetas, v.hashtags, v.descripcion];
+      const palabras = qBusq.split(/\s+/).filter((w) => w.length >= 2);
+      const coincide =
+        campos.some((c) => c?.toLowerCase().includes(qBusq)) ||
+        (palabras.length > 0 && palabras.some((p) => campos.some((c) => c?.toLowerCase().includes(p))));
+      if (coincide) mapa.set(v.id, v);
+    });
+    return Array.from(mapa.values());
+  })();
+
+  const esBusquedaSinExactos = qBusq.length > 0 && coincidenciasExactas.length === 0;
+  const recomendados = (esBusquedaSinExactos ? [...lista] : coincidenciasExactas).sort(
+    (a, b) => puntajeAlgoritmo(b) - puntajeAlgoritmo(a)
+  );
+
 const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerCase().includes("alex") || v.titulo?.toLowerCase().includes("short");
   const listaShorts = recomendados.filter(esVerticalAuto);
   const vistasTotales = lista.reduce((a, b) => a + (b.vistas || 0), 0);
@@ -451,16 +539,113 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             </button>
           </div>
 
-          {/* Fila 3: Buscador */}
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar talento, título o @canal..."
-              className="w-full bg-slate-100 border border-slate-200 rounded-full pl-9 pr-4 py-1.5 text-xs outline-none focus:border-blue-500 focus:bg-white"
-            />
-          </div>
+                    {/* Fila 3: Buscador Inteligente con Lupa Móvil y Resultados en Tiempo Real */}
+          {barraVisible && (
+            <form onSubmit={ejecutarBusqueda} className="relative">
+              <div className="relative flex items-center">
+                {!busqueda.trim() && (
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none transition-all duration-200" />
+                )}
+                <input
+                  type="search"
+                  enterKeyHint="search"
+                  value={busqueda}
+                  onFocus={() => setMostrarSugerencias(true)}
+                  onChange={(e) => {
+                    setBusqueda(e.target.value);
+                    setMostrarSugerencias(true);
+                  }}
+                  placeholder="Buscar talento, título o @canal..."
+                  className={`w-full bg-slate-100 border border-slate-200 rounded-full py-2 text-xs outline-none focus:bg-white focus:border-blue-500 transition-all duration-200 ${
+                    busqueda.trim() ? "pl-4 pr-12" : "pl-10 pr-4"
+                  }`}
+                />
+                {busqueda.trim() && (
+                  <button
+                    type="submit"
+                    aria-label="Buscar ahora"
+                    className="absolute right-1.5 p-1.5 rounded-full bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-sm hover:opacity-95 transition-all duration-200"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {mostrarSugerencias && busqueda.trim().length > 0 && (
+                <div className="absolute left-0 right-0 top-11 z-40 bg-white border border-slate-200 rounded-2xl shadow-2xl p-3 space-y-2.5 max-h-80 overflow-y-auto">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 px-1">
+                    <span>{buscandoDb ? "Buscando en RUTF Talentico..." : "Coincidencias y talentos relacionados"}</span>
+                    <button
+                      type="button"
+                      onClick={() => setMostrarSugerencias(false)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+
+                  {canalesDb.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-1">Canales</p>
+                      {canalesDb.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setMostrarSugerencias(false);
+                            setCanalVisitado(c.username);
+                            setTab("canal");
+                          }}
+                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-blue-50 text-left text-xs font-extrabold text-slate-800"
+                        >
+                          <span>{c.username}</span>
+                          <span className="text-[10px] font-bold text-blue-600">Ver canal →</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-1">
+                      Videos encontrados ({resultadosDb.length})
+                    </p>
+                    {resultadosDb.length > 0 ? (
+                      resultadosDb.slice(0, 6).map((v) => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => {
+                            setMostrarSugerencias(false);
+                            abrirVideo(v);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-slate-50 text-left"
+                        >
+                          <div className="w-12 h-8 rounded-lg bg-slate-900 overflow-hidden shrink-0">
+                            {v.miniatura_url ? (
+                              <img src={v.miniatura_url} alt={v.titulo} className="w-full h-full object-cover" />
+                            ) : (
+                              <video src={`${v.video_url}#t=0.5`} preload="metadata" muted playsInline className="w-full h-full object-cover" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-slate-900 truncate">{v.titulo}</p>
+                            <p className="text-[10px] text-slate-500 truncate">{v.creador}</p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      !buscandoDb && (
+                        <p className="text-xs text-slate-500 px-2 py-1">
+                          Presiona Buscar para ver talentos similares recomendados.
+                        </p>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+            </form>
+          )}
+
 
           {/* Fila 4: Pestañas de navegación de video limpias y sin cortarse */}
           <div className="grid grid-cols-2 gap-2 pt-0.5">
@@ -588,6 +773,44 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             </div>
           </div>
     )}
+{canalVisitado && (
+  <div className="mb-6">
+    <div className="mb-3 flex items-center justify-between">
+      <button
+        type="button"
+        onClick={() => setCanalVisitado(null)}
+        className="px-3.5 py-1.5 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-extrabold transition"
+      >
+        ← Volver al inicio
+      </button>
+    </div>
+          <EstudioCanal
+        supabase={supabase}
+        perfil={{
+          id: canalesDb.find((c) => c.username?.toLowerCase() === canalVisitado.toLowerCase())?.id || "",
+          username: canalVisitado,
+          email: "",
+          nombre_canal:
+            canalesDb.find((c) => c.username?.toLowerCase() === canalVisitado.toLowerCase())?.nombre_canal ||
+            canalVisitado,
+          avatar_url:
+            canalesDb.find((c) => c.username?.toLowerCase() === canalVisitado.toLowerCase())?.avatar_url || "",
+        }}
+        videos={lista.filter((v) => v.creador.toLowerCase() === canalVisitado.toLowerCase())}
+        seguidores={conteoSeguidores[canalVisitado] || 0}
+        onActualizarPerfil={() => {}}
+        onAbrirVideo={(v) => {
+          const encontrado = lista.find((item) => item.id === v.id);
+          setCanalVisitado(null);
+          if (encontrado) abrirVideo(encontrado);
+        }}
+        onRecargar={() => {}}
+        onVolver={() => setCanalVisitado(null)}
+        soloLectura={true}
+      />
+
+  </div>
+)}
 
         {tab === "inicio" && (
           <div className="space-y-8">
@@ -737,7 +960,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <div className="text-xs font-black text-orange-400 truncate">
-                          {actual.creador} • {conteoSeguidores[actual.creador] || 0} suscriptores
+                          {actual.creador} • {conteoSeguidores[actual.creador] || 0} Fans
                         </div>
                         <p className="text-sm font-black line-clamp-2 leading-snug">{actual.titulo}</p>
                       </div>

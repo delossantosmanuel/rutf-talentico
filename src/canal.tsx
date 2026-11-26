@@ -211,7 +211,7 @@ onToggleFan,
     e.preventDefault();
     setGuardando(true);
     try {
-      const bioLimpia = bio.trim().slice(0, 160);
+      const bioLimpia = bio.trim().slice(0, 1000);
       const nombreLimpio = nombreCanal.trim() || perfil.username.replace("@", "");
       const { data: actualizado, error } = await supabase
         .from("usuarios_rutf")
@@ -705,38 +705,50 @@ onToggleFan,
 
 
 
-      {modalInfoCanal && (
-        <div
-          onClick={() => setModalInfoCanal(false)}
-          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-           className="w-full max-w-md max-h-[82vh] overflow-y-auto bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-5"
+           {modalInfoCanal && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto flex flex-col">
+          <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setModalInfoCanal(false)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold transition"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Volver</span>
+            </button>
+            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">
+              Información del canal
+            </span>
+            <div className="w-16" />
+          </div>
 
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-900">Información del canal</h3>
-              <button
-                type="button"
-                onClick={() => setModalInfoCanal(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
-              >
-                <X className="w-4 h-4" />
-              </button>
+          <div className="w-full max-w-2xl mx-auto px-5 py-6 flex-1 space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                {nombreCanal || perfil.username}
+              </h3>
+              <p className="text-xs font-bold text-slate-500 mt-0.5">{perfil.username}</p>
             </div>
 
-                      <div className="space-y-3 text-sm text-slate-700">
-              {perfil.bio && (
-                <div className="py-1.5 border-b border-slate-100 space-y-1">
-                  <span className="text-slate-500 font-semibold block">Descripción del canal</span>
-                  <p className="text-slate-800 leading-relaxed whitespace-pre-line">{perfil.bio}</p>
-                </div>
+            <div className="space-y-2 border-b border-slate-200 pb-5">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400 block">
+                Descripción del canal
+              </span>
+              {bio || perfil.bio ? (
+                <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-line break-words">
+                  {bio || perfil.bio}
+                </p>
+              ) : (
+                <p className="text-sm text-slate-400 italic">
+                  Este canal aún no ha agregado una descripción.
+                </p>
               )}
+            </div>
 
-              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+            <div className="space-y-3 text-sm text-slate-700">
+              <div className="flex items-center justify-between py-2 border-b border-slate-100">
                 <span className="text-slate-500 font-semibold">Fecha de creación</span>
-                <span className="font-extrabold text-slate-900">
+                <span className="font-extrabold text-slate-900 text-right">
                   {perfil.username.toLowerCase() === "@rutftalentico"
                     ? "Miembro fundador"
                     : `Se unió el ${new Date(
@@ -749,32 +761,39 @@ onToggleFan,
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+              <div className="flex items-center justify-between py-2 border-b border-slate-100">
                 <span className="text-slate-500 font-semibold">Fans totales</span>
                 <span className="font-extrabold text-slate-900">
                   {seguidores.toLocaleString()}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-1.5">
+              <div className="flex items-center justify-between py-2">
                 <span className="text-slate-500 font-semibold">Visualizaciones totales</span>
                 <span className="font-extrabold text-slate-900">
                   {vistasTotales.toLocaleString()}
                 </span>
               </div>
             </div>
-
-
-            <button
-              type="button"
-              onClick={() => setModalInfoCanal(false)}
-              className="w-full py-2.5 rounded-full bg-slate-900 text-white text-xs font-black"
-            >
-              Cerrar
-            </button>
           </div>
+
+          <footer className="w-full max-w-2xl mx-auto px-5 py-6 border-t border-slate-100 text-center space-y-2">
+            <p className="text-[11px] font-bold text-slate-400">
+              RUTF Talentico © 2026 • Plataforma Global de Talento Original
+            </p>
+            <div className="flex items-center justify-center gap-3 text-xs font-extrabold text-blue-600">
+              <a href="/privacidad" target="_blank" rel="noreferrer" className="hover:underline">
+                Política de Privacidad
+              </a>
+              <span className="text-slate-300">•</span>
+              <a href="/terminos" target="_blank" rel="noreferrer" className="hover:underline">
+                Términos de Uso
+              </a>
+            </div>
+          </footer>
         </div>
       )}
+
             {videoAEliminar && (
         <div
           onClick={() => !eliminandoVideo && setVideoAEliminar(null)}

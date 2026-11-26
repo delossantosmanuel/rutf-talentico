@@ -37,6 +37,12 @@ const [perfilVisitadoData, setPerfilVisitadoData] = useState<any>(null);
 const [totalUsuariosPlataforma, setTotalUsuariosPlataforma] = useState<number | null>(null);
 const [calidadVideo, setCalidadVideo] = useState<"Auto" | "1080p" | "720p" | "480p" | "360p" | "144p">("Auto");
 const [avisoCalidad, setAvisoCalidad] = useState<string>("");
+  const [cargando, setCargando] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setCargando(false), 1100);
+    return () => clearTimeout(t);
+  }, []);
+
 
 useEffect(() => {
   if (!canalVisitado) {
@@ -441,6 +447,25 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
   const seguidoresTotales = Object.values(conteoSeguidores).reduce((a, b) => a + (b || 0), 0);
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-900">
+          {cargando && (
+        <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center">
+          <div className="fixed top-0 left-0 right-0 h-1 bg-slate-800 overflow-hidden">
+            <div className="h-full w-2/3 bg-gradient-to-r from-emerald-400 via-blue-500 to-emerald-400 animate-pulse" />
+          </div>
+          <img
+            src="/logo-rt.png"
+            alt="RUTF Talentico"
+            className="w-24 h-24 rounded-3xl shadow-2xl border border-white/10 animate-pulse"
+          />
+          <p className="mt-4 text-sm font-black tracking-wide text-white">
+            RUTF Talentico
+          </p>
+          <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+            Tu talento vale, paso a paso
+          </p>
+        </div>
+      )}
+
               {mostrarAuth && (
           <AuthModal
             supabase={supabase}
@@ -1311,7 +1336,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
 
 
-                  {tab === "canal" && usuario && (
+             {!canalVisitado && tab === "canal" && usuario && (
           <EstudioCanal
             supabase={supabase}
             perfil={usuario}

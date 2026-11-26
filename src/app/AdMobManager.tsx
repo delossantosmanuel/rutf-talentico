@@ -2,14 +2,15 @@
 
 import { useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
+
 import {
   AdMob,
   BannerAdOptions,
   BannerAdSize,
   BannerAdPosition,
   AdOptions,
-  RewardAdOptions,
-  RewardAdPluginEvents,
+  RewardInterstitialAdOptions,
+  RewardInterstitialAdPluginEvents,
 } from "@capacitor-community/admob";
 
 // CAMBIA A false JUSTO ANTES DE GENERAR EL PAQUETE FINAL PARA GOOGLE PLAY
@@ -77,28 +78,37 @@ export async function mostrarAnuncioRecompensado(onRecompensaGanada: () => void)
 
   try {
     let recompensaOtorgada = false;
-    const rewardListener = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
-      recompensaOtorgada = true;
-      onRecompensaGanada();
-    });
+    const rewardListener = await AdMob.addListener(
+      RewardInterstitialAdPluginEvents.Rewarded,
+      () => {
+        recompensaOtorgada = true;
+        onRecompensaGanada();
+      }
+    );
 
     const cerradoPromesa = new Promise<void>(async (resolve) => {
-      const dismissListener = await AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
-        dismissListener.remove();
-        resolve();
-      });
-      const failedListener = await AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => {
-        failedListener.remove();
-        resolve();
-      });
+      const dismissListener = await AdMob.addListener(
+        RewardInterstitialAdPluginEvents.Dismissed,
+        () => {
+          dismissListener.remove();
+          resolve();
+        }
+      );
+      const failedListener = await AdMob.addListener(
+        RewardInterstitialAdPluginEvents.FailedToShow,
+        () => {
+          failedListener.remove();
+          resolve();
+        }
+      );
     });
 
-    const opcionesReward: RewardAdOptions = {
+    const opcionesReward: RewardInterstitialAdOptions = {
       adId: IDS_ADMOB.recompensado,
       isTesting: MODO_PRUEBA,
     };
-    await AdMob.prepareRewardVideoAd(opcionesReward);
-    await AdMob.showRewardVideoAd();
+    await AdMob.prepareRewardInterstitialAd(opcionesReward);
+    await AdMob.showRewardInterstitialAd();
     await cerradoPromesa;
     await rewardListener.remove();
     return recompensaOtorgada;

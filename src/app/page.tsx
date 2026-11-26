@@ -628,6 +628,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
            <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-md pb-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col gap-2">
           {/* Fila 1: Logo a la izquierda + Entrar / Crear Canal compacto arriba a la derecha */}
+          {(barraVisible || tab === "monetizar" || tab === "subir" || !!videoActivo || tab === "shorts") && (
           <div className="flex items-center justify-between gap-2">
            <div className="flex items-center gap-2 select-none">
   <button
@@ -691,7 +692,22 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         </span>
                       </div>
                     ) : (
-                      <p className="text-[9px] font-bold text-slate-400">Tu talento vale, paso a paso</p>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTab("monetizar");
+                            setVideoActivo(null);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 text-[10px] font-extrabold border border-amber-300 transition cursor-pointer"
+                        >
+                          <DollarSign className="w-3 h-3 text-amber-600" />
+                          <span>Monetización</span>
+                        </span>
+                      </div>
+
                     )}
 
                   </div>
@@ -701,7 +717,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
             <div className="flex items-center gap-2 shrink-0">
               
-              {(videoActivo || tab === "shorts" || tab === "monetizar") && (
+                       {tab !== "subir" && (
                 <button
                   type="button"
                   onClick={abrirSubir}
@@ -711,6 +727,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   <span>Subir</span>
                 </button>
               )}
+
+              
 
           
               <CampanaNotificaciones
@@ -791,35 +809,11 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         
 
 
-         {!videoActivo && tab !== "shorts" && tab !== "monetizar" && tab !== "subir" && (
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => { setTab("monetizar"); setVideoActivo(null); }}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full text-xs font-extrabold border transition ${
-                tab === "monetizar"
-                  ? "bg-amber-500 text-white border-amber-600"
-                  : "bg-amber-50/90 hover:bg-amber-100 text-amber-800 border-amber-300"
-              }`}
-            >
-              <DollarSign className={`w-4 h-4 ${tab === "monetizar" ? "text-white" : "text-amber-600"}`} />
-              <span>Monetización</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={abrirSubir}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white text-xs font-extrabold shadow-sm transition"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Subir Video</span>
-            </button>
-          </div>
         )}
 
 
                     {/* Fila 3: Buscador Inteligente con Lupa Móvil y Resultados en Tiempo Real */}
-         {barraVisible && tab !== "monetizar" && tab !== "subir" && (
+         {tab !== "monetizar" && tab !== "subir" && (
 
             <form onSubmit={ejecutarBusqueda} className="relative">
               <div className="relative flex items-center">
@@ -1448,6 +1442,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   )}
 
                   <div className="absolute inset-x-0 bottom-12 bg-gradient-to-t from-black/95 via-black/75 to-transparent p-4 text-white space-y-2.5">
+
+
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <div className="text-xs font-black text-orange-400 truncate">

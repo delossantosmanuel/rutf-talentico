@@ -668,6 +668,18 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+                            {(tab === "monetizar" || tab === "subir") && (
+                <button
+                  type="button"
+                  onClick={() => { setTab("inicio"); setVideoActivo(null); }}
+                  className="px-2.5 py-1 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-extrabold inline-flex items-center gap-1 border border-blue-200 transition"
+                >
+                 <span>←</span>
+
+                  <span>Inicio</span>
+                </button>
+              )}
+
               {(videoActivo || tab === "shorts" || tab === "monetizar") && (
                 <button
                   type="button"

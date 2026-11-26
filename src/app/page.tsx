@@ -756,18 +756,50 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             </div>
 
           </div>
-            {(tab === "monetizar" || tab === "subir") && (
-              <div className="flex justify-end -mt-1">
-                <button
-                  type="button"
-                  onClick={() => { setTab("inicio"); setVideoActivo(null); }}
-                  className="px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-extrabold inline-flex items-center gap-1 border border-slate-200 transition"
-                >
-                  <span>←</span>
-                  <span>Inicio</span>
-                </button>
-              </div>
-            )}
+                               {tab === "monetizar" ? (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold border border-amber-300">
+                          <DollarSign className="w-3 h-3 text-amber-600" />
+                          <span>Monetización</span>
+                        </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTab("inicio");
+                            setVideoActivo(null);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-extrabold border border-blue-200 transition cursor-pointer"
+                        >
+                          <span>Inicio</span>
+                          <span>→</span>
+                        </span>
+                      </div>
+                    ) : tab === "subir" ? (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
+                          <PlusCircle className="w-3 h-3 text-emerald-600" />
+                          <span>Subir Video</span>
+                        </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTab("inicio");
+                            setVideoActivo(null);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-extrabold border border-blue-200 transition cursor-pointer"
+                        >
+                          <span>Inicio</span>
+                          <span>→</span>
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="text-[9px] font-bold text-slate-400">Tu talento vale, paso a paso</p>
+                    )}
+
 
          {!videoActivo && tab !== "shorts" && tab !== "monetizar" && tab !== "subir" && (
           <div className="flex items-center justify-between gap-2">

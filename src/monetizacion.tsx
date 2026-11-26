@@ -13,6 +13,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import PantallaPagosPaypal from "./pagosPaypal";
+import PanelAdminPagos, { CORREO_ADMIN_OFICIAL } from "./adminPagos";
+
 
 type Props = {
   supabase: any;
@@ -81,6 +83,11 @@ export default function PanelMonetizacion({
   const [cargandoEstado, setCargandoEstado] = useState(false);
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
   const [mostrarFormularioPaypal, setMostrarFormularioPaypal] = useState(false);
+    const [mostrarPanelAdmin, setMostrarPanelAdmin] = useState(false);
+  const esAdminOficial =
+    Boolean(usuario?.email) &&
+    usuario!.email.trim().toLowerCase() === CORREO_ADMIN_OFICIAL;
+
 
   const [fansReales, setFansReales] = useState<number>(seguidoresCanal || 0);
   const [vistasReales, setVistasReales] = useState<number>(vistasCalificadas15s || 0);
@@ -270,6 +277,16 @@ export default function PanelMonetizacion({
       claseColumna: "col-span-2 sm:col-span-1",
     },
   ];
+    if (mostrarPanelAdmin && esAdminOficial) {
+    return (
+      <PanelAdminPagos
+        supabase={supabase}
+        usuario={usuario}
+        onVolver={() => setMostrarPanelAdmin(false)}
+      />
+    );
+  }
+
   if (mostrarFormularioPaypal && usuario && cumpleRequisitos) {
     return (
       <PantallaPagosPaypal
@@ -299,6 +316,21 @@ export default function PanelMonetizacion({
         <h2 className="text-lg sm:text-2xl font-black leading-snug">Monetiza tu talento original y genera ingresos reales</h2>
         <p className="text-[11px] sm:text-sm text-blue-100/80 mt-1 leading-relaxed">Al completar los 3 requisitos del canal, activamos tus pagos directos por PayPal.</p>
       </div>
+      {esAdminOficial && (
+        <div className="bg-slate-950 text-white rounded-2xl p-3.5 flex items-center justify-between gap-2 shadow">
+          <div className="text-xs font-extrabold">
+            <span className="text-amber-400 block text-[10px] uppercase tracking-wider">Acceso Oficial Fundador</span>
+            <span>Solicitudes de Retiro y Pagos PayPal</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMostrarPanelAdmin(true)}
+            className="px-3.5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black shrink-0 transition"
+          >
+            Revisar Solicitudes →
+          </button>
+        </div>
+      )}
 
       <div className="space-y-2.5">
         <div className="flex items-center justify-between gap-2 px-0.5">

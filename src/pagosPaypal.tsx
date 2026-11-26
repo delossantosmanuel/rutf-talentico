@@ -98,9 +98,26 @@ export default function PantallaPagosPaypal({ supabase, usuario, onVolver }: Pro
     if (Array.isArray(retiros)) setHistorialRetiros(retiros);
   }, [supabase, usuario.id]);
 
-  useEffect(() => {
+   useEffect(() => {
     cargarDatosPagos();
-  }, [cargarDatosPagos]);
+    const canal = supabase
+      .channel(`pagos-creador-${usuario.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "retiros_paypal_rutf", filter: `usuario_id=eq.${usuario.id}` },
+        () => cargarDatosPagos()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "configuracion_pagos_rutf", filter: `usuario_id=eq.${usuario.id}` },
+        () => cargarDatosPagos()
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(canal);
+    };
+  }, [cargarDatosPagos, supabase, usuario.id]);
+
   const enviarCodigoSms = async () => {
     setMensajeSistema(null);
     const limpio = telefono.replace(/\D/g, "");
@@ -471,24 +488,53 @@ export default function PantallaPagosPaypal({ supabase, usuario, onVolver }: Pro
           ) : (
             <div className="divide-y divide-slate-100">
               {historialRetiros.map((r) => (
-                <div key={r.id} className="py-2.5 flex items-center justify-between gap-2 text-xs">
-                  <div>
-                    <p className="font-black text-slate-900">${Number(r.monto_usd).toFixed(2)} USD</p>
-                    <p className="text-[11px] text-slate-500">{r.correo_paypal} • {new Date(r.creado_en).toLocaleDateString()}</p>
+                                <div key={r.id} className="py-3 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="font-black text-slate-900">${Number(r.monto_usd).toFixed(2)} USD</p>
+                      <p className="text-[11px] text-slate-500">
+                        {r.correo_paypal} • {new Date(r.creado_en).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-black inline-flex items-center gap-1 ${
+                        r.estado === "pagado"
+                          ? "bg-emerald-50 text-[#16A34A]"
+                          : r.estado === "revisada"
+                          ? "bg-blue-50 text-blue-700"
+                          : r.estado === "rechazado"
+                          ? "bg-rose-50 text-rose-600"
+                          : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {r.estado === "pagado" ? (
+                        <CheckCircle2 className="w-3 h-3" />
+                      ) : r.estado === "rechazado" ? (
+                        <XCircle className="w-3 h-3" />
+                      ) : (
+                        <Clock className="w-3 h-3" />
+                      )}
+                      <span>
+                        {r.estado === "pagado"
+                          ? "Pagado"
+                          : r.estado === "revisada"
+                          ? "Revisada y Aceptada"
+                          : r.estado === "rechazado"
+                          ? "Rechazado"
+                          : "En revisión"}
+                      </span>
+                    </span>
                   </div>
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-black inline-flex items-center gap-1 ${
-                      r.estado === "pagado"
-                        ? "bg-emerald-50 text-[#16A34A]"
-                        : r.estado === "rechazado"
-                        ? "bg-rose-50 text-rose-600"
-                        : "bg-amber-50 text-amber-700"
-                    }`}
-                  >
-                    {r.estado === "pagado" ? <CheckCircle2 className="w-3 h-3" /> : r.estado === "rechazado" ? <XCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                    <span>{r.estado === "pagado" ? "Pagado" : r.estado === "rechazado" ? "Rechazado" : "En revisión"}</span>
-                  </span>
+                  {r.plazo_estimado && (
+                    <p className="text-[11px] font-bold text-slate-600">Plazo: {r.plazo_estimado}</p>
+                  )}
+                  {r.motivo_admin && (
+                    <p className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1.5">
+                      {r.motivo_admin}
+                    </p>
+                  )}
                 </div>
+
               ))}
             </div>
           )}

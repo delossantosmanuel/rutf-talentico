@@ -13,6 +13,11 @@ import PanelMonetizacion from "../monetizacion";
 import { iniciarNotificacionesCreadores } from "../notificacionesNativas";
 import { App as CapApp } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
+import {
+  controlarVisibilidadBanner,
+  mostrarIntersticialAlSalirVideo,
+  mostrarAnuncioRecompensado,
+} from "./AdMobManager";
 
 const SUPABASE_URL = "https://" + "macovqecajhwhntlpkta" + ".supabase.co";
 const SUPABASE_KEY = "sb_publishable_OuFfTHlGkS0jKmCkwh7axw_eDS0JXh7";
@@ -163,6 +168,44 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
     const [indiceShort, setIndiceShort] = useState(0);
   const [mostrarGuiaSwipe, setMostrarGuiaSwipe] = useState(true);
   const [toqueInicioY, setToqueInicioY] = useState<number | null>(null);
+    const videoAnteriorRef = useRef<Video | null>(null);
+  const [apoyandoVideo, setApoyandoVideo] = useState(false);
+
+  useEffect(() => {
+    controlarVisibilidadBanner(tab === "monetizar");
+  }, [tab]);
+
+  useEffect(() => {
+    if (videoAnteriorRef.current && !videoActivo) {
+      mostrarIntersticialAlSalirVideo();
+    }
+    videoAnteriorRef.current = videoActivo;
+  }, [videoActivo]);
+
+  const apoyarCreadorConAnuncio = async (v: Video) => {
+    if (apoyandoVideo) return;
+    setApoyandoVideo(true);
+    try {
+      await mostrarAnuncioRecompensado(async () => {
+        await supabase.from("apoyos_recompensados_rutf").insert({
+          video_id: v.id,
+          creador_username: v.creador,
+          espectador_username: usuario?.username || "Invitado",
+        });
+        await supabase.from("notificaciones").insert({
+          destinatario_username: v.creador,
+          actor_username: usuario?.username || "Un fan",
+          tipo: "monetizacion",
+          mensaje: `${usuario?.username || "Un espectador"} vio un anuncio recompensado para apoyar tu video "${v.titulo}".`,
+          leida: false,
+        });
+        alert(`¡Gracias por apoyar a ${v.creador}! Tu apoyo fue registrado.`);
+      });
+    } finally {
+      setApoyandoVideo(false);
+    }
+  };
+
 
   const [nuevoCom, setNuevoCom] = useState("");
     const [abiertoComShort, setAbiertoComShort] = useState(false);
@@ -1130,6 +1173,16 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     <ShieldAlert className="w-4 h-4" /> No me gustó ({videoActivo.dislikes || 0})
                   </button>
                   <button onClick={() => setVideoCompartir(videoActivo)} className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Share2 className="w-4 h-4 text-blue-600" /> Compartir</button>
+                                  <button
+                  type="button"
+                  disabled={apoyandoVideo}
+                  onClick={() => apoyarCreadorConAnuncio(videoActivo)}
+                  className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3.5 py-2 rounded-full text-xs font-black transition"
+                >
+                  <Award className="w-4 h-4 text-amber-600" />
+                  <span>{apoyandoVideo ? "Cargando anuncio..." : "Apoyar Talentico"}</span>
+                </button>
+
                   <button onClick={abrirSubir} className="flex items-center gap-1.5 bg-orange-50 text-orange-700 border border-orange-200 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Scissors className="w-4 h-4" /> Recrear Vertical</button>
                   <button onClick={() => setVideoActivo(null)} className="text-xs font-bold bg-slate-100 text-slate-500 px-3 py-2 rounded-xl cursor-pointer">Cerrar</button>
                                   </div>
@@ -1302,7 +1355,9 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             <section>
               <h3 className="font-extrabold mb-3 text-blue-600">Recomendados para Ti</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {recomendados.filter(v => v.tipo === "largo").map(v => (
+          {recomendados.filter(v => v.tipo === "largo").map((v, idx) => (
+  <React.Fragment key={v.id}>
+
                   <div key={v.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                                       <div onClick={() => abrirVideo(v)} className="relative aspect-video bg-slate-900 flex items-center justify-center cursor-pointer overflow-hidden">
                     {v.miniatura_url ? (
@@ -1351,6 +1406,31 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                       </div>
                     </div>
                   </div>
+                      {(idx + 1) % 6 === 0 && (
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider">
+            Patrocinado • AdMob
+          </span>
+          <span className="text-[10px] text-slate-400 font-semibold">RUTF Ads</span>
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-black text-slate-900">Impulsa tu talento y monetiza tus videos</p>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Espacio publicitario nativo integrado en RUTF Talentico. Los ingresos ayudan a financiar pagos directos a creadores.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setTab("monetizar")}
+          className="w-full py-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-black transition"
+        >
+          Conocer Programa de Creadores →
+        </button>
+      </div>
+    )}
+  </React.Fragment>
+
                 ))}
               </div>
             </section>

@@ -1,17 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   DollarSign,
-  Users,
-  Eye,
   CheckCircle2,
-  ShieldCheck,
-  Lock,
-  Send,
-  X,
-  RefreshCw,
   Clock,
+  Send,
+  RefreshCw,
+  Lock,
   HelpCircle,
   ChevronDown,
 } from "lucide-react";
@@ -32,33 +28,34 @@ type Props = {
 };
 
 const META_SEGUIDORES = 100;
-const META_VISTAS_15S = 1000;
+const META_VISTAS_16S = 1000;
+const META_VIDEOS_ORIGINALES = 5;
 
 const PREGUNTAS_FRECUENTES = [
   {
-    pregunta: "¿Qué cuenta como una vista calificada de 15 segundos?",
+    pregunta: "¿Qué cuenta como una vista calificada (+16s)?",
     respuesta:
-      "Únicamente las reproducciones orgánicas de usuarios reales que permanecen viendo tu video de forma continua durante al menos 15 segundos. Las vistas rápidas de pocos segundos no suman para el umbral de monetización.",
+      "Únicamente las reproducciones orgánicas de usuarios reales que permanecen viendo tu video de forma continua durante más de 16 segundos.",
   },
   {
     pregunta: "¿Qué contenido se necesita para ser aprobado?",
     respuesta:
-      "Tus videos deben ser de tu propia creación o talento original (música, arte, comedia, deporte, tutoriales, cocina o entretenimiento apto para todo público), sin marcas de agua de otras redes ni material con derechos de autor de terceros.",
+      "Debes contar con al menos 5 videos originales de tu propia creación o talento. No se acepta contenido copiado ni resubido sin autorización.",
   },
   {
     pregunta: "¿Cómo funcionan los pagos por PayPal?",
     respuesta:
-      "Al alcanzar los 100 Fans reales y las 1,000 vistas calificadas de 15 segundos, se desbloquea el formulario para vincular tu correo de PayPal, tu nombre completo y tu número de teléfono de contacto. Los pagos se procesan de forma mensual una vez superado el mínimo de retiro.",
+      "Al alcanzar los 100 Fans reales, 1,000 vistas calificadas (+16s) y 5 videos originales, se desbloquea el botón para vincular tu correo de PayPal.",
   },
   {
     pregunta: "¿Cuánto tarda la revisión cuando cumplo los requisitos?",
     respuesta:
-      "Nuestro equipo editorial revisa la autenticidad de tu audiencia y la originalidad de tus videos en un plazo habitual de 48 a 72 horas hábiles tras enviar tu solicitud.",
+      "Nuestro equipo revisa la autenticidad de tu audiencia y tus videos en un plazo de 24 a 72 horas hábiles tras vincular tu cuenta.",
   },
   {
     pregunta: "¿Qué ocurre si se detectan bots o contenido resubido?",
     respuesta:
-      "Cualquier intento de manipulación artificial de Fans, vistas automatizadas o resubida de videos ajenos conlleva el rechazo o suspensión permanente del programa de monetización.",
+      "Cualquier manipulación artificial de Fans, vistas automatizadas o resubida de videos ajenos conlleva la suspensión permanente de la monetización.",
   },
 ];
 
@@ -69,7 +66,6 @@ export default function PanelMonetizacion({
   vistasCalificadas15s,
   onAbrirAuth,
   onRefrescarMetricas,
-  onCerrar,
 }: Props) {
   const [nombreReal, setNombreReal] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -80,48 +76,107 @@ export default function PanelMonetizacion({
   const [solicitudExistente, setSolicitudExistente] = useState<any>(null);
   const [cargandoEstado, setCargandoEstado] = useState(false);
   const [faqAbierta, setFaqAbierta] = useState<number | null>(0);
+  const [mostrarFormularioPaypal, setMostrarFormularioPaypal] = useState(false);
 
-  const pctSeguidores = Math.min(100, Math.round((seguidoresCanal / META_SEGUIDORES) * 100));
-  const pctVistas = Math.min(100, Math.round((vistasCalificadas15s / META_VISTAS_15S) * 100));
-  const cumpleRequisitos =
-    seguidoresCanal >= META_SEGUIDORES && vistasCalificadas15s >= META_VISTAS_15S;
+  const [fansReales, setFansReales] = useState<number>(seguidoresCanal || 0);
+  const [vistasReales, setVistasReales] = useState<number>(vistasCalificadas15s || 0);
+  const [videosOriginales, setVideosOriginales] = useState<number>(0);
 
-  const manejarActualizar = () => {
+  useEffect(() => {
+    setFansReales((prev) => Math.max(prev, seguidoresCanal || 0));
+  }, [seguidoresCanal]);
+
+  useEffect(() => {
+    setVistasReales((prev) => Math.max(prev, vistasCalificadas15s || 0));
+  }, [vistasCalificadas15s]);
+
+  const cargarMetricasReales = useCallback(async () => {
+    if (!usuario) {
+      setFansReales(0);
+      setVistasReales(0);
+      setVideosOriginales(0);
+      return;
+    }
+
+    try {
+      const [{ count: totalFans }, { data: videosUsuario }, { count: totalVistasTabla }] =
+        await Promise.all([
+          supabase
+            .from("suscripciones_canal")
+            .select("*", { count: "exact", head: true })
+            .ilike("canal_username", usuario.username),
+          supabase
+            .from("videos")
+            .select("id,vistas")
+            .ilike("autor", usuario.username),
+          supabase
+            .from("vistas_calificadas")
+            .select("*", { count: "exact", head: true })
+            .ilike("autor_canal", usuario.username),
+        ]);
+
+      const cantVideos = Array.isArray(videosUsuario) ? videosUsuario.length : 0;
+      const sumaVistasVideos = Array.isArray(videosUsuario)
+        ? videosUsuario.reduce((acc: number, v: any) => acc + Number(v.vistas || 0), 0)
+        : 0;
+
+      setFansReales(Math.max(seguidoresCanal || 0, Number(totalFans || 0)));
+      setVistasReales(
+        Math.max(vistasCalificadas15s || 0, Number(totalVistasTabla || 0), sumaVistasVideos)
+      );
+      setVideosOriginales(cantVideos);
+    } catch {
+      setFansReales(seguidoresCanal || 0);
+      setVistasReales(vistasCalificadas15s || 0);
+    }
+  }, [supabase, usuario, seguidoresCanal, vistasCalificadas15s]);
+
+  const fansCompletado = fansReales >= META_SEGUIDORES;
+  const vistasCompletado = vistasReales >= META_VISTAS_16S;
+  const videosCompletado = videosOriginales >= META_VIDEOS_ORIGINALES;
+  const cumpleRequisitos = fansCompletado && vistasCompletado && videosCompletado;
+
+  const manejarActualizar = async () => {
     setActualizando(true);
     setActualizadoOk(false);
     onRefrescarMetricas?.();
+    await cargarMetricasReales();
     setTimeout(() => {
       setActualizando(false);
       setActualizadoOk(true);
       setTimeout(() => setActualizadoOk(false), 2000);
-    }, 550);
+    }, 400);
   };
 
   useEffect(() => {
     if (!usuario) return;
     onRefrescarMetricas?.();
+    cargarMetricasReales();
     const intervalo = setInterval(() => {
       onRefrescarMetricas?.();
-    }, 30 * 60 * 1000);
-
-    const verificar = async () => {
-      setCargandoEstado(true);
-      try {
-        const { data } = await supabase
-          .from("solicitudes_monetizacion")
-          .select("*")
-          .eq("usuario_id", usuario.id)
-          .order("creado_en", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (data) setSolicitudExistente(data);
-      } finally {
-        setCargandoEstado(false);
-      }
-    };
-    verificar();
+      cargarMetricasReales();
+    }, 30000);
     return () => clearInterval(intervalo);
-  }, [usuario]);
+  }, [usuario, onRefrescarMetricas, cargarMetricasReales]);
+
+  useEffect(() => {
+    if (!usuario) {
+      setSolicitudExistente(null);
+      return;
+    }
+    setCargandoEstado(true);
+    supabase
+      .from("solicitudes_monetizacion")
+      .select("*")
+      .eq("usuario_id", usuario.id)
+      .order("creado_en", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }: any) => {
+        if (data) setSolicitudExistente(data);
+        setCargandoEstado(false);
+      });
+  }, [usuario, supabase]);
 
   const enviarSolicitud = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,8 +198,8 @@ export default function PanelMonetizacion({
           pais: telefono.trim(),
           metodo_pago: "PayPal",
           cuenta_pago: correoPaypal.trim(),
-          seguidores_al_solicitar: seguidoresCanal,
-          vistas_al_solicitar: vistasCalificadas15s,
+          seguidores_al_solicitar: fansReales,
+          vistas_al_solicitar: vistasReales,
           estado: "en_revision",
         })
         .select("*")
@@ -155,123 +210,89 @@ export default function PanelMonetizacion({
         return;
       }
       setSolicitudExistente(data);
+      setMostrarFormularioPaypal(false);
     } finally {
       setEnviando(false);
     }
   };
+  const tarjetasRequisitos = [
+    { numero: 1, titulo: "Fans reales", actual: fansReales, meta: META_SEGUIDORES, completado: fansCompletado },
+    { numero: 2, titulo: "Vistas calificadas (+16s)", actual: vistasReales, meta: META_VISTAS_16S, completado: vistasCompletado },
+    { numero: 3, titulo: "Videos originales", actual: videosOriginales, meta: META_VIDEOS_ORIGINALES, completado: videosCompletado },
+  ];
+
   return (
     <div className="max-w-3xl mx-auto pb-16 space-y-6">
-      <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white rounded-3xl p-6 shadow-xl border border-blue-900/40 relative">
-        {onCerrar && (
-          <button
-            type="button"
-            onClick={onCerrar}
-            aria-label="Cerrar monetización"
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-
+      <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white rounded-3xl p-6 shadow-xl">
         <div className="flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-wider mb-2">
           <DollarSign className="w-4 h-4" />
           <span>Programa de Creadores RUTF Talentico</span>
         </div>
-
         <h2 className="text-2xl sm:text-3xl font-black leading-tight">
           Monetiza tu talento original y genera ingresos reales
         </h2>
         <p className="text-xs sm:text-sm text-blue-100/80 mt-2 leading-relaxed">
-          Al alcanzar los requisitos de audiencia orgánica, activamos tus pagos directos por
-          PayPal por los anuncios reproducidos en tus videos originales.
+          Al completar los 3 requisitos de elegibilidad del canal, activamos tus pagos directos por PayPal por los anuncios reproducidos en tus videos originales.
         </p>
       </div>
 
-      {/* Requisitos en tiempo real */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-5">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-blue-600" />
-            <span>Progreso de Elegibilidad del Canal</span>
-          </h3>
-
-          {onRefrescarMetricas && (
-            <button
-              type="button"
-              onClick={manejarActualizar}
-              disabled={actualizando}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold transition ${
-                actualizadoOk
-                  ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-              }`}
-            >
-              <RefreshCw className={`w-3 h-3 ${actualizando ? "animate-spin" : ""}`} />
-              <span>{actualizadoOk ? "Actualizado" : "Actualizar"}</span>
-            </button>
-          )}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <h3 className="text-sm sm:text-base font-black text-slate-900">Requisitos de Elegibilidad en Tiempo Real</h3>
+          <button
+            type="button"
+            onClick={manejarActualizar}
+            disabled={actualizando}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold transition ${
+              actualizadoOk
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                : "bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-2xs"
+            }`}
+          >
+            <RefreshCw className={`w-3 h-3 ${actualizando ? "animate-spin" : ""}`} />
+            <span>{actualizadoOk ? "Actualizado" : "Actualizar"}</span>
+          </button>
         </div>
 
-        {/* Barra 1: Fans reales */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-extrabold">
-            <span className="flex items-center gap-1.5 text-slate-700">
-              <Users className="w-4 h-4 text-blue-600" />
-              <span>Fans reales del canal</span>
-            </span>
-            <span className="text-slate-900">
-              {seguidoresCanal.toLocaleString()} / {META_SEGUIDORES.toLocaleString()} ({pctSeguidores}%)
-            </span>
-          </div>
-          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-500"
-              style={{ width: `${pctSeguidores}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Barra 2: Vistas calificadas >= 15 segundos */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-extrabold">
-            <span className="flex items-center gap-1.5 text-slate-700">
-              <Eye className="w-4 h-4 text-emerald-600" />
-              <span>Vistas calificadas (≥ 15 segundos)</span>
-            </span>
-            <span className="text-slate-900">
-              {vistasCalificadas15s.toLocaleString()} / {META_VISTAS_15S.toLocaleString()} ({pctVistas}%)
-            </span>
-          </div>
-          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-500"
-              style={{ width: `${pctVistas}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-slate-500 leading-relaxed">
-            Solo las reproducciones reales que superan los <strong>15 segundos continuos</strong> suman para el programa de monetización.
-          </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          {tarjetasRequisitos.map((item) => (
+            <div key={item.numero} className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between gap-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200/80 text-slate-800 text-xs font-black flex items-center justify-center">
+                  {item.numero}
+                </span>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border ${
+                    item.completado
+                      ? "bg-emerald-50 text-[#16A34A] border-emerald-200"
+                      : "bg-slate-50 text-slate-500 border-slate-200"
+                  }`}
+                >
+                  {item.completado ? "Completado" : "En progreso"}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-slate-500">{item.titulo}</p>
+                <p className="text-2xl sm:text-[26px] font-black tracking-tight text-slate-900">
+                  <span className="text-[#16A34A]">{item.actual.toLocaleString()}</span>{" "}
+                  <span className="text-slate-400 font-bold text-lg">/</span>{" "}
+                  <span className="text-slate-800 text-xl sm:text-2xl">{item.meta.toLocaleString()}</span>
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Sección de Pagos PayPal */}
       {!usuario ? (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 text-center space-y-3 shadow-sm">
-          <p className="text-sm font-bold text-slate-700">
-            Inicia sesión con tu canal para consultar tu progreso y habilitar tus pagos por PayPal.
-          </p>
-          <button
-            type="button"
-            onClick={onAbrirAuth}
-            className="px-6 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow"
-          >
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 text-center space-y-3 shadow-2xs">
+          <p className="text-sm font-bold text-slate-700">Inicia sesión con tu canal para sincronizar tus requisitos y habilitar tus pagos por PayPal.</p>
+          <button type="button" onClick={onAbrirAuth} className="px-6 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow">
             Iniciar Sesión / Crear Canal
           </button>
         </div>
       ) : cargandoEstado ? (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 text-center text-xs font-bold text-slate-500">
-          Verificando estado de monetización...
-        </div>
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 text-center text-xs font-bold text-slate-500">Verificando estado de monetización...</div>
       ) : solicitudExistente ? (
         <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 space-y-2">
           <div className="flex items-center gap-2 text-emerald-800 font-black text-sm">
@@ -279,106 +300,57 @@ export default function PanelMonetizacion({
             <span>Cuenta PayPal Registrada para Pagos</span>
           </div>
           <p className="text-xs text-emerald-900/80 leading-relaxed">
-            Tu canal <strong>{usuario.username}</strong> está en revisión editorial para verificar
-            originalidad y cumplimiento de políticas. Correo PayPal vinculado:{" "}
-            <strong>{solicitudExistente.cuenta_pago}</strong>.
+            Tu canal <strong>{usuario.username}</strong> está en revisión editorial. Correo PayPal vinculado: <strong>{solicitudExistente.cuenta_pago}</strong>.
           </p>
         </div>
-      ) : cumpleRequisitos ? (
-        <form
-          onSubmit={enviarSolicitud}
-          className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4"
-        >
+      ) : cumpleRequisitos && mostrarFormularioPaypal ? (
+        <form onSubmit={enviarSolicitud} className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xs space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-base font-black text-slate-900">
-              Configurar Pagos por PayPal
-            </h3>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">
-              Habilitado
-            </span>
+            <h3 className="text-base font-black text-slate-900">Configurar Pagos por PayPal</h3>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-[#16A34A] text-[11px] font-black">Habilitado</span>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-extrabold text-slate-700 mb-1">
-                Nombre completo del titular
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Ej. Juan Pérez"
-                value={nombreReal}
-                onChange={(e) => setNombreReal(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl"
-              />
+              <label className="block text-xs font-extrabold text-slate-700 mb-1">Nombre completo del titular</label>
+              <input type="text" required placeholder="Ej. Juan Pérez" value={nombreReal} onChange={(e) => setNombreReal(e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl" />
             </div>
             <div>
-              <label className="block text-xs font-extrabold text-slate-700 mb-1">
-                Número de teléfono (con código de país)
-              </label>
-              <input
-                type="tel"
-                required
-                placeholder="Ej. +1 809 555 1234"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl"
-              />
+              <label className="block text-xs font-extrabold text-slate-700 mb-1">Número de teléfono (con código de país)</label>
+              <input type="tel" required placeholder="Ej. +1 809 555 1234" value={telefono} onChange={(e) => setTelefono(e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl" />
             </div>
           </div>
-
           <div>
-            <label className="block text-xs font-extrabold text-slate-700 mb-1">
-              Correo electrónico de PayPal
-            </label>
-            <input
-              type="email"
-              required
-              placeholder="tu-correo@paypal.com"
-              value={correoPaypal}
-              onChange={(e) => setCorreoPaypal(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl"
-            />
+            <label className="block text-xs font-extrabold text-slate-700 mb-1">Correo electrónico de PayPal</label>
+            <input type="email" required placeholder="tu-correo@paypal.com" value={correoPaypal} onChange={(e) => setCorreoPaypal(e.target.value)} className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl" />
           </div>
-
-          <button
-            type="submit"
-            disabled={enviando}
-            className="w-full py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black inline-flex items-center justify-center gap-2 shadow"
-          >
+          <button type="submit" disabled={enviando} className="w-full py-3 rounded-full bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-black inline-flex items-center justify-center gap-2 shadow transition">
             <Send className="w-4 h-4" />
             <span>{enviando ? "Guardando..." : "Vincular PayPal y Activar Pagos"}</span>
           </button>
         </form>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3 text-center">
+        <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xs text-center space-y-3">
           <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-500">
             <Clock className="w-4 h-4 text-amber-500" />
-            <span>Revisión y activación automática al completar la meta</span>
+            <span>{cumpleRequisitos ? "¡Felicidades! Cumples los 3 requisitos del Programa de Creadores" : "Completa los 3 requisitos para activar tus pagos"}</span>
           </div>
-
-          <p className="text-xs text-slate-600 leading-relaxed max-w-lg mx-auto">
-            Sigue publicando videos originales y compartiendo tu canal. Al alcanzar{" "}
-            <strong>100 Fans reales</strong> y{" "}
-            <strong>1,000 vistas calificadas (≥ 15s)</strong>, se desbloqueará tu formulario de cobro.
-          </p>
-
           <div>
             <button
               type="button"
-              disabled
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 border border-slate-200 text-slate-500 text-xs font-extrabold cursor-not-allowed"
+              disabled={!cumpleRequisitos}
+              onClick={() => cumpleRequisitos && setMostrarFormularioPaypal(true)}
+              className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-xs font-black transition ${
+                cumpleRequisitos ? "bg-[#16A34A] hover:bg-emerald-700 text-white shadow-md cursor-pointer" : "bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed"
+              }`}
             >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Pagos PayPal • Se habilitan al cumplir con los requisitos</span>
+              {cumpleRequisitos ? <CheckCircle2 className="w-4 h-4" /> : <Lock className="w-3.5 h-3.5" />}
+              <span>Desbloquear Monetización (Pagos vía PayPal)</span>
             </button>
           </div>
         </div>
       )}
-
-      {/* Preguntas Frecuentes (bien separadas abajo) */}
-      <div className="pt-4">
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
+      <div className="pt-2">
+        <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xs space-y-3">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
             <HelpCircle className="w-5 h-5 text-blue-600" />
             <h3 className="text-base font-black text-slate-900">

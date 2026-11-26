@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 import {
@@ -42,11 +42,16 @@ export default function PanelAdminPagos({ supabase: supabaseProp, usuario, onVol
   const [notaAcreditar, setNotaAcreditar] = useState("");
   const [acreditando, setAcreditando] = useState(false);
 
-   const supabase = createClient(
-    "https://" + "macovqecajhwhntlpkta" + ".supabase.co",
-    "sb_publishable_OuffTH1gKS0jkmCkwh7axw_eDS0JXh7",
-    { global: { headers: { "x-rutf-admin": usuario?.email || "" } } }
+     const supabase = useMemo(
+    () =>
+      createClient(
+        "https://" + "macovqecajhwhntlpkta" + ".supabase.co",
+        "sb_publishable_OuffTH1gKS0jkmCkwh7axw_eDS0JXh7",
+        { global: { headers: { "x-rutf-admin": usuario?.email || "" } } }
+      ),
+    [usuario?.email]
   );
+
 
 
   const cargarSolicitudes = useCallback(async () => {

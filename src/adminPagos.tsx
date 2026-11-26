@@ -42,11 +42,12 @@ export default function PanelAdminPagos({ supabase: supabaseProp, usuario, onVol
   const [notaAcreditar, setNotaAcreditar] = useState("");
   const [acreditando, setAcreditando] = useState(false);
 
- const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+   const supabase = createClient(
+    "https://" + "macovqecajhwhntlpkta" + ".supabase.co",
+    "sb_publishable_OuffTH1gKS0jkmCkwh7axw_eDS0JXh7",
     { global: { headers: { "x-rutf-admin": usuario?.email || "" } } }
   );
+
 
   const cargarSolicitudes = useCallback(async () => {
     if (!esAdmin) return;

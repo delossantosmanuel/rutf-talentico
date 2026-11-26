@@ -54,30 +54,35 @@ export default function PanelAdminPagos({ supabase: supabaseProp, usuario, onVol
 
 
 
-  const cargarSolicitudes = useCallback(async () => {
-    if (!esAdmin) return;
-    setCargando(true);
-    try {
-      const [{ data: listaRetiros }, { data: listaConfigs }] = await Promise.all([
-        supabase
-          .from("retiros_paypal_rutf")
-          .select("*")
-          .order("creado_en", { ascending: false }),
-        supabase.from("configuracion_pagos_rutf").select("*"),
-      ]);
+   const cargarSolicitudes = useCallback(
+    async (pausaManual = false) => {
+      if (!esAdmin) return;
+      setCargando(true);
+      try {
+        const [{ data: listaRetiros }, { data: listaConfigs }] = await Promise.all([
+          supabase
+            .from("retiros_paypal_rutf")
+            .select("*")
+            .order("creado_en", { ascending: false }),
+          supabase.from("configuracion_pagos_rutf").select("*"),
+          ...(pausaManual ? [new Promise((resolve) => setTimeout(resolve, 8000))] : []),
+        ]);
 
-      if (Array.isArray(listaRetiros)) setRetiros(listaRetiros);
-      if (Array.isArray(listaConfigs)) {
-        const mapa: Record<string, any> = {};
-        listaConfigs.forEach((c: any) => {
-          mapa[c.usuario_id] = c;
-        });
-        setCuentasConfig(mapa);
+        if (Array.isArray(listaRetiros)) setRetiros(listaRetiros);
+        if (Array.isArray(listaConfigs)) {
+          const mapa: Record<string, any> = {};
+          listaConfigs.forEach((c: any) => {
+            mapa[c.usuario_id] = c;
+          });
+          setCuentasConfig(mapa);
+        }
+      } finally {
+        setCargando(false);
       }
-    } finally {
-      setCargando(false);
-    }
-  }, [esAdmin, supabase]);
+    },
+    [esAdmin, supabase]
+  );
+
 
   useEffect(() => {
     if (!esAdmin) return;
@@ -265,7 +270,8 @@ export default function PanelAdminPagos({ supabase: supabaseProp, usuario, onVol
 
           <button
             type="button"
-            onClick={cargarSolicitudes}
+                        onClick={() => cargarSolicitudes(true)}
+            disabled={cargando}
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${cargando ? "animate-spin" : ""}`} />

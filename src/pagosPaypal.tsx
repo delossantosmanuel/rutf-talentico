@@ -529,10 +529,26 @@ export default function PantallaPagosPaypal({ supabase, usuario, onVolver }: Pro
                     <p className="text-[11px] font-bold text-slate-600">Plazo: {r.plazo_estimado}</p>
                   )}
                   {r.motivo_admin && (
+                       
+
                     <p className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200/80 rounded-xl px-2.5 py-1.5">
                       {r.motivo_admin}
                     </p>
                   )}
+                                    {r.estado === "pagado" && (
+                    <div className="mt-1.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 p-3 space-y-1 text-[11px] text-emerald-950">
+                      <div className="flex items-center justify-between font-black text-[#16A34A]">
+                        <span>CERTIFICADO OFICIAL DE PAGO</span>
+                        <span>{r.codigo_comprobante || "RUTF-PAY-OFICIAL"}</span>
+                      </div>
+                      <p><strong>Titular:</strong> {r.nombre_titular} (@{r.username})</p>
+                      <p><strong>PayPal destino:</strong> {r.correo_paypal} • <strong>Monto:</strong> ${Number(r.monto_usd).toFixed(2)} USD</p>
+                      <p className="text-[10px] text-emerald-800 pt-0.5">
+                        Firmado digitalmente por Administración Oficial RUTF Talentico • {new Date(r.pagado_en || r.creado_en).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+
                 </div>
 
               ))}
@@ -543,3 +559,5 @@ export default function PantallaPagosPaypal({ supabase, usuario, onVolver }: Pro
     </div>
   );
 }
+
+               

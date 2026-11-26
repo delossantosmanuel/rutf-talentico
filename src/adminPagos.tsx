@@ -10,6 +10,7 @@ import {
   DollarSign,
   Eye,
   RefreshCw,
+  Mail,
 } from "lucide-react";
 
 export const CORREO_ADMIN_OFICIAL = "delossantosmanuel892@gmail.com";
@@ -108,6 +109,11 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
           : nuevoEstado === "pagado"
           ? "Pago completado vía PayPal"
           : "Solicitud rechazada";
+   const codigoRecibo =
+     retiro.codigo_comprobante ||
+     (nuevoEstado === "pagado"
+       ? `RUTF-PAY-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
+       : "");
 
       const { error } = await supabase
         .from("retiros_paypal_rutf")
@@ -115,6 +121,8 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
           estado: nuevoEstado,
           motivo_admin: mensajeFinal,
           plazo_estimado: plazoNuevo,
+                 ...(codigoRecibo ? { codigo_comprobante: codigoRecibo } : {}),
+
           ...(nuevoEstado === "pagado" ? { pagado_en: new Date().toISOString() } : {}),
         })
         .eq("id", retiro.id);
@@ -158,11 +166,11 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
 
     setAcreditando(true);
     try {
-      const { data: perfil } = await supabase
-        .from("perfiles")
-        .select("id,username")
-        .ilike("username", usernameLimpio)
-        .maybeSingle();
+        const { data: perfil } = await supabase
+     .from("perfiles")
+     .select("id,username,email")
+     .or(`username.ilike.${usernameLimpio},email.ilike.${usernameLimpio}`)
+     .maybeSingle();
 
       if (!perfil) {
         alert(`No se encontró ningún canal con el usuario @${usernameLimpio}.`);
@@ -253,6 +261,27 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-5 pb-16 space-y-4">
+             <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
+       <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs">
+         <p className="text-[10px] sm:text-xs font-extrabold text-slate-500">Saldo Creadores</p>
+         <p className="text-base sm:text-xl font-black text-blue-700 mt-0.5">
+           ${Object.values(cuentasConfig).reduce((a: number, c: any) => a + Number(c?.saldo_disponible || 0), 0).toFixed(2)}
+         </p>
+       </div>
+       <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs">
+         <p className="text-[10px] sm:text-xs font-extrabold text-slate-500">Pendiente Pago</p>
+         <p className="text-base sm:text-xl font-black text-amber-600 mt-0.5">
+           ${retiros.filter((x) => x.estado === "en_revision" || x.estado === "revisada").reduce((a, x) => a + Number(x.monto_usd || 0), 0).toFixed(2)}
+         </p>
+       </div>
+       <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs">
+         <p className="text-[10px] sm:text-xs font-extrabold text-slate-500">Total Pagado</p>
+         <p className="text-base sm:text-xl font-black text-[#16A34A] mt-0.5">
+           ${retiros.filter((x) => x.estado === "pagado").reduce((a, x) => a + Number(x.monto_usd || 0), 0).toFixed(2)}
+         </p>
+       </div>
+     </div>
+
              <form onSubmit={acreditarSaldoCreador} className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-2xs space-y-3">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <h2 className="text-sm sm:text-base font-black text-slate-900">Acreditar Ganancias a Creador ($ USD)</h2>
@@ -262,7 +291,7 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
             <input
               type="text"
               required
-              placeholder="Usuario del canal (ej. JuanTalento)"
+             placeholder="@usuario o correo del creador"
               value={canalAcreditar}
               onChange={(e) => setCanalAcreditar(e.target.value)}
               className="px-3 py-2 text-xs border border-slate-300 rounded-xl"
@@ -396,6 +425,31 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Rechazar Solicitud</span>
                   </button>
+                                 {r.estado === "pagado" && (
+                 <a
+                   href={`mailto:${r.correo_paypal}?subject=${encodeURIComponent(
+                     `Comprobante Oficial de Pago RUTF Talentico (${r.codigo_comprobante || "RUTF-PAY"})`
+                   )}&body=${encodeURIComponent(
+                     `CERTIFICADO OFICIAL DE PAGO - RUTF TALENTICO\n` +
+                       `--------------------------------------------------\n` +
+                       `Comprobante N°: ${r.codigo_comprobante || "RUTF-PAY-OFICIAL"}\n` +
+                       `Fecha de emisión: ${new Date(r.pagado_en || r.creado_en).toLocaleString()}\n` +
+                       `Titular receptor: ${r.nombre_titular} (@${r.username})\n` +
+                       `Cuenta PayPal destino: ${r.correo_paypal}\n` +
+                       `País fiscal: ${r.pais_nombre}\n` +
+                       `Monto liquidado: $${Number(r.monto_usd).toFixed(2)} USD\n` +
+                       `Estado: PAGADO Y VERIFICADO\n` +
+                       `--------------------------------------------------\n` +
+                       `Emitido y firmado digitalmente por:\n` +
+                       `Administración Oficial RUTF Talentico (${CORREO_ADMIN_OFICIAL})`
+                   )}`}
+                   className="px-3.5 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-black inline-flex items-center gap-1.5"
+                 >
+                   <Mail className="w-3.5 h-3.5" />
+                   <span>Enviar Copia por Correo ({r.codigo_comprobante || "Recibo"})</span>
+                 </a>
+               )}
+
                 </div>
               </div>
             );

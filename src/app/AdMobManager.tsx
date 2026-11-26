@@ -71,23 +71,37 @@ export async function mostrarAnuncioRecompensado(onRecompensaGanada: () => void)
   }
   try {
     let recompensaOtorgada = false;
-    const listener = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
+    const rewardListener = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
       recompensaOtorgada = true;
       onRecompensaGanada();
     });
+
+    const cerradoPromesa = new Promise<void>(async (resolve) => {
+      const dismissListener = await AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
+        dismissListener.remove();
+        resolve();
+      });
+      const failedListener = await AdMob.addListener(RewardAdPluginEvents.FailedToShow, () => {
+        failedListener.remove();
+        resolve();
+      });
+    });
+
     const opcionesReward: RewardAdOptions = {
       adId: IDS_ADMOB.recompensado,
       isTesting: MODO_PRUEBA,
     };
     await AdMob.prepareRewardVideoAd(opcionesReward);
     await AdMob.showRewardVideoAd();
-    await listener.remove();
+    await cerradoPromesa;
+    await rewardListener.remove();
     return recompensaOtorgada;
   } catch (err) {
     console.log("Error en anuncio recompensado:", err);
     return false;
   }
 }
+
 export default function AdMobManager() {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;

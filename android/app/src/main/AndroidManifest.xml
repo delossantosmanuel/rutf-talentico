@@ -42,6 +42,11 @@
             <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7833811584621376~1668736976" />
+     <activity
+         android:name="com.google.android.gms.ads.AdActivity"
+         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+         android:exported="false"
+         android:theme="@android:style/Theme.Translucent" />
 
     </application>
 

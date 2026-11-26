@@ -12,6 +12,7 @@ import {
   HelpCircle,
   ChevronDown,
 } from "lucide-react";
+import PantallaPagosPaypal from "./pagosPaypal";
 
 type Props = {
   supabase: any;
@@ -269,6 +270,15 @@ export default function PanelMonetizacion({
       claseColumna: "col-span-2 sm:col-span-1",
     },
   ];
+  if (mostrarFormularioPaypal && usuario && cumpleRequisitos) {
+    return (
+      <PantallaPagosPaypal
+        supabase={supabase}
+        usuario={usuario}
+        onVolver={() => setMostrarFormularioPaypal(false)}
+      />
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto pb-16 space-y-3.5 sm:space-y-5">
@@ -374,7 +384,12 @@ export default function PanelMonetizacion({
               className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-xs font-black transition ${cumpleRequisitos ? "bg-[#16A34A] hover:bg-emerald-700 text-white shadow-md cursor-pointer" : avisoBloqueado ? "bg-rose-50 border border-rose-300 text-rose-600 cursor-not-allowed" : "bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed"}`}
             >
               {cumpleRequisitos ? <CheckCircle2 className="w-4 h-4" /> : avisoBloqueado ? <Ban className="w-4 h-4 text-rose-600" /> : <Lock className="w-3.5 h-3.5" />}
-              <span>Desbloquear Monetización (Pagos vía PayPal)</span>
+              <span>
+  {cumpleRequisitos
+    ? "Continuar y Configurar Pagos vía PayPal →"
+    : "Desbloquear Monetización (Pagos vía PayPal)"}
+</span>
+
             </button>
           </div>
           {avisoBloqueado && !cumpleRequisitos && <p className="text-[11px] font-bold text-rose-600">Aún debes completar los 3 requisitos (100 Fans, 1,000 vistas +16s y 5 videos originales).</p>}

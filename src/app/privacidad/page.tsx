@@ -48,6 +48,20 @@ export default function PrivacidadPage() {
             Puedes eliminar permanentemente tu cuenta y todos tus datos asociados en cualquier momento desde el botón <strong>&ldquo;Eliminar Cuenta&rdquo;</strong> ubicado al pie de la aplicación principal o enviando una solicitud a <strong>delossantosmanuel892@gmail.com</strong>.
           </p>
         </section>
+                <section className="space-y-2 text-sm leading-relaxed text-slate-600">
+          <h2 className="text-base font-black text-slate-900">6. Políticas de Monetización, Edad Mínima (+18) y Retiros PayPal</h2>
+          <p>
+            Para participar en el Programa de Monetización de <strong>RUTF Talentico</strong> y recibir pagos vía <strong>PayPal</strong>, el creador debe haber cumplido al menos <strong>18 años de edad</strong> (mayoría de edad legal), completar los requisitos de elegibilidad del canal (100 Fans reales, 1,000 vistas calificadas de más de 16 segundos y 5 videos originales) y verificar su número telefónico real mediante código SMS (OTP) para prevención de fraude y cuentas automatizadas. El monto mínimo de retiro es de <strong>$10.00 USD</strong>. Las comisiones de transferencia internacional y conversión de divisa aplicadas por PayPal o por las normativas financieras de cada país corren por cuenta del titular receptor.
+          </p>
+        </section>
+
+        <section className="space-y-2 text-sm leading-relaxed text-slate-600">
+          <h2 className="text-base font-black text-slate-900">7. Impuestos, Cumplimiento Global y Prevención de Fraude</h2>
+          <p>
+            Cada creador es responsable de declarar y cumplir con las obligaciones fiscales o tributarias aplicables en su país de residencia respecto a los ingresos generados en la plataforma. RUTF Talentico audita cada solicitud de pago y se reserva el derecho de retener, rechazar o cancelar pagos si se detecta tráfico artificial, bots, suplantación de identidad, infracción de derechos de autor o incumplimiento de las políticas comunitarias.
+          </p>
+        </section>
+
       </div>
     </main>
   );

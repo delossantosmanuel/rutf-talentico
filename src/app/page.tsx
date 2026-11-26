@@ -645,28 +645,40 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     title={videoActivo || tab === "shorts" ? "Ir a Monetización" : "Inicio RUTF Talentico"}
     className="flex items-center gap-2.5 cursor-pointer text-left"
   >
-    <img src="/logo-rt.png" alt="RUTF Talentico" className="w-9 h-9 rounded-xl object-cover shadow" />
-    {!videoActivo && tab !== "shorts" && (
-      <div>
-        <h1 className="text-base sm:text-lg font-black tracking-tight bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">RUTF TALENTICO</h1>
-        <p className="text-[9px] font-bold text-slate-400">Tu talento vale, paso a paso</p>
-      </div>
-    )}
-  </button>
-</div>
+                    <img src="/logo-rt.png" alt="RUTF Talentico" className="w-9 h-9 rounded-xl object-cover shadow" />
+                {!videoActivo && tab !== "shorts" && (
+                  <div>
+                    <h1 className="text-base sm:text-lg font-black tracking-tight bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">RUTF TALENTICO</h1>
+                    {tab === "monetizar" ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold border border-amber-300">
+                        <DollarSign className="w-3 h-3 text-amber-600" />
+                        <span>Monetización</span>
+                      </span>
+                    ) : tab === "subir" ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
+                        <PlusCircle className="w-3 h-3 text-emerald-600" />
+                        <span>Subir Video</span>
+                      </span>
+                    ) : (
+                      <p className="text-[9px] font-bold text-slate-400">Tu talento vale, paso a paso</p>
+                    )}
+                  </div>
+                )}
+              </button>
+            </div>
 
+            <div className="flex items-center gap-2 shrink-0">
+              {(videoActivo || tab === "shorts" || tab === "monetizar") && (
+                <button
+                  type="button"
+                  onClick={abrirSubir}
+                  className="px-2.5 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold inline-flex items-center gap-1 shadow-xs"
+                >
+                  <PlusCircle className="w-3 h-3" />
+                  <span>Subir</span>
+                </button>
+              )}
 
-                        <div className="flex items-center gap-2 shrink-0">
-                         {(videoActivo || tab === "shorts") && (
-           <button
-             type="button"
-             onClick={abrirSubir}
-             className="px-2.5 py-1 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold inline-flex items-center gap-1 shadow-xs"
-           >
-             <PlusCircle className="w-3 h-3" />
-             <span>Subir</span>
-           </button>
-         )}
           
               <CampanaNotificaciones
                 usuario={usuario}
@@ -744,7 +756,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
           </div>
 
-                 {!videoActivo && tab !== "shorts" && (
+         {!videoActivo && tab !== "shorts" && tab !== "monetizar" && tab !== "subir" && (
           <div className="flex items-center justify-between gap-2">
             <button
               type="button"
@@ -772,7 +784,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
 
                     {/* Fila 3: Buscador Inteligente con Lupa Móvil y Resultados en Tiempo Real */}
-          {barraVisible && (
+         {barraVisible && tab !== "monetizar" && tab !== "subir" && (
+
             <form onSubmit={ejecutarBusqueda} className="relative">
               <div className="relative flex items-center">
                 {!busqueda.trim() && (
@@ -880,32 +893,38 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
 
           {/* Fila 4: Pestañas de navegación de video limpias y sin cortarse */}
-          <div className="grid grid-cols-2 gap-2 pt-0.5">
-            <button
-              type="button"
-              onClick={() => { setTab("inicio"); setVideoActivo(null); }}
-              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition ${
-                tab === "inicio" ? "bg-blue-600 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <Flame className="w-3.5 h-3.5" />
-              <span>Para Ti (Recomendados)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setTab("shorts"); setVideoActivo(null); }}
-              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition ${
-                tab === "shorts" ? "bg-orange-500 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <Play className="w-3.5 h-3.5" />
-              <span>Verticales</span>
-            </button>
-          </div>
+                     {tab !== "monetizar" && tab !== "subir" && (
+              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => { setTab("inicio"); setVideoActivo(null); }}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition ${
+                    tab === "inicio" ? "bg-blue-600 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  <Flame className="w-3.5 h-3.5" />
+                  <span>Para Ti (Recomendados)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setTab("shorts"); setVideoActivo(null); }}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition ${
+                    tab === "shorts" ? "bg-orange-500 text-white shadow" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  <Play className="w-3.5 h-3.5" />
+                  <span>Verticales</span>
+                </button>
+              </div>
+            )}
+
         </div>
       </header>
 
-      <BarraInstitucional usuario={usuario} onAbrirAuth={() => setMostrarAuth(true)} />
+             {tab !== "monetizar" && tab !== "subir" && (
+            <BarraInstitucional usuario={usuario} onAbrirAuth={() => setMostrarAuth(true)} />
+          )}
+
  </>}
 
 

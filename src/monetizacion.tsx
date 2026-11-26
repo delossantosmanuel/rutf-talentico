@@ -292,7 +292,10 @@ export default function PanelMonetizacion({
 
       <div className="space-y-2.5">
         <div className="flex items-center justify-between gap-2 px-0.5">
-          <h3 className="pt-2 text-sm sm:text-base font-black text-slate-900">Requisitos de Elegibilidad en Tiempo Real</h3>
+<h3 className="pt-2 text-[13px] sm:text-base font-black text-slate-900 tracking-tight whitespace-nowrap">
+  Requisitos de Elegibilidad <span className="hidden xs:inline sm:inline">en Tiempo Real</span>
+</h3>
+
           <button
             type="button"
             onClick={manejarActualizar}

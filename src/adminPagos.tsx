@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
+
 import {
   ArrowLeft,
   ShieldCheck,
@@ -25,7 +27,7 @@ type Props = {
   onVolver: () => void;
 };
 
-export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) {
+export default function PanelAdminPagos({ supabase: supabaseProp, usuario, onVolver }: Props) {
   const esAdmin =
     Boolean(usuario?.email) &&
     usuario!.email.trim().toLowerCase() === CORREO_ADMIN_OFICIAL;
@@ -40,6 +42,11 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
   const [notaAcreditar, setNotaAcreditar] = useState("");
   const [acreditando, setAcreditando] = useState(false);
 
+ const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { "x-rutf-admin": usuario?.email || "" } } }
+  );
 
   const cargarSolicitudes = useCallback(async () => {
     if (!esAdmin) return;

@@ -169,6 +169,86 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
   const [likesComentario, setLikesComentario] = useState<Record<string, "like" | "dislike">>({});
     const [conteoComs, setConteoComs] = useState<Record<string, number>>({});
 const [menuCuenta, setMenuCuenta] = useState(false);
+  const [respondiendoA, setRespondiendoA] = useState<Comentario | null>(null);
+  const [textoRespuesta, setTextoRespuesta] = useState("");
+  const [animacionComId, setAnimacionComId] = useState<string | null>(null);
+
+  const notificarInteraccionComentario = async (
+    destinatarioUsername: string,
+    mensaje: string,
+    videoObj: Video
+  ) => {
+    try {
+      if (!usuario || destinatarioUsername.toLowerCase() === usuario.username.toLowerCase()) return;
+      const { data: dest } = await supabase
+        .from("usuarios_rutf")
+        .select("id")
+        .ilike("username", destinatarioUsername)
+        .maybeSingle();
+      if (dest?.id) {
+        await supabase.from("notificaciones_rutf").insert({
+          usuario_id: dest.id,
+          titulo: "RUTF Talentico • Interacción en tu comentario",
+          mensaje,
+          video_id: videoObj.id,
+          leida: false,
+        });
+      }
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        new Notification("RUTF Talentico", { body: mensaje, icon: "/logo-rt.png" });
+      }
+    } catch {}
+  };
+
+  const reaccionarComentario = async (c: Comentario, tipo: "like" | "dislike") => {
+    if (!usuario) {
+      setMostrarAuth(true);
+      return;
+    }
+    const actual = likesComentario[c.id];
+    const nuevo = actual === tipo ? undefined : tipo;
+    setLikesComentario((prev) => {
+      const copia = { ...prev };
+      if (nuevo) copia[c.id] = nuevo;
+      else delete copia[c.id];
+      return copia;
+    });
+    setAnimacionComId(`${c.id}-${tipo}`);
+    setTimeout(() => setAnimacionComId(null), 400);
+    if (nuevo && videoActivo) {
+      await notificarInteraccionComentario(
+        c.usuario,
+        `${nuevo === "like" ? "👍" : "👎"} ${usuario.username} reaccionó a tu comentario en "${videoActivo.titulo}"`,
+        videoActivo
+      );
+    }
+  };
+
+  const enviarRespuestaComentario = async (e: React.FormEvent, cPadre: Comentario) => {
+    e.preventDefault();
+    if (!usuario) {
+      setMostrarAuth(true);
+      return;
+    }
+    if (!videoActivo || !textoRespuesta.trim()) return;
+    const cuerpo = `↳ Respondiendo a ${cPadre.usuario}: ${textoRespuesta.trim()}`;
+    const { data, error } = await supabase
+      .from("comentarios")
+      .insert({ video_id: videoActivo.id, usuario: usuario.username, texto: cuerpo })
+      .select("*")
+      .single();
+    if (!error && data) {
+      setComentarios((prev) => [data, ...prev]);
+      setTextoRespuesta("");
+      setRespondiendoA(null);
+      await notificarInteraccionComentario(
+        cPadre.usuario,
+        `💬 ${usuario.username} respondió a tu comentario en "${videoActivo.titulo}"`,
+        videoActivo
+      );
+    }
+  };
+
 
 
   const vistaContadaRef = useRef<Record<string, boolean>>({});
@@ -938,14 +1018,93 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   <input required value={nuevoCom} onChange={(e) => setNuevoCom(e.target.value)} placeholder={usuario ? `Comentar como ${usuario.username}...` : "Inicia sesión para comentar..."} className="flex-1 border border-slate-300 rounded-xl px-3.5 py-2 text-xs" />
                   <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"><Send className="w-3.5 h-3.5" /> {usuario ? "Comentar" : "Entrar para comentar"}</button>
                 </form>
-                <div className="space-y-2.5 max-h-60 overflow-y-auto">
-                  {comentarios.length === 0 ? <p className="text-xs text-slate-400">Sé el primero en comentar este video.</p> : comentarios.map((c) => (
-                    <div key={c.id} className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs">
-                      <div className="flex justify-between items-center mb-1"><span className="font-bold text-blue-600">{c.usuario}</span><span className="text-[10px] text-slate-400">{new Date(c.creado_en).toLocaleDateString()}</span></div>
-                      <p className="text-slate-700">{c.texto}</p>
-                    </div>
-                  ))}
-                </div>
+                          <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+             {comentarios.length === 0 ? (
+               <p className="text-xs text-slate-400">Sé el primero en comentar este video.</p>
+             ) : (
+               comentarios.map((c) => {
+                 const reaccion = likesComentario[c.id];
+                 return (
+                   <div key={c.id} className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs space-y-2">
+                     <div className="flex justify-between items-center">
+                       <span className="font-bold text-blue-600">{c.usuario}</span>
+                       <span className="text-[10px] text-slate-400">{new Date(c.creado_en).toLocaleDateString()}</span>
+                     </div>
+                     <p className="text-slate-700 leading-relaxed">{c.texto}</p>
+
+                     <div className="flex items-center gap-2 pt-0.5">
+                       <button
+                         type="button"
+                         onClick={() => reaccionarComentario(c, "like")}
+                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold transition-transform duration-200 ${
+                           animacionComId === `${c.id}-like` ? "scale-125" : "scale-100"
+                         } ${
+                           reaccion === "like"
+                             ? "bg-blue-600 text-white shadow-xs"
+                             : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                         }`}
+                       >
+                         <ThumbsUp className="w-2.5 h-2.5" />
+                         <span>Me gusta</span>
+                       </button>
+
+                       <button
+                         type="button"
+                         onClick={() => reaccionarComentario(c, "dislike")}
+                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold transition-transform duration-200 ${
+                           animacionComId === `${c.id}-dislike` ? "scale-125" : "scale-100"
+                         } ${
+                           reaccion === "dislike"
+                             ? "bg-rose-600 text-white shadow-xs"
+                             : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                         }`}
+                       >
+                         <ThumbsDown className="w-2.5 h-2.5" />
+                       </button>
+
+                       <button
+                         type="button"
+                         onClick={() => {
+                           if (!usuario) {
+                             setMostrarAuth(true);
+                             return;
+                           }
+                           setRespondiendoA(respondiendoA?.id === c.id ? null : c);
+                           setTextoRespuesta("");
+                         }}
+                         className="px-2 py-0.5 rounded-full text-[10px] font-extrabold text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition"
+                       >
+                         Responder
+                       </button>
+                     </div>
+
+                     {respondiendoA?.id === c.id && (
+                       <form
+                         onSubmit={(e) => enviarRespuestaComentario(e, c)}
+                         className="flex items-center gap-1.5 pt-1"
+                       >
+                         <input
+                           type="text"
+                           required
+                           value={textoRespuesta}
+                           onChange={(e) => setTextoRespuesta(e.target.value)}
+                           placeholder={`Responder a ${c.usuario}...`}
+                           className="flex-1 bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-[11px] outline-none focus:border-blue-500"
+                         />
+                         <button
+                           type="submit"
+                           className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-extrabold"
+                         >
+                           Enviar
+                         </button>
+                       </form>
+                     )}
+                   </div>
+                 );
+               })
+             )}
+           </div>
+
               </div>
             </div>
           </div>

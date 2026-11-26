@@ -34,6 +34,11 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
   const [cargando, setCargando] = useState(true);
   const [procesandoId, setProcesandoId] = useState<string | null>(null);
   const [motivosPorId, setMotivosPorId] = useState<Record<string, string>>({});
+    const [canalAcreditar, setCanalAcreditar] = useState("");
+  const [montoAcreditar, setMontoAcreditar] = useState("");
+  const [notaAcreditar, setNotaAcreditar] = useState("");
+  const [acreditando, setAcreditando] = useState(false);
+
 
   const cargarSolicitudes = useCallback(async () => {
     if (!esAdmin) return;
@@ -142,6 +147,83 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
       setProcesandoId(null);
     }
   };
+         const acreditarSaldoCreador = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const usernameLimpio = canalAcreditar.trim().replace(/^@/, "");
+    const montoNum = Number(montoAcreditar);
+    if (!usernameLimpio || isNaN(montoNum) || montoNum <= 0) {
+      alert("Ingresa un @usuario válido y un monto mayor a $0.00 USD.");
+      return;
+    }
+
+    setAcreditando(true);
+    try {
+      const { data: perfil } = await supabase
+        .from("perfiles")
+        .select("id,username")
+        .ilike("username", usernameLimpio)
+        .maybeSingle();
+
+      if (!perfil) {
+        alert(`No se encontró ningún canal con el usuario @${usernameLimpio}.`);
+        return;
+      }
+
+      const { data: cfgActual } = await supabase
+        .from("configuracion_pagos_rutf")
+        .select("*")
+        .eq("usuario_id", perfil.id)
+        .maybeSingle();
+
+      const saldoPrevio = Number(cfgActual?.saldo_disponible || 0);
+      const nuevoSaldo = Number((saldoPrevio + montoNum).toFixed(2));
+
+      const { error } = await supabase.from("configuracion_pagos_rutf").upsert(
+        {
+          usuario_id: perfil.id,
+          username: perfil.username,
+          pais_codigo: cfgActual?.pais_codigo || "+1",
+          pais_nombre: cfgActual?.pais_nombre || "Internacional",
+          telefono: cfgActual?.telefono || "",
+          telefono_verificado: Boolean(cfgActual?.telefono_verificado),
+          nombre_titular: cfgActual?.nombre_titular || perfil.username,
+          correo_paypal: cfgActual?.correo_paypal || "",
+          saldo_disponible: nuevoSaldo,
+          saldo_pendiente: Number(cfgActual?.saldo_pendiente || 0),
+          acepto_politicas: Boolean(cfgActual?.acepto_politicas),
+          actualizado_en: new Date().toISOString(),
+        },
+        { onConflict: "usuario_id" }
+      );
+
+      if (error) {
+        alert("No se pudo acreditar el saldo: " + error.message);
+        return;
+      }
+
+      const detalle =
+        notaAcreditar.trim() ||
+        `Se han acreditado $${montoNum.toFixed(2)} USD a tu Saldo Disponible por ingresos publicitarios de tus videos originales.`;
+
+      await supabase.from("notificaciones").insert({
+        destinatario_username: perfil.username,
+        actor_username: "RUTF Talentico Pagos",
+        tipo: "monetizacion",
+        mensaje: detalle,
+        leida: false,
+      });
+
+      setCanalAcreditar("");
+      setMontoAcreditar("");
+      setNotaAcreditar("");
+      await cargarSolicitudes();
+      alert(`¡Listo! Se acreditaron $${montoNum.toFixed(2)} USD a @${perfil.username}.`);
+    } finally {
+      setAcreditando(false);
+    }
+  };
+
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-50 overflow-y-auto">
       <div className="sticky top-0 z-10 bg-slate-950 text-white border-b border-slate-800 px-4 py-3">
@@ -171,6 +253,47 @@ export default function PanelAdminPagos({ supabase, usuario, onVolver }: Props) 
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-5 pb-16 space-y-4">
+             <form onSubmit={acreditarSaldoCreador} className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 shadow-2xs space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <h2 className="text-sm sm:text-base font-black text-slate-900">Acreditar Ganancias a Creador ($ USD)</h2>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#16A34A] text-[10px] font-black">Liquidación Oficial</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <input
+              type="text"
+              required
+              placeholder="Usuario del canal (ej. JuanTalento)"
+              value={canalAcreditar}
+              onChange={(e) => setCanalAcreditar(e.target.value)}
+              className="px-3 py-2 text-xs border border-slate-300 rounded-xl"
+            />
+            <input
+              type="number"
+              step="0.01"
+              min="0.50"
+              required
+              placeholder="Monto USD (ej. 15.00)"
+              value={montoAcreditar}
+              onChange={(e) => setMontoAcreditar(e.target.value)}
+              className="px-3 py-2 text-xs border border-slate-300 rounded-xl"
+            />
+            <input
+              type="text"
+              placeholder="Concepto (ej. Ingresos AdMob Noviembre)"
+              value={notaAcreditar}
+              onChange={(e) => setNotaAcreditar(e.target.value)}
+              className="px-3 py-2 text-xs border border-slate-300 rounded-xl"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={acreditando}
+            className="px-5 py-2 rounded-full bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-black transition"
+          >
+            {acreditando ? "Acreditando..." : "Acreditar Saldo Disponible ($ USD)"}
+          </button>
+        </form>
+
         {cargando && retiros.length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center text-xs font-bold text-slate-500">
             Cargando solicitudes de creadores...

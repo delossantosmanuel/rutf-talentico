@@ -182,10 +182,15 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
     videoAnteriorRef.current = videoActivo;
   }, [videoActivo]);
 
-  const apoyarCreadorConAnuncio = async (v: Video) => {
+    const apoyarCreadorConAnuncio = async (v: Video) => {
     if (apoyandoVideo) return;
+    const confirmar = window.confirm(
+      `¿Deseas ver un breve anuncio patrocinado para apoyar directamente a ${v.creador}?`
+    );
+    if (!confirmar) return;
     setApoyandoVideo(true);
     try {
+
       await mostrarAnuncioRecompensado(async () => {
         await supabase.from("apoyos_recompensados_rutf").insert({
           video_id: v.id,

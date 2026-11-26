@@ -22,9 +22,10 @@ export const IDS_ADMOB = {
   intersticial: MODO_PRUEBA
     ? "ca-app-pub-3940256099942544/1033173712"
     : "ca-app-pub-7833811584621376/8613419276",
-  recompensado: MODO_PRUEBA
-    ? "ca-app-pub-3940256099942544/5224354917"
-    : "ca-app-pub-1290211641432693/2878366671",
+recompensado: MODO_PRUEBA
+  ? "ca-app-pub-3940256099942544/5354046379"
+  : "ca-app-pub-1290211641432693/2878366671",
+
   nativo: MODO_PRUEBA
     ? "ca-app-pub-3940256099942544/2247696110"
     : "ca-app-pub-7833811584621376/8613419276",
@@ -64,11 +65,16 @@ export async function mostrarIntersticialAlSalirVideo() {
   }
 }
 
+let mostrandoRecompensado = false;
+
 export async function mostrarAnuncioRecompensado(onRecompensaGanada: () => void): Promise<boolean> {
   if (!Capacitor.isNativePlatform()) {
     onRecompensaGanada();
     return true;
   }
+  if (mostrandoRecompensado) return false;
+  mostrandoRecompensado = true;
+
   try {
     let recompensaOtorgada = false;
     const rewardListener = await AdMob.addListener(RewardAdPluginEvents.Rewarded, () => {
@@ -99,8 +105,11 @@ export async function mostrarAnuncioRecompensado(onRecompensaGanada: () => void)
   } catch (err) {
     console.log("Error en anuncio recompensado:", err);
     return false;
+  } finally {
+    mostrandoRecompensado = false;
   }
 }
+
 
 export default function AdMobManager() {
   useEffect(() => {

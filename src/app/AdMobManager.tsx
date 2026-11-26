@@ -77,6 +77,8 @@ export async function mostrarAnuncioRecompensado(onRecompensaGanada: () => void)
   mostrandoRecompensado = true;
 
   try {
+    await AdMob.hideBanner().catch(() => {});
+
     let recompensaOtorgada = false;
     const rewardListener = await AdMob.addListener(
       RewardInterstitialAdPluginEvents.Rewarded,
@@ -87,19 +89,21 @@ export async function mostrarAnuncioRecompensado(onRecompensaGanada: () => void)
     );
 
     const cerradoPromesa = new Promise<void>(async (resolve) => {
+      let resuelto = false;
+      const finalizar = async () => {
+        if (resuelto) return;
+        resuelto = true;
+        await dismissListener.remove().catch(() => {});
+        await failedListener.remove().catch(() => {});
+        resolve();
+      };
       const dismissListener = await AdMob.addListener(
         RewardInterstitialAdPluginEvents.Dismissed,
-        () => {
-          dismissListener.remove();
-          resolve();
-        }
+        finalizar
       );
       const failedListener = await AdMob.addListener(
         RewardInterstitialAdPluginEvents.FailedToShow,
-        () => {
-          failedListener.remove();
-          resolve();
-        }
+        finalizar
       );
     });
 
@@ -110,13 +114,16 @@ export async function mostrarAnuncioRecompensado(onRecompensaGanada: () => void)
     await AdMob.prepareRewardInterstitialAd(opcionesReward);
     await AdMob.showRewardInterstitialAd();
     await cerradoPromesa;
-    await rewardListener.remove();
+    await rewardListener.remove().catch(() => {});
     return recompensaOtorgada;
   } catch (err) {
     console.log("Error en anuncio recompensado:", err);
     return false;
   } finally {
     mostrandoRecompensado = false;
+    if (!pantallaSensibleActiva) {
+      await AdMob.resumeBanner().catch(() => {});
+    }
   }
 }
 

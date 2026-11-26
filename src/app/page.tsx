@@ -184,10 +184,6 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
 
     const apoyarCreadorConAnuncio = async (v: Video) => {
     if (apoyandoVideo) return;
-    const confirmar = window.confirm(
-      `¿Deseas ver un breve anuncio patrocinado para apoyar directamente a ${v.creador}?`
-    );
-    if (!confirmar) return;
     setApoyandoVideo(true);
     try {
 
@@ -204,7 +200,6 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
           mensaje: `${usuario?.username || "Un espectador"} vio un anuncio recompensado para apoyar tu video "${v.titulo}".`,
           leida: false,
         });
-        alert(`¡Gracias por apoyar a ${v.creador}! Tu apoyo fue registrado.`);
       });
     } finally {
       setApoyandoVideo(false);

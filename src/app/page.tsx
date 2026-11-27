@@ -490,6 +490,25 @@ const [menuCuenta, setMenuCuenta] = useState(false);
     cargarDatos();
     iniciarNotificacionesCreadores(() => setTab("subir"));
            CapApp.addListener("appUrlOpen", async ({ url }) => {
+      if (url && url.includes("login-callback")) {
+        try {
+          const { Browser } = await import("@capacitor/browser");
+          await Browser.close();
+        } catch {}
+        const parsed = new URL(url);
+        const code = parsed.searchParams.get("code");
+        if (code) {
+          await supabase.auth.exchangeCodeForSession(code);
+        } else if (parsed.hash) {
+          const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ""));
+          const access_token = hashParams.get("access_token");
+          const refresh_token = hashParams.get("refresh_token");
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token });
+          }
+        }
+        return;
+      }
                     if (url.includes("?v=")) {
           const vidId = new URL(url).searchParams.get("v");
           if (vidId) {
@@ -1968,6 +1987,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

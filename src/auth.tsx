@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState } from "react";
 import { UserCheck, Lock, Mail, AtSign, ShieldCheck, X } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
@@ -197,20 +197,20 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
 
     return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative space-y-4">
-        <button onClick={onCerrar} className="absolute right-4 top-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 cursor-pointer"><X className="w-4 h-4" /></button>
+      <div className="bg-white border border-[#2A3A54] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative space-y-4">
+        <button onClick={onCerrar} className="absolute right-4 top-4 p-2 rounded-full bg-[#0B1120] hover:bg-slate-200 text-[#94A3B8] cursor-pointer"><X className="w-4 h-4" /></button>
         {googleNuevo ? (
           <form onSubmit={guardarCanalNuevoGoogle} className="space-y-4">
             <div className="text-center space-y-1">
               <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black flex items-center justify-center text-base shadow">
                 RT
               </div>
-              <h2 className="text-xl font-black text-slate-900">Completa tu Canal Único</h2>
-              <p className="text-xs text-slate-500">Elige tu identidad única para publicar y monetizar en RUTF Talentico.</p>
+              <h2 className="text-xl font-black text-[#F8FAFC]">Completa tu Canal Único</h2>
+              <p className="text-xs text-[#94A3B8]">Elige tu identidad única para publicar y monetizar en RUTF Talentico.</p>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Nombre de Canal Único (@Usuario)</label>
+              <label className="text-xs font-bold text-[#CBD5E1]">Nombre de Canal Único (@Usuario)</label>
               <div className="relative flex items-center">
                 <AtSign className="w-4 h-4 text-slate-400 absolute left-3" />
                 <input
@@ -234,7 +234,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700">Nombre visible de tu canal</label>
+              <label className="text-xs font-bold text-[#CBD5E1]">Nombre visible de tu canal</label>
               <input
                 type="text"
                 required
@@ -258,11 +258,11 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
 
         <div className="text-center space-y-1">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center mx-auto shadow-sm">RT</div>
-          <h2 className="text-xl font-black text-slate-900">{modo === "registro" ? "Crea tu Canal Único" : "Inicia Sesión en RUTF"}</h2>
-          <p className="text-xs text-slate-500">Cada @usuario es único e irrepetible en toda la plataforma.</p>
+          <h2 className="text-xl font-black text-[#F8FAFC]">{modo === "registro" ? "Crea tu Canal Único" : "Inicia Sesión en RUTF"}</h2>
+          <p className="text-xs text-[#94A3B8]">Cada @usuario es único e irrepetible en toda la plataforma.</p>
         </div>
 
-        <button type="button" onClick={entrarConGoogle} disabled={cargando} className="w-full flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold py-2.5 rounded-xl text-xs shadow-2xs cursor-pointer transition">
+        <button type="button" onClick={entrarConGoogle} disabled={cargando} className="w-full flex items-center justify-center gap-2.5 bg-[#0B1120] hover:bg-[#1E293B] text-[#F8FAFC] text-[#F8FAFC] border border-slate-300 font-bold py-2.5 rounded-xl text-xs shadow-2xs cursor-pointer transition">
                        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z" />
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z" />
@@ -278,15 +278,15 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
           <div className="flex-1 h-px bg-slate-200" /><span>o con tu correo y @usuario</span><div className="flex-1 h-px bg-slate-200" />
         </div>
 
-        <div className="grid grid-cols-2 bg-slate-100 p-1 rounded-xl text-xs font-bold">
-          <button type="button" onClick={() => setModo("registro")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "registro" ? "bg-white text-blue-600 shadow-2xs" : "text-slate-600"}`}>Crear Cuenta</button>
-          <button type="button" onClick={() => setModo("login")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "login" ? "bg-white text-blue-600 shadow-2xs" : "text-slate-600"}`}>Iniciar Sesión</button>
+        <div className="grid grid-cols-2 bg-[#0B1120] p-1 rounded-xl text-xs font-bold">
+          <button type="button" onClick={() => setModo("registro")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "registro" ? "bg-white text-blue-600 shadow-2xs" : "text-[#94A3B8]"}`}>Crear Cuenta</button>
+          <button type="button" onClick={() => setModo("login")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "login" ? "bg-white text-blue-600 shadow-2xs" : "text-[#94A3B8]"}`}>Iniciar Sesión</button>
         </div>
 
         <form onSubmit={manejarEnvio} className="space-y-3">
           {modo === "registro" && (
             <div>
-              <label className="text-xs font-bold text-slate-700 mb-1 block">Nombre de Canal Único (@Usuario)</label>
+              <label className="text-xs font-bold text-[#CBD5E1] mb-1 block">Nombre de Canal Único (@Usuario)</label>
               <div className="relative">
                 <AtSign className="w-4 h-4 text-blue-600 absolute left-3 top-3" />
                 <input required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Ej: RUTF_Talentico o TuNombre" className="w-full border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none focus:border-blue-600" />
@@ -301,7 +301,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
           )}
 
           <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">Correo Electrónico</label>
+            <label className="text-xs font-bold text-[#CBD5E1] mb-1 block">Correo Electrónico</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.com" className="w-full border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none focus:border-blue-600" />
@@ -309,7 +309,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
           </div>
 
           <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">Contraseña</label>
+            <label className="text-xs font-bold text-[#CBD5E1] mb-1 block">Contraseña</label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="w-full border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none focus:border-blue-600" />
@@ -327,3 +327,4 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     </div>
   );
 }
+

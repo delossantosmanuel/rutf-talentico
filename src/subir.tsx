@@ -233,14 +233,35 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       const dataVid = await resVid.json();
       if (!resVid.ok) throw new Error(dataVid.error || "Error preparando video en R2");
 
-      const putVid = await fetch(dataVid.uploadUrl, {
-        method: "PUT",
-        body: archivo,
-      });
-      if (!putVid.ok) throw new Error("Error subiendo video a R2");
-
       clearInterval(intervalo);
-      setProgreso(95);
+      const totalMB = (archivo.size / (1024 * 1024)).toFixed(1);
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", dataVid.uploadUrl, true);
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            const subidoMB = (ev.loaded / (1024 * 1024)).toFixed(1);
+            const pct = Math.min(95, Math.max(5, Math.round((ev.loaded / ev.total) * 95)));
+            setProgreso(pct);
+            setEstadoTexto(`Subiendo video real: ${subidoMB} MB de ${totalMB} MB (${pct}%)...`);
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setProgreso(97);
+            setEstadoTexto(`Video subido (${totalMB} MB). Guardando en RUTF Talentico...`);
+            resolve();
+          } else {
+            reject(new Error(`Error HTTP R2 (${xhr.status}): ${xhr.responseText || xhr.statusText}`));
+          }
+        };
+        xhr.onerror = () => {
+          reject(new Error("Bloqueo de red/CORS al enviar el video directo a Cloudflare R2"));
+        };
+        xhr.send(archivo);
+      });
+
       const urlVideoFinal = dataVid.publicUrl;
 
       const tagsLimpios = hashtags
@@ -510,6 +531,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

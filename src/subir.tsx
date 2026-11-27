@@ -391,7 +391,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           {archivo ? `Video listo: ${archivo.name}` : "Toca aquí para elegir tu video (.mp4 / .mov)"}
         </span>
         <span className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
-          <AlertCircle className="w-3 h-3 text-blue-500" /> Máximo 50 MB • Alta definición recomendada
+          <AlertCircle className="w-3 h-3 text-blue-500" /> Máximo 500 MB • Alta definición recomendada
         </span>
         <input
           type="file"
@@ -514,5 +514,6 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 

@@ -165,8 +165,8 @@ onToggleFan,
     setSubiendoImg(tipo);
     try {
       const optimizado = await comprimirImagen(archivo, tipo === "avatar" ? 512 : 1400, 0.84);
-      const supaBase = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      const supaKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+      const supaBase = (supabase as unknown as { supabaseUrl: string }).supabaseUrl;
+      const supaKey = (supabase as unknown as { supabaseKey: string }).supabaseKey;
       const resR2 = await fetch(`${supaBase}/functions/v1/firmar-r2`, {
         method: "POST",
         headers: {
@@ -1177,6 +1177,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

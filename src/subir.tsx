@@ -205,8 +205,8 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
       if (blobFinal) {
         setDetalleSubida("Subiendo miniatura...");
-        const supaBase = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-        const supaKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+        const supaBase = (supabase as unknown as { supabaseUrl: string }).supabaseUrl;
+        const supaKey = (supabase as unknown as { supabaseKey: string }).supabaseKey;
         const resMin = await fetch(`${supaBase}/functions/v1/firmar-r2`, {
           method: "POST",
           headers: {
@@ -227,8 +227,8 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
       clearInterval(intervalo);
       const totalMB = (archivo.size / (1024 * 1024)).toFixed(1);
-      const supaBase = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      const supaKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+      const supaBase = (supabase as unknown as { supabaseUrl: string }).supabaseUrl;
+      const supaKey = (supabase as unknown as { supabaseKey: string }).supabaseKey;
 
       const urlVideoFinal = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -532,6 +532,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

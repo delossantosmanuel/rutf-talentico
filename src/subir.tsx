@@ -334,7 +334,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           <span className="flex items-center gap-1 text-[#CBD5E1]">
             <Type className="w-3.5 h-3.5 text-blue-600" /> Título del Talento
           </span>
-          <span className={titulo.trim().length >= 15 && titulo.trim().length <= 65 ? "text-[#10B981]" : "text-amber-400"}>{titulo.length} / 80</span>
+          
         </div>
         <input
           required
@@ -345,16 +345,21 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           placeholder="Ej: Mi presentación acústica en vivo..."
           className="w-full px-4 py-2.5 rounded-xl bg-[#0B1120] border border-[#2A3A54] text-sm text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#FF6B00]"
         />
-        <div className="mt-1.5">
-          {titulo.trim().length >= 15 && titulo.trim().length <= 65 ? (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#34D399] text-[11px] font-extrabold">
-              ✓ ¡Excelente! Título optimizado para el Escenario Principal
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
-              Falta contexto — escribe entre 15 y 65 letras para destacar mejor
-            </span>
-          )}
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <div>
+            {titulo.trim().length >= 15 && titulo.trim().length <= 65 ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#34D399] text-[11px] font-extrabold">
+                ✓ ¡Excelente! Título optimizado
+              </span>
+            ) : (
+              <span className="text-[11px] font-semibold text-amber-400">
+                Falta contexto — escribe entre 15 y 65 letras
+              </span>
+            )}
+          </div>
+          <span className={"text-[11px] font-bold shrink-0 " + (titulo.trim().length >= 15 && titulo.trim().length <= 65 ? "text-[#10B981]" : "text-[#94A3B8]")}>
+            {titulo.length}/80
+          </span>
         </div>
       </div>
 
@@ -363,7 +368,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           <span className="flex items-center gap-1 text-[#CBD5E1]">
             <FileText className="w-3.5 h-3.5 text-[#FF6B00]" /> Historia y Contexto del Talento
           </span>
-          <span className={descripcion.trim().length > 30 ? "text-[#10B981]" : "text-amber-400"}>{descripcion.length} / 1000</span>
+          
         </div>
         <textarea
           required
@@ -375,39 +380,47 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           placeholder="Cuenta la historia de tu talento, quién participa y qué lo hace único..."
           className="w-full px-4 py-2.5 rounded-xl bg-[#0B1120] border border-[#2A3A54] text-sm text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#FF6B00]"
         />
-        {descripcion.trim().length > 30 && (
-          <div className="mt-1.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#34D399] text-[11px] font-extrabold">
-              ✓ Ficha completa — presentación profesional
-            </span>
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <div>
+            {descripcion.trim().length > 30 ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#34D399] text-[11px] font-extrabold">
+                ✓ Ficha completa — presentación profesional
+              </span>
+            ) : (
+              <span className="text-[11px] text-[#94A3B8]">Mínimo 20 caracteres</span>
+            )}
           </div>
-        )}
+          <span className={"text-[11px] font-bold shrink-0 " + (descripcion.trim().length > 30 ? "text-[#10B981]" : "text-[#94A3B8]")}>
+            {descripcion.length}/1000
+          </span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="flex items-center gap-1 text-xs font-bold text-[#CBD5E1] mb-1">
-            <Tag className="w-3.5 h-3.5 text-blue-600" /> Etiquetas (separadas por coma)
-          </label>
-          <input
-            maxLength={200}
-            value={etiquetas}
-            onChange={(e) => setEtiquetas(e.target.value)}
-            placeholder="música, canto, talento..."
-            className="w-full px-3.5 py-2 rounded-xl border border-[#2A3A54] text-xs focus:outline-none focus:border-blue-600"
-          />
+      <div className="space-y-2 p-4 rounded-2xl bg-[#0B1120] border border-[#2A3A54]">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <label className="text-xs font-black text-[#F8FAFC] block">Esencia de este Video</label>
+            <span className="text-[11px] text-[#94A3B8]">Selecciona el talento principal de esta publicación</span>
+          </div>
+          {etiquetas && (
+            <span className="text-[11px] font-extrabold text-[#10B981]">✓ {etiquetas}</span>
+          )}
         </div>
-        <div>
-          <label className="flex items-center gap-1 text-xs font-bold text-[#CBD5E1] mb-1">
-            <Hash className="w-3.5 h-3.5 text-blue-600" /> Hashtags
-          </label>
-          <input
-            maxLength={150}
-            value={hashtags}
-            onChange={(e) => setHashtags(e.target.value)}
-            placeholder="#RUTFTalentico #TalentoReal"
-            className="w-full px-3.5 py-2 rounded-xl border border-[#2A3A54] text-xs focus:outline-none focus:border-blue-600"
-          />
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+          {ESENCIAS_RUTF.map((item) => {
+            const activa = etiquetas === item;
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setEtiquetas(item)}
+                className={"shrink-0 px-3.5 py-1.5 rounded-full text-xs font-extrabold border transition cursor-pointer inline-flex items-center gap-1.5 " + (activa ? "bg-[#10B981] border-[#10B981] text-white shadow-md shadow-[#10B981]/30" : "bg-[#162032] border-[#2A3A54] text-[#CBD5E1] hover:border-[#10B981]/60")}
+              >
+                {activa && <span>✓</span>}
+                <span>{item}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -528,7 +541,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           Declaro que este video y su audio son de mi <strong>autoría original</strong> (o cuento con derechos legales
           de uso) y no infringen normas de derechos de autor de terceros.
         </span>
-      </label>
+      </label></div>
 
       <button
         disabled={subiendo || !aceptaCopyright}
@@ -540,6 +553,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

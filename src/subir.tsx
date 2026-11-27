@@ -205,25 +205,35 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
       if (blobFinal) {
         setDetalleSubida("Subiendo miniatura...");
-        const fdMin = new FormData();
-        fdMin.append("file", blobFinal, `miniatura-${Date.now()}.webp`);
-        fdMin.append("carpeta", "miniaturas");
-        const resMin = await fetch("/api/subir-archivo", { method: "POST", body: fdMin });
-        const dataMin = await resMin.json();
-        if (!resMin.ok) throw new Error(dataMin.error || "Error subiendo miniatura");
+        const { data: dataMin, error: errMin } = await supabase.functions.invoke("firmar-r2", {
+          body: {
+            carpeta: "miniaturas",
+            nombreArchivo: `miniatura-${Date.now()}.webp`,
+            tipoContenido: "image/webp",
+          },
+        });
+        if (errMin || !dataMin?.uploadUrl) {
+          throw new Error(errMin?.message || dataMin?.error || "Error preparando miniatura en R2");
+        }
+        const putMin = await fetch(dataMin.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "image/webp" },
+          body: blobFinal,
+        });
+        if (!putMin.ok) throw new Error(`Error subiendo miniatura a R2 (${putMin.status})`);
         miniaturaUrlFinal = dataMin.publicUrl;
       }
 
-      const resVid = await fetch("/api/subir", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const { data: dataVid, error: errVid } = await supabase.functions.invoke("firmar-r2", {
+        body: {
           carpeta: "videos",
           nombreArchivo: archivo.name,
-        }),
+          tipoContenido: archivo.type || "video/mp4",
+        },
       });
-      const dataVid = await resVid.json();
-      if (!resVid.ok) throw new Error(dataVid.error || "Error preparando video en R2");
+      if (errVid || !dataVid?.uploadUrl) {
+        throw new Error(errVid?.message || dataVid?.error || "Error preparando video en R2");
+      }
 
       clearInterval(intervalo);
       const totalMB = (archivo.size / (1024 * 1024)).toFixed(1);
@@ -231,16 +241,19 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", dataVid.uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", archivo.type || "video/mp4");
         xhr.upload.onprogress = (ev) => {
           if (ev.lengthComputable) {
             const subidoMB = (ev.loaded / (1024 * 1024)).toFixed(1);
             const pct = Math.min(95, Math.max(5, Math.round((ev.loaded / ev.total) * 95)));
-            setProgreso(pct); setDetalleSubida(`${subidoMB} MB de ${totalMB} MB (${pct}%)`);
+            setProgreso(pct);
+            setDetalleSubida(`${subidoMB} MB de ${totalMB} MB (${pct}%)`);
           }
         };
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            setProgreso(97); setDetalleSubida(`${totalMB} MB completados (97%)`);
+            setProgreso(97);
+            setDetalleSubida(`${totalMB} MB completados (97%)`);
             resolve();
           } else {
             reject(new Error(`Error HTTP R2 (${xhr.status}): ${xhr.responseText || xhr.statusText}`));
@@ -521,6 +534,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

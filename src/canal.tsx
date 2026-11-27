@@ -165,26 +165,24 @@ onToggleFan,
     setSubiendoImg(tipo);
     try {
       const optimizado = await comprimirImagen(archivo, tipo === "avatar" ? 512 : 1400, 0.84);
-      const resR2 = await fetch("/api/subir", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const { data: dataR2, error: errR2 } = await supabase.functions.invoke("firmar-r2", {
+        body: {
           carpeta: tipo === "avatar" ? "avatares" : "banners",
           nombreArchivo: `${perfil.id}_${tipo}_${Date.now()}.jpg`,
           tipoContenido: "image/jpeg",
-        }),
+        },
       });
-      const dataR2 = await resR2.json();
-      if (!resR2.ok) {
-        alert("No se pudo preparar la imagen: " + (dataR2.error || "Error R2"));
+      if (errR2 || !dataR2?.uploadUrl) {
+        alert("No se pudo preparar la imagen: " + (errR2?.message || dataR2?.error || "Error R2"));
         return;
       }
       const putR2 = await fetch(dataR2.uploadUrl, {
         method: "PUT",
+        headers: { "Content-Type": "image/jpeg" },
         body: optimizado,
       });
       if (!putR2.ok) {
-        alert("No se pudo subir la imagen a R2.");
+        alert(`No se pudo subir la imagen a R2 (${putR2.status}).`);
         return;
       }
       const urlPublica = `${dataR2.publicUrl}?t=${Date.now()}`;
@@ -1181,6 +1179,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

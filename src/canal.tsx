@@ -461,7 +461,7 @@ onToggleFan,
                     className="group relative overflow-hidden inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-extrabold shadow-sm hover:opacity-95 transition"
                   >
                     <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-                    <PlusCircle className="w-3.5 h-3.5 transition-transform duration-200 group-hover:rotate-90" />
+                    <Video className="w-4 h-4" strokeWidth={2} />
                     <span>Subir</span>
                   </button>
                 )}
@@ -1024,6 +1024,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

@@ -1588,7 +1588,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             <div className="flex items-center justify-between bg-[#162032] border border-[#2A3A54] text-[#F8FAFC]/90 rounded-2xl px-4 py-2.5 shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-xs font-black text-slate-800">Talentos Verticales</span>
+                <span className="text-xs font-black text-slate-800"><span className="text-[#F8FAFC] font-black">Talentos Verticales</span></span>
               </div>
               <button type="button" onClick={abrirSubir} className="bg-gradient-to-r from-blue-600 to-orange-500 text-white text-xs font-black px-3.5 py-1.5 rounded-full shadow-md hover:opacity-95 transition flex items-center gap-1.5">
                 <span>+</span>
@@ -1955,6 +1955,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

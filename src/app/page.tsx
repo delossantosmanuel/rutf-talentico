@@ -822,10 +822,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                       </div>
                     ) : tab === "subir" ? (
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#2563EB]/10 text-[#2563EB] text-[10px] font-extrabold border border-[#2563EB]/25">
-                          <PlusCircle className="w-3 h-3 text-[#2563EB]" />
-                          <span>Subir Video</span>
-                        </span>
+                        <span role="button" onClick={() => setTab("monetizacion")} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-extrabold border border-amber-300 cursor-pointer hover:bg-amber-100 transition"><DollarSign className="w-3 h-3 text-amber-600" /><span>Monetización</span></span>
                         <span
                           role="button"
                           tabIndex={0}
@@ -1961,6 +1958,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

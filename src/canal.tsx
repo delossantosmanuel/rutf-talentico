@@ -390,11 +390,10 @@ onToggleFan,
                 {soloLectura ? (
                   <button
                     type="button"
-                    onClick={toggleSuscripcion}
-                    disabled={procesandoSub}
-                    className={"px-5 py-2 rounded-full text-xs font-black transition cursor-pointer " + (suscrito ? "bg-[#0B1120] text-[#F8FAFC] border border-[#2A3A54] hover:border-[#FF6B00]" : "bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white shadow-md")}
+                    onClick={onToggleFan}
+                    className={"px-5 py-2 rounded-full text-xs font-black transition cursor-pointer " + (esFan ? "bg-[#0B1120] text-[#F8FAFC] border border-[#2A3A54] hover:border-[#FF6B00]" : "bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white shadow-md")}
                   >
-                    {suscrito ? "Eres Fan ✓" : "Hazte Fan"}
+                    {esFan ? "Eres Fan ✓" : "Hazte Fan"}
                   </button>
                 ) : (
                   <>
@@ -1025,6 +1024,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

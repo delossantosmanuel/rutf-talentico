@@ -47,3 +47,30 @@ html, body { background-color: #0B1120 !important; color: #F8FAFC !important; }
   animation: rutfShimmer 45s ease-in-out infinite;
   pointer-events: none;
 }
+
+@keyframes rutfAura {
+  0% { transform: scale(0.85); opacity: 0.25; }
+  55% { transform: scale(1.18); opacity: 0.75; }
+  100% { transform: scale(1); opacity: 0.45; }
+}
+@keyframes rutfEq {
+  0%, 100% { transform: scaleY(0.35); opacity: 0.65; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+@keyframes rutfStageIn {
+  0% { opacity: 0; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.rutf-aura {
+  animation: rutfAura 1.3s ease-out forwards;
+}
+.rutf-eq-bar {
+  width: 3px;
+  height: 18px;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #2563EB, #FF6B00);
+  animation: rutfEq 0.95s ease-in-out infinite;
+}
+.rutf-stage-reveal {
+  animation: rutfStageIn 250ms ease-out forwards;
+}

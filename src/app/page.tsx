@@ -735,19 +735,29 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
           {cargando && (
         <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center">
           <div className="fixed top-0 left-0 right-0 h-1 bg-slate-800 overflow-hidden">
-            <div className="h-full w-2/3 bg-gradient-to-r from-emerald-400 via-blue-500 to-emerald-400 animate-pulse" />
+            <div className="h-full w-2/3 bg-gradient-to-r from-[#2563EB] to-[#FF6B00] animate-pulse" />
           </div>
-          <img
-            src="/logo-rt.png"
-            alt="RUTF Talentico"
-            className="w-24 h-24 rounded-3xl shadow-2xl border border-white/10 animate-pulse"
-          />
+          <div className="relative flex items-center justify-center">
+              <div className="rutf-aura absolute -inset-4 rounded-full bg-gradient-to-tr from-[#2563EB]/50 to-[#FF6B00]/50 blur-xl pointer-events-none" />
+              <img
+                src="/logo-rt.png"
+                alt="RUTF Talentico"
+                className="relative w-24 h-24 rounded-3xl shadow-2xl border border-white/15"
+              />
+            </div>
           <p className="mt-4 text-sm font-black tracking-wide text-white">
             RUTF Talentico
           </p>
           <p className="text-[11px] font-bold text-[#94A3B8] mt-0.5">
             Tu talento vale, paso a paso
           </p>
+            <div className="mt-4 flex items-center justify-center gap-1.5 h-5" aria-hidden="true">
+              <span className="rutf-eq-bar" style={{ animationDelay: "0ms" }} />
+              <span className="rutf-eq-bar" style={{ animationDelay: "140ms" }} />
+              <span className="rutf-eq-bar" style={{ animationDelay: "280ms" }} />
+              <span className="rutf-eq-bar" style={{ animationDelay: "140ms" }} />
+              <span className="rutf-eq-bar" style={{ animationDelay: "0ms" }} />
+            </div>
         </div>
       )}
 
@@ -1958,6 +1968,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

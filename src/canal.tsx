@@ -435,7 +435,7 @@ onToggleFan,
         </div>
 
         <div className="px-5 sm:px-6 pb-6">
-          <div className="flex items-end justify-between gap-3 -mt-10 relative z-10">
+          <div className="flex flex-col items-center justify-center gap-3 pt-5 pb-2 relative z-10">
             <input
               ref={inputAvatarRef}
               type="file"
@@ -452,7 +452,7 @@ onToggleFan,
               onClick={() => { if (!soloLectura) inputAvatarRef.current?.click(); }}
 
           
-              className="relative w-20 h-20 aspect-square rounded-full border-4 border-white shadow-md overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
+              className="relative w-24 h-24 aspect-square rounded-full p-[3px] bg-gradient-to-r from-[#2563EB] to-[#FF6B00] shadow-lg overflow-hidden text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
             >
                          {avatarUrl || perfil.username.toLowerCase() === "@rutftalentico" ? (
               <img
@@ -483,7 +483,7 @@ onToggleFan,
               )}
             </div>
 
-            <div className="mt-3 space-y-1">
+            <div className="mt-3 rounded-[14px] bg-[#0F172A] text-white p-4 shadow-md border border-slate-800 text-center space-y-1.5">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 className="text-xl font-black text-slate-900 truncate">
                   {nombreCanal || perfil.username}
@@ -498,7 +498,7 @@ onToggleFan,
                     className={`px-4 py-1.5 rounded-full text-xs font-black transition shadow-xs ${
                       esFan
                         ? "bg-slate-900 text-white"
-                        : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
+                        : "bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white"
                     }`}
                   >
                     {esFan ? "Eres Fan ✓" : "Hazte Fan"}
@@ -507,7 +507,7 @@ onToggleFan,
               </div>
 
 
-            <p className="text-xs font-bold text-slate-500">
+            <p className="text-xs font-bold text-slate-300">
               {perfil.username} • {seguidores.toLocaleString()}{" "}
               {seguidores === 1 ? "Fan" : "Fans"}
 
@@ -735,7 +735,7 @@ onToggleFan,
               <h3 className="text-xl font-black text-slate-900">
                 {nombreCanal || perfil.username}
               </h3>
-              <p className="text-xs font-bold text-slate-500 mt-0.5">{perfil.username}</p>
+              <p className="text-xs font-bold text-slate-300 mt-0.5">{perfil.username}</p>
             </div>
 
             <div className="space-y-2 border-b border-slate-200 pb-5">
@@ -1182,6 +1182,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

@@ -42,7 +42,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
       provider: "google",
       options: {
         redirectTo: esNativo
-          ? "com.rutftalentico.app://login-callback"
+          ? "https://vercel.app"
           : (typeof window !== "undefined" ? window.location.origin : undefined),
         skipBrowserRedirect: esNativo,
       },
@@ -327,5 +327,6 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     </div>
   );
 }
+
 
 

@@ -205,41 +205,40 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
       if (blobFinal) {
         setDetalleSubida("Subiendo miniatura...");
-        const { data: dataMin, error: errMin } = await supabase.functions.invoke("firmar-r2", {
-          body: {
-            carpeta: "miniaturas",
-            nombreArchivo: `miniatura-${Date.now()}.webp`,
-            tipoContenido: "image/webp",
+        const supaBase = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+        const supaKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+        const resMin = await fetch(`${supaBase}/functions/v1/firmar-r2`, {
+          method: "POST",
+          headers: {
+            "apikey": supaKey,
+            "Authorization": `Bearer ${supaKey}`,
+            "Content-Type": "image/webp",
+            "x-carpeta": "miniaturas",
+            "x-nombre-archivo": encodeURIComponent(`miniatura-${Date.now()}.webp`),
           },
-        });
-        if (errMin || !dataMin?.uploadUrl) {
-          throw new Error(errMin?.message || dataMin?.error || "Error preparando miniatura en R2");
-        }
-        const putMin = await fetch(dataMin.uploadUrl, {
-          method: "PUT",
           body: await blobFinal.arrayBuffer(),
         });
-        if (!putMin.ok) throw new Error(`Error subiendo miniatura a R2 (${putMin.status})`);
+        const dataMin = await resMin.json();
+        if (!resMin.ok || !dataMin?.publicUrl) {
+          throw new Error(dataMin?.error || `Error miniatura (${resMin.status})`);
+        }
         miniaturaUrlFinal = dataMin.publicUrl;
-      }
-
-      const { data: dataVid, error: errVid } = await supabase.functions.invoke("firmar-r2", {
-        body: {
-          carpeta: "videos",
-          nombreArchivo: archivo.name,
-          tipoContenido: archivo.type || "video/mp4",
-        },
-      });
-      if (errVid || !dataVid?.uploadUrl) {
-        throw new Error(errVid?.message || dataVid?.error || "Error preparando video en R2");
       }
 
       clearInterval(intervalo);
       const totalMB = (archivo.size / (1024 * 1024)).toFixed(1);
+      const supaBase = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+      const supaKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-      await new Promise<void>((resolve, reject) => {
+      const urlVideoFinal = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("PUT", dataVid.uploadUrl, true);
+        xhr.open("POST", `${supaBase}/functions/v1/firmar-r2`, true);
+        xhr.setRequestHeader("apikey", supaKey);
+        xhr.setRequestHeader("Authorization", `Bearer ${supaKey}`);
+        xhr.setRequestHeader("Content-Type", archivo.type || "video/mp4");
+        xhr.setRequestHeader("x-carpeta", "videos");
+        xhr.setRequestHeader("x-nombre-archivo", encodeURIComponent(archivo.name));
+
         xhr.upload.onprogress = (ev) => {
           if (ev.lengthComputable) {
             const subidoMB = (ev.loaded / (1024 * 1024)).toFixed(1);
@@ -249,21 +248,22 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           }
         };
         xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            setProgreso(97);
-            setDetalleSubida(`${totalMB} MB completados (97%)`);
-            resolve();
-          } else {
-            reject(new Error(`Error HTTP R2 (${xhr.status}): ${xhr.responseText || xhr.statusText}`));
+          try {
+            const resp = JSON.parse(xhr.responseText || "{}");
+            if (xhr.status >= 200 && xhr.status < 300 && resp.publicUrl) {
+              setProgreso(97);
+              setDetalleSubida(`${totalMB} MB completados (97%)`);
+              resolve(resp.publicUrl);
+            } else {
+              reject(new Error(resp.error || `Error servidor (${xhr.status})`));
+            }
+          } catch {
+            reject(new Error(`Respuesta inesperada (${xhr.status})`));
           }
         };
-        xhr.onerror = () => {
-          reject(new Error("Bloqueo de red/CORS al enviar el video directo a Cloudflare R2"));
-        };
-        archivo.arrayBuffer().then((buf) => xhr.send(buf)).catch(reject);
+        xhr.onerror = () => reject(new Error("Error de conexión al enviar el video"));
+        xhr.send(archivo);
       });
-
-      const urlVideoFinal = dataVid.publicUrl;
 
       const tagsLimpios = hashtags
         .split(/\s+/)
@@ -532,6 +532,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

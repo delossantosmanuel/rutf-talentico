@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Shield, FileText, Trash2, HeartHandshake, Sparkles, X, AlertTriangle } from "lucide-react";
@@ -41,10 +41,10 @@ export function BarraInstitucional({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4"
+            className="w-full max-w-md bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-900">
+              <h3 className="text-base font-black text-[#F8FAFC]">
                 {modalAbierto === "fundacion"
                   ? "Fundación RUTF Talentico"
                   : "Programa RUTF Pro"}
@@ -59,13 +59,13 @@ export function BarraInstitucional({
             </div>
 
             {modalAbierto === "fundacion" ? (
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
                 Apoyamos a nuevos talentos independientes brindándoles visibilidad gratuita,
                 herramientas de difusión y oportunidades reales de crecimiento creativo sin
                 barreras económicas.
               </p>
             ) : (
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
                 Los creadores verificados con contenido 100 % original acceden a posicionamiento
                 destacado y participación en ingresos publicitarios al completar los requisitos
                 del programa.
@@ -171,7 +171,7 @@ export function PieLegal({
   return (
     <>
       <footer className="max-w-7xl mx-auto px-4 py-8 mt-8 border-t border-slate-200 text-center space-y-2.5">
-        <p className="text-xs font-extrabold text-slate-600">
+        <p className="text-xs font-extrabold text-[#94A3B8]">
           RUTF Talentico © 2026 • Plataforma Global de Talento Original
         </p>
 
@@ -217,10 +217,10 @@ export function PieLegal({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl max-h-[85vh] bg-white rounded-3xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden"
+            className="w-full max-w-2xl max-h-[85vh] bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-3xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden"
           >
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-base sm:text-lg font-black text-slate-900">
+              <h3 className="text-base sm:text-lg font-black text-[#F8FAFC]">
                 {docActivo === "privacidad"
                   ? "Política de Privacidad • RUTF Talentico"
                   : "Términos y Condiciones de Uso • RUTF Talentico"}
@@ -234,7 +234,7 @@ export function PieLegal({
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed text-left">
+            <div className="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-[#CBD5E1] leading-relaxed text-left">
               {docActivo === "privacidad" ? (
                 <>
                   <p>
@@ -311,12 +311,12 @@ export function PieLegal({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4 text-left"
+            className="w-full max-w-md bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4 text-left"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2 text-red-600">
                 <AlertTriangle className="w-5 h-5" />
-                <h3 className="text-base font-black text-slate-900">
+                <h3 className="text-base font-black text-[#F8FAFC]">
                   Eliminar Cuenta y Canal
                 </h3>
               </div>
@@ -349,7 +349,7 @@ export function PieLegal({
                 onChange={(e) => setAceptaTerminosBaja(e.target.checked)}
                 className="mt-0.5 w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500 shrink-0"
               />
-              <span className="text-xs text-slate-700 leading-relaxed">
+              <span className="text-xs text-[#CBD5E1] leading-relaxed">
                 He leído y acepto los términos de eliminación definitiva de{" "}
                 <strong>RUTF Talentico</strong>, entendiendo que mi canal se borrará por completo.
               </span>
@@ -360,7 +360,7 @@ export function PieLegal({
                 type="button"
                 disabled={eliminando}
                 onClick={() => setModalEliminar(false)}
-                className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-xs font-extrabold hover:bg-slate-50"
+                className="px-4 py-2 rounded-full border border-slate-300 text-[#CBD5E1] text-xs font-extrabold hover:bg-slate-50"
               >
                 Cancelar
               </button>
@@ -380,3 +380,4 @@ export function PieLegal({
     </>
   );
 }
+

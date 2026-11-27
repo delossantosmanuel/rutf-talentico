@@ -434,7 +434,7 @@ onToggleFan,
               <p className="text-base sm:text-lg font-black text-[#60A5FA]">
                 {videos.reduce((acc, item) => acc + (item.vistas || 0), 0)}
               </p>
-              <p className="text-[10px] sm:text-xs font-bold text-[#94A3B8] uppercase tracking-wider">Vistas Calificadas</p>
+              <p className="text-[10px] sm:text-xs font-bold text-[#94A3B8] uppercase tracking-wider">Alcance Total</p>
             </div>
           </div>
 
@@ -652,7 +652,7 @@ onToggleFan,
               </div>
 
               <div className="flex items-center justify-between py-2">
-                <span className="text-[#94A3B8] font-semibold">Visualizaciones totales</span>
+                <span className="text-[#94A3B8] font-semibold">Alcance histórico</span>
                 <span className="font-extrabold text-[#F8FAFC]">
                   {vistasTotales.toLocaleString()}
                 </span>
@@ -1057,6 +1057,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

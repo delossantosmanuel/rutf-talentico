@@ -1020,7 +1020,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                             setCanalVisitado(c.username);
                             setTab("canal");
                           }}
-                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-blue-50 text-left text-xs font-extrabold text-slate-800"
+                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl hover:bg-[#1E293B] text-left text-xs font-extrabold text-[#F8FAFC]"
                         >
                           <span>{c.username}</span>
                           <span className="text-[10px] font-bold text-blue-600">Ver canal →</span>
@@ -1121,8 +1121,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
               }}
               className="bg-slate-950 relative w-full aspect-video max-h-[540px] flex items-center justify-center group"
             >
-              <video
-                src={videoActivo.video_url}
+              <video preload="auto" src={videoActivo.video_url}
                 poster={videoActivo.miniatura_url || undefined}
                 controls
                 controlsList="nodownload noplaybackrate"
@@ -1955,6 +1954,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

@@ -413,7 +413,7 @@ onToggleFan,
                       className="px-4 py-2 rounded-full bg-[#0B1120] border border-[#2A3A54] hover:border-[#2563EB] text-[#F8FAFC] text-xs font-extrabold inline-flex items-center gap-1.5 transition cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5 text-[#FF6B00]" />
-                      <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
+                      <span>{editorAbierto ? "Cancelar" : "Editar Descripción"}</span>
                     </button>
                   </>
                 )}
@@ -438,9 +438,42 @@ onToggleFan,
             </div>
           </div>
 
-          <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
             {bio || "Creador oficial en RUTF Talentico."}
           </p>
+
+          {editorAbierto && !soloLectura && (
+            <form onSubmit={guardarCambios} className="pt-2 space-y-3 border-t border-[#2A3A54]">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-[#F8FAFC]">Descripción del canal</label>
+                <span className="text-[11px] font-bold text-[#94A3B8]">{bio.length}/1000</span>
+              </div>
+              <textarea
+                rows={4}
+                maxLength={1000}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Cuéntale al mundo sobre tu talento y el contenido de tu canal..."
+                className="w-full rounded-xl bg-[#0B1120] border border-[#2A3A54] focus:border-[#FF6B00] p-3 text-xs sm:text-sm text-[#F8FAFC] placeholder:text-[#94A3B8] outline-none resize-none"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditorAbierto(false)}
+                  className="px-4 py-2 rounded-full bg-[#0B1120] border border-[#2A3A54] text-xs font-bold text-[#94A3B8] hover:text-[#F8FAFC] cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={guardando}
+                  className="px-5 py-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-md transition cursor-pointer disabled:opacity-60"
+                >
+                  {guardando ? "Guardando..." : "Guardar Descripción"}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
 
@@ -1024,6 +1057,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

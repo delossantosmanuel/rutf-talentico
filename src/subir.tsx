@@ -530,7 +530,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         </div>
       )}
 
-      <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#0B1120] border border-[#2A3A54] cursor-pointer">
+      <div className={"p-4 rounded-2xl bg-[#162032] border border-[#2A3A54] border-l-[3px] transition space-y-2 " + (aceptaCopyright ? "border-l-[#10B981]" : "border-l-[#2563EB]")}><div className="flex items-center justify-between"><span className={"text-[10px] font-black tracking-wider uppercase " + (aceptaCopyright ? "text-[#10B981]" : "text-[#60A5FA]")}>{aceptaCopyright ? "✓ Sello de Autoría Validado" : "Verificación de Autoría Obligatoria"}</span></div><label className="flex items-start gap-2.5 cursor-pointer">
         <input
           type="checkbox"
           checked={aceptaCopyright}
@@ -553,6 +553,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

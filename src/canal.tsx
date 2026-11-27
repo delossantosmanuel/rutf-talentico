@@ -401,7 +401,7 @@ onToggleFan,
                       <button
                         type="button"
                         onClick={onAbrirSubir}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-md transition cursor-pointer"
+                        className="rutf-shimmer inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-md transition cursor-pointer"
                       >
                         <Video className="w-3.5 h-3.5" strokeWidth={2} />
                         <span>Subir Video</span>
@@ -1057,6 +1057,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

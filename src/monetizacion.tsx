@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
@@ -334,7 +334,7 @@ export default function PanelMonetizacion({
 
       <div className="space-y-2.5">
         <div className="flex items-center justify-between gap-2 px-0.5">
-<h3 className="pt-2 text-[13px] sm:text-base font-black text-slate-900 tracking-tight whitespace-nowrap">
+<h3 className="pt-2 text-[13px] sm:text-base font-black text-[#F8FAFC] tracking-tight whitespace-nowrap">
   Requisitos de Elegibilidad <span className="hidden xs:inline sm:inline">en Tiempo Real</span>
 </h3>
 
@@ -450,3 +450,4 @@ export default function PanelMonetizacion({
     </div>
   );
 }
+

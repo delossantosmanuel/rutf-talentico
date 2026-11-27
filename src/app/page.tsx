@@ -915,10 +915,6 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     </div>
                   </button>
                   {menuCuenta && (
-                    <div className="absolute left-1/2 -translate-x-1/2 top-12
-                    </div>
-                  </button>
-                  {menuCuenta && (
                     <div className="absolute left-1/2 -translate-x-1/2 top-11 z-50 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 text-xs font-bold">
                       <div className="px-3 py-2 border-b border-slate-100">
                         <p className="font-black text-[#1E293B] truncate">{usuario.username}</p>
@@ -1965,6 +1961,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

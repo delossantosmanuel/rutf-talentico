@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -165,22 +165,30 @@ onToggleFan,
     setSubiendoImg(tipo);
     try {
       const optimizado = await comprimirImagen(archivo, tipo === "avatar" ? 512 : 1400, 0.84);
-      const ruta = `${perfil.id}_${tipo}_${Date.now()}.jpg`;
-
-      const { error: upErr } = await supabase.storage
-        .from("perfiles")
-        .upload(ruta, optimizado, {
-          contentType: "image/jpeg",
-          upsert: true,
-        });
-
-      if (upErr) {
-        alert("No se pudo subir la imagen: " + upErr.message);
+      const resR2 = await fetch("/api/subir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          carpeta: tipo === "avatar" ? "avatares" : "banners",
+          nombreArchivo: `${perfil.id}_${tipo}_${Date.now()}.jpg`,
+          tipoContenido: "image/jpeg",
+        }),
+      });
+      const dataR2 = await resR2.json();
+      if (!resR2.ok) {
+        alert("No se pudo preparar la imagen: " + (dataR2.error || "Error R2"));
         return;
       }
-
-      const { data: pub } = supabase.storage.from("perfiles").getPublicUrl(ruta);
-      const urlPublica = `${pub.publicUrl}?t=${Date.now()}`;
+      const putR2 = await fetch(dataR2.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "image/jpeg" },
+        body: optimizado,
+      });
+      if (!putR2.ok) {
+        alert("No se pudo subir la imagen a R2.");
+        return;
+      }
+      const urlPublica = `${dataR2.publicUrl}?t=${Date.now()}`;
 
       if (tipo === "avatar") {
         setAvatarUrl(urlPublica);
@@ -1174,3 +1182,4 @@ export function ModalCompartir({
     </div>
   );
 }
+

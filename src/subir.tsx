@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useState } from "react";
 import { Upload, Hash, Tag, FileText, Type, AlertCircle, CheckCircle2, Image as ImageIcon, Sparkles } from "lucide-react";
 
@@ -122,8 +122,8 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
   const seleccionarArchivo = (file: File | null) => {
     if (!file) return;
-    if (file.size / (1024 * 1024) > 50) {
-      alert("Por ahora aceptamos videos de hasta 50 MB mientras seguimos creciendo.");
+    if (file.size / (1024 * 1024) > 500) {
+      alert("Por ahora aceptamos videos de hasta 500 MB mientras seguimos creciendo.");
       return;
     }
     setArchivo(file);
@@ -203,23 +203,49 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       }
 
       if (blobFinal) {
-        const nombreMini = `miniaturas/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
-        const { error: miniErr } = await supabase.storage
-          .from("videos-rutf")
-          .upload(nombreMini, blobFinal, { contentType: "image/webp" });
-        if (!miniErr) {
-          const { data: miniPub } = supabase.storage.from("videos-rutf").getPublicUrl(nombreMini);
-          miniaturaUrlFinal = miniPub.publicUrl;
-        }
+        const resMin = await fetch("/api/subir", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            carpeta: "miniaturas",
+            nombreArchivo: `miniatura-${Date.now()}.webp`,
+            tipoContenido: "image/webp",
+          }),
+        });
+        const dataMin = await resMin.json();
+        if (!resMin.ok) throw new Error(dataMin.error || "Error preparando miniatura en R2");
+
+        const putMin = await fetch(dataMin.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "image/webp" },
+          body: blobFinal,
+        });
+        if (!putMin.ok) throw new Error("Error subiendo miniatura a R2");
+        miniaturaUrlFinal = dataMin.publicUrl;
       }
 
-      const nombre = `${Date.now()}-${archivo.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const { error: upErr } = await supabase.storage.from("videos-rutf").upload(nombre, archivo);
-      clearInterval(intervalo);
-      if (upErr) throw new Error(upErr.message);
+      const resVid = await fetch("/api/subir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          carpeta: "videos",
+          nombreArchivo: archivo.name,
+          tipoContenido: archivo.type || "video/mp4",
+        }),
+      });
+      const dataVid = await resVid.json();
+      if (!resVid.ok) throw new Error(dataVid.error || "Error preparando video en R2");
 
+      const putVid = await fetch(dataVid.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": archivo.type || "video/mp4" },
+        body: archivo,
+      });
+      if (!putVid.ok) throw new Error("Error subiendo video a R2");
+
+      clearInterval(intervalo);
       setProgreso(95);
-      const { data: pubData } = supabase.storage.from("videos-rutf").getPublicUrl(nombre);
+      const urlVideoFinal = dataVid.publicUrl;
 
       const tagsLimpios = hashtags
         .split(/\s+/)
@@ -236,7 +262,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           creador: canalActual,
           nivel: "Semilla",
           tipo,
-          video_url: pubData.publicUrl,
+          video_url: urlVideoFinal,
           miniatura_url: miniaturaUrlFinal,
           vistas: 0,
           likes: 0,
@@ -488,4 +514,5 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 

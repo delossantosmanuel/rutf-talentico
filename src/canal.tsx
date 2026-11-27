@@ -165,22 +165,16 @@ onToggleFan,
     setSubiendoImg(tipo);
     try {
       const optimizado = await comprimirImagen(archivo, tipo === "avatar" ? 512 : 1400, 0.84);
-      const supaBase = (supabase as unknown as { supabaseUrl: string }).supabaseUrl;
-      const supaKey = (supabase as unknown as { supabaseKey: string }).supabaseKey;
-      const resR2 = await fetch(`${supaBase}/functions/v1/firmar-r2`, {
-        method: "POST",
-        headers: {
-          "apikey": supaKey,
-          "Authorization": `Bearer ${supaKey}`,
-          "Content-Type": "image/jpeg",
-          "x-carpeta": tipo === "avatar" ? "avatares" : "banners",
-          "x-nombre-archivo": encodeURIComponent(`${perfil.id}_${tipo}_${Date.now()}.jpg`),
-        },
-        body: await optimizado.arrayBuffer(),
+      const { data: dataR2, error: errR2 } = await supabase.functions.invoke("firmar-r2", {
+        body: { carpeta: tipo === "avatar" ? "avatares" : "banners", nombreArchivo: `${perfil.id}_${tipo}_${Date.now()}.jpg` },
       });
-      const dataR2 = await resR2.json();
-      if (!resR2.ok || !dataR2?.publicUrl) {
-        alert("No se pudo subir la imagen: " + (dataR2?.error || "Error"));
+      if (errR2 || !dataR2?.uploadUrl) {
+        alert("No se pudo preparar la imagen: " + (errR2?.message || dataR2?.error || "Error R2"));
+        return;
+      }
+      const putR2 = await fetch(dataR2.uploadUrl, { method: "PUT", body: await optimizado.arrayBuffer() });
+      if (!putR2.ok) {
+        alert(`No se pudo subir la imagen a R2 (${putR2.status}).`);
         return;
       }
       const urlPublica = `${dataR2.publicUrl}?t=${Date.now()}`;
@@ -1177,6 +1171,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

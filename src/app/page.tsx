@@ -495,18 +495,42 @@ const [menuCuenta, setMenuCuenta] = useState(false);
           const { Browser } = await import("@capacitor/browser");
           await Browser.close();
         } catch {}
-        const parsed = new URL(url);
-        const code = parsed.searchParams.get("code");
-        if (code) {
-          await supabase.auth.exchangeCodeForSession(code); const { data: uData } = await supabase.auth.getUser(); if (uData?.user?.email) { const { data: perfilDb } = await supabase.from("usuarios_rutf").select("*").eq("email", uData.user.email.toLowerCase()).maybeSingle(); if (perfilDb) { setUsuario(perfilDb); localStorage.setItem("rutf_usuario", JSON.stringify(perfilDb)); } }
-        } else if (parsed.hash) {
-          const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ""));
-          const access_token = hashParams.get("access_token");
-          const refresh_token = hashParams.get("refresh_token");
-          if (access_token && refresh_token) {
-            await supabase.auth.setSession({ access_token, refresh_token });
+        try {
+          const parsed = new URL(url);
+          const code = parsed.searchParams.get("code");
+          if (code) {
+            await supabase.auth.exchangeCodeForSession(code);
+          } else if (parsed.hash) {
+            const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ""));
+            const access_token = hashParams.get("access_token");
+            const refresh_token = hashParams.get("refresh_token");
+            if (access_token && refresh_token) {
+              await supabase.auth.setSession({ access_token, refresh_token });
+            }
           }
-        }
+          const { data: uData } = await supabase.auth.getUser();
+          const authUser = uData?.user;
+          if (authUser?.email) {
+            const emailNorm = authUser.email.trim().toLowerCase();
+            let { data: perfilDb } = await supabase.from("usuarios_rutf").select("*").eq("email", emailNorm).maybeSingle();
+            if (!perfilDb) {
+              const baseHandle = "@" + emailNorm.split("@")[0].replace(/[^a-z0-9_]/g, "").slice(0, 14) + "_" + authUser.id.replace(/-/g, "").slice(0, 4);
+              const { data: creado } = await supabase.from("usuarios_rutf").insert([{
+                id: authUser.id,
+                email: emailNorm,
+                username: baseHandle,
+                username_lower: baseHandle.toLowerCase(),
+                avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || "",
+                es_fundador: false,
+              }]).select("*").maybeSingle();
+              perfilDb = creado;
+            }
+            if (perfilDb) {
+              setUsuario(perfilDb);
+              localStorage.setItem("rutf_usuario", JSON.stringify(perfilDb));
+            }
+          }
+        } catch {}
         return;
       }
                     if (url.includes("?v=")) {
@@ -1987,6 +2011,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

@@ -498,7 +498,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
         const parsed = new URL(url);
         const code = parsed.searchParams.get("code");
         if (code) {
-          await supabase.auth.exchangeCodeForSession(code);
+          await supabase.auth.exchangeCodeForSession(code); const { data: uData } = await supabase.auth.getUser(); if (uData?.user?.email) { const { data: perfilDb } = await supabase.from("usuarios_rutf").select("*").eq("email", uData.user.email.toLowerCase()).maybeSingle(); if (perfilDb) { setUsuario(perfilDb); localStorage.setItem("rutf_usuario", JSON.stringify(perfilDb)); } }
         } else if (parsed.hash) {
           const hashParams = new URLSearchParams(parsed.hash.replace(/^#/, ""));
           const access_token = hashParams.get("access_token");
@@ -523,7 +523,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
             const urlObj = new URL(url);
             const code = urlObj.searchParams.get("code");
             if (code) {
-              await supabase.auth.exchangeCodeForSession(code);
+              await supabase.auth.exchangeCodeForSession(code); const { data: uData } = await supabase.auth.getUser(); if (uData?.user?.email) { const { data: perfilDb } = await supabase.from("usuarios_rutf").select("*").eq("email", uData.user.email.toLowerCase()).maybeSingle(); if (perfilDb) { setUsuario(perfilDb); localStorage.setItem("rutf_usuario", JSON.stringify(perfilDb)); } }
             }
           } else if (url.includes("access_token")) {
             const hashPart = url.split("#")[1];
@@ -1987,6 +1987,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

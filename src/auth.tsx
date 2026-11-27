@@ -197,7 +197,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
 
     return (
     <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white border border-[#2A3A54] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative space-y-4">
+      <div className="bg-[#162032] border border-[#2A3A54] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative space-y-4">
         <button onClick={onCerrar} className="absolute right-4 top-4 p-2 rounded-full bg-[#0B1120] hover:bg-slate-200 text-[#94A3B8] cursor-pointer"><X className="w-4 h-4" /></button>
         {googleNuevo ? (
           <form onSubmit={guardarCanalNuevoGoogle} className="space-y-4">
@@ -212,7 +212,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
             <div className="space-y-1">
               <label className="text-xs font-bold text-[#CBD5E1]">Nombre de Canal Único (@Usuario)</label>
               <div className="relative flex items-center">
-                <AtSign className="w-4 h-4 text-slate-400 absolute left-3" />
+                <AtSign className="w-4 h-4 text-[#94A3B8] absolute left-3" />
                 <input
                   type="text"
                   required
@@ -223,7 +223,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
                 />
               </div>
               {handleDisponible === "verificando" && (
-                <p className="text-[11px] text-slate-400 font-semibold">Verificando disponibilidad...</p>
+                <p className="text-[11px] text-[#94A3B8] font-semibold">Verificando disponibilidad...</p>
               )}
               {handleDisponible === "disponible" && (
                 <p className="text-[11px] text-emerald-600 font-bold">✓ {limpiarHandle(username)} está disponible</p>
@@ -274,13 +274,13 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
 
         </button>
 
-        <div className="flex items-center gap-2 text-[11px] text-slate-400">
+        <div className="flex items-center gap-2 text-[11px] text-[#94A3B8]">
           <div className="flex-1 h-px bg-slate-200" /><span>o con tu correo y @usuario</span><div className="flex-1 h-px bg-slate-200" />
         </div>
 
         <div className="grid grid-cols-2 bg-[#0B1120] p-1 rounded-xl text-xs font-bold">
-          <button type="button" onClick={() => setModo("registro")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "registro" ? "bg-white text-blue-600 shadow-2xs" : "text-[#94A3B8]"}`}>Crear Cuenta</button>
-          <button type="button" onClick={() => setModo("login")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "login" ? "bg-white text-blue-600 shadow-2xs" : "text-[#94A3B8]"}`}>Iniciar Sesión</button>
+          <button type="button" onClick={() => setModo("registro")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "registro" ? "bg-[#162032] text-blue-600 shadow-2xs" : "text-[#94A3B8]"}`}>Crear Cuenta</button>
+          <button type="button" onClick={() => setModo("login")} className={`py-2 rounded-lg cursor-pointer transition ${modo === "login" ? "bg-[#162032] text-blue-600 shadow-2xs" : "text-[#94A3B8]"}`}>Iniciar Sesión</button>
         </div>
 
         <form onSubmit={manejarEnvio} className="space-y-3">
@@ -294,7 +294,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
               {username.trim().toLowerCase().replace(/^@/, "") === "rutf_talentico" && (
                 <div className="mt-2 bg-blue-50 border border-blue-200 rounded-xl p-2.5">
                   <label className="text-[11px] font-extrabold text-blue-800 flex items-center gap-1 mb-1"><ShieldCheck className="w-3.5 h-3.5" /> Clave Oficial del Fundador</label>
-                  <input required type="password" value={claveFundador} onChange={(e) => setClaveFundador(e.target.value)} placeholder="Escribe RUTF2026" className="w-full bg-white border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs" />
+                  <input required type="password" value={claveFundador} onChange={(e) => setClaveFundador(e.target.value)} placeholder="Escribe RUTF2026" className="w-full bg-[#162032] border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs" />
                 </div>
               )}
             </div>
@@ -303,7 +303,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
           <div>
             <label className="text-xs font-bold text-[#CBD5E1] mb-1 block">Correo Electrónico</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Mail className="w-4 h-4 text-[#94A3B8] absolute left-3 top-3" />
               <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.com" className="w-full border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none focus:border-blue-600" />
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
           <div>
             <label className="text-xs font-bold text-[#CBD5E1] mb-1 block">Contraseña</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-[#94A3B8] absolute left-3 top-3" />
               <input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="w-full border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none focus:border-blue-600" />
             </div>
           </div>
@@ -327,4 +327,5 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     </div>
   );
 }
+
 

@@ -383,3 +383,4 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
 
 
 
+

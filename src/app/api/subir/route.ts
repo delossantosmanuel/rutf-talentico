@@ -15,8 +15,8 @@ const r2 = new S3Client({
 
 export async function POST(req: Request) {
   try {
-    const { carpeta = "videos", nombreArchivo, tipoContenido } = await req.json();
-    if (!nombreArchivo || !tipoContenido) {
+    const { carpeta = "videos", nombreArchivo } = await req.json();
+    if (!nombreArchivo) {
       return NextResponse.json({ error: "Faltan datos del archivo" }, { status: 400 });
     }
 
@@ -26,7 +26,6 @@ export async function POST(req: Request) {
     const comando = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME || "rutf-talentico",
       Key: ruta,
-      ContentType: tipoContenido,
     });
 
     const uploadUrl = await getSignedUrl(r2, comando, { expiresIn: 3600 });

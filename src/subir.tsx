@@ -209,7 +209,6 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           body: JSON.stringify({
             carpeta: "miniaturas",
             nombreArchivo: `miniatura-${Date.now()}.webp`,
-            tipoContenido: "image/webp",
           }),
         });
         const dataMin = await resMin.json();
@@ -229,7 +228,6 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         body: JSON.stringify({
           carpeta: "videos",
           nombreArchivo: archivo.name,
-          tipoContenido: archivo.type || "video/mp4",
         }),
       });
       const dataVid = await resVid.json();
@@ -512,6 +510,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

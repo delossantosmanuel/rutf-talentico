@@ -8,7 +8,7 @@ import {
   Eye,
   Save,
   ArrowLeft,
-  PlusCircle,
+  Video,
   MoreVertical,
   Edit3,
   Info,
@@ -248,14 +248,14 @@ onToggleFan,
         </div>
       )}
 
-      <div className="sticky top-0 z-30 -mx-4 px-4 py-2.5 bg-white/95 backdrop-blur border-b border-slate-200 space-y-2">
+      <div className="sticky top-0 z-30 -mx-4 px-4 py-2.5 bg-[#0B1120]/95 backdrop-blur-md border-b border-[#2A3A54] space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {onVolver && (
               <button
                 type="button"
                 onClick={onVolver}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold transition shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1E293B] hover:bg-slate-200 text-[#F8FAFC] text-xs font-extrabold transition shrink-0"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Volver</span>
@@ -263,39 +263,25 @@ onToggleFan,
             )}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 aspect-square rounded-full overflow-hidden bg-gradient-to-tr from-blue-600 to-orange-500 text-white font-black text-xs flex items-center justify-center shrink-0">
-                           {avatarUrl || perfil.username.toLowerCase() === "@rutftalentico" ? (
-                <img
-                  src={avatarUrl || "/logo-rutf.png"}
-                  alt="Cuenta"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                inicialesCanal
-              )}
-
-            </div>
-
-            <div className="relative">
+          <div className="flex items-center gap-2 shrink-0"><div className="relative">
               <button
                 type="button"
                 onClick={() => setMenuOpciones(!menuOpciones)}
                 aria-label="Opciones del canal"
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-700 transition"
+                className="p-1.5 rounded-full hover:bg-[#1E293B] text-[#CBD5E1] transition"
               >
                 <MoreVertical className="w-5 h-5" />
               </button>
 
               {menuOpciones && (
-                <div className="absolute right-0 top-10 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl py-1.5 z-40 text-xs font-bold text-slate-700">
+                <div className="absolute right-0 top-10 w-52 bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-2xl shadow-xl py-1.5 z-40 text-xs font-bold text-[#CBD5E1]">
                   <button
                     type="button"
                     onClick={() => {
                       setMenuOpciones(false);
                       setModalInfoCanal(true);
                     }}
-                    className="w-full px-3.5 py-2.5 text-left hover:bg-[#E2E8F0] flex items-center gap-2"
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-[#0B1120] flex items-center gap-2"
                   >
                     <Info className="w-4 h-4 text-blue-600" />
                     <span>Información del canal</span>
@@ -310,9 +296,9 @@ onToggleFan,
                       setMenuOpciones(false);
                       setEditorAbierto(!editorAbierto);
                     }}
-                    className="w-full px-3.5 py-2.5 text-left hover:bg-[#E2E8F0] flex items-center gap-2"
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-[#0B1120] flex items-center gap-2"
                   >
-                    <Edit3 className="w-4 h-4 text-slate-600" />
+                    <Edit3 className="w-4 h-4 text-[#94A3B8]" />
                     <span>{editorAbierto ? "Cerrar edición" : "Editar canal"}</span>
                   </button>
                   )}
@@ -336,280 +322,137 @@ onToggleFan,
           </div>
         </div>
 
-        {!soloLectura && onAbrirSubir && (
-
-          <div className="flex justify-end pt-0.5">
-            <button
-              type="button"
-              onClick={onAbrirSubir}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-sm transition"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Subir Video</span>
-            </button>
-          </div>
-        )}
-      </div>
-
-               <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-        <div className="relative h-[120px] bg-gradient-to-r from-blue-950 via-blue-800 to-slate-900">
-                       {bannerUrl ? (
-          <img src={bannerUrl} alt="Banner del canal" className="w-full h-full object-cover" />
-        ) : perfil.username.toLowerCase() === "@rutftalentico" ? (
-          <div className="w-full h-full relative bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 flex items-center justify-between px-4 sm:px-10 overflow-hidden select-none">
-            <svg viewBox="0 0 180 180" className="hidden sm:block w-28 h-28 md:w-36 md:h-36 shrink-0 opacity-90">
-              <circle cx="90" cy="90" r="82" fill="#ffffff" fillOpacity="0.06" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="2" />
-              <circle cx="78" cy="56" r="20" fill="#f8fafc" />
-              <path d="M44 148 C44 108, 112 108, 112 148 Z" fill="#e2e8f0" />
-              <rect x="124" y="64" width="8" height="68" rx="4" fill="#cbd5e1" />
-              <circle cx="128" cy="58" r="12" fill="#ffffff" stroke="#0f172a" strokeWidth="3" />
-              <circle cx="34" cy="36" r="18" fill="#10b981" />
-              <text x="34" y="43" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="20" fill="#ffffff">$</text>
-            </svg>
-
-            <div className="text-center mx-auto z-10 px-2">
-              <span className="inline-block px-3 py-0.5 rounded-full bg-blue-900/80 border border-blue-400/40 text-blue-200 text-[10px] sm:text-xs font-extrabold tracking-widest uppercase">
-                Canal Oficial • Official Channel
-              </span>
-              <h3 className="text-xl sm:text-3xl md:text-4xl font-black text-white tracking-wide mt-1">
-                RUTF TALENTICO
-              </h3>
-              <p className="text-[11px] sm:text-sm font-extrabold text-slate-100 mt-0.5">
-                Comparte tu talento real y monetiza tu creatividad
-              </p>
-              <p className="text-[10px] sm:text-xs font-bold text-blue-300 tracking-wider uppercase mt-0.5">
-                SHARE YOUR ORIGINAL TALENT • GROW &amp; EARN WORLDWIDE
-              </p>
-            </div>
-
-            <svg viewBox="0 0 180 180" className="hidden sm:block w-28 h-28 md:w-36 md:h-36 shrink-0 opacity-90">
-              <circle cx="90" cy="90" r="82" fill="#ffffff" fillOpacity="0.06" stroke="#ffffff" strokeOpacity="0.2" strokeWidth="2" />
-              <circle cx="105" cy="56" r="20" fill="#f8fafc" />
-              <path d="M71 148 C71 108, 139 108, 139 148 Z" fill="#e2e8f0" />
-              <rect x="30" y="54" width="46" height="82" rx="9" fill="#0f172a" stroke="#ffffff" strokeWidth="3" />
-              <rect x="35" y="63" width="36" height="44" rx="4" fill="#2563eb" />
-              <polygon points="49,77 49,93 62,85" fill="#ffffff" />
-              <rect x="118" y="24" width="42" height="26" rx="13" fill="#2563eb" />
-              <text x="139" y="42" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="900" fontSize="14" fill="#ffffff">♥ +$</text>
-            </svg>
-          </div>
-        ) : null}
- 
-
-{!soloLectura && (<>
-          <input
-    
-
-            id="input-banner-canal"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (!f) return;
-              const img = new Image();
-              const url = URL.createObjectURL(f);
-              img.onload = () => {
-                if (img.width < 1024 || img.height < 360 || img.width <= img.height) {
-                  URL.revokeObjectURL(url);
-                  alert("Formato no compatible. Usa una imagen horizontal panorámica (mínimo 1024 × 360 px, relación 16:9).");
-                  return;
-                }
-                setBannerPendiente({ archivo: f, preview: url });
-              };
-              img.src = url;
-              e.target.value = "";
-            }}
-          />
-
-          <label
-            htmlFor="input-banner-canal"
-            className="absolute bottom-3 right-3 z-20 px-3.5 py-1.5 rounded-full bg-slate-950/80 hover:bg-slate-950 text-white text-xs font-extrabold backdrop-blur inline-flex items-center gap-1.5 shadow-md cursor-pointer select-none transition active:scale-95"
-          >
-            <Camera className="w-3.5 h-3.5" />
-            <span>{subiendoImg === "banner" ? "Subiendo..." : "Cambiar Banner"}</span>
-          </label>
-          </>)}
-
-
         </div>
 
-        <div className="px-5 sm:px-6 pb-6">
-          <div className="flex flex-col items-center justify-center gap-3 pt-5 pb-2 relative z-10">
-            <input
-              ref={inputAvatarRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) subirImagen(f, "avatar");
-                e.target.value = "";
-              }}
-            />
-
-            <div
-              onClick={() => { if (!soloLectura) inputAvatarRef.current?.click(); }}
-
-          
-              className="relative w-24 h-24 aspect-square rounded-full p-[3px] bg-gradient-to-r from-[#2563EB] to-[#FF6B00] shadow-lg overflow-hidden text-white font-black text-xl flex items-center justify-center cursor-pointer group shrink-0"
-            >
-                         {avatarUrl || perfil.username.toLowerCase() === "@rutftalentico" ? (
-              <img
-                src={avatarUrl || "/logo-rutf.png"}
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              inicialesCanal
-            )}
-
-                             {!soloLectura && (
-                  <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                    <Camera className="w-5 h-5 text-white" />
-                  </div>
-                )}
+               <div className="relative rounded-[18px] p-[1.5px] bg-gradient-to-r from-[#2563EB] via-[#2A3A54] to-[#FF6B00] shadow-xl">
+        <div className="bg-[#162032] rounded-[17px] p-5 sm:p-6 space-y-5">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+            <div className="relative shrink-0">
+              <div
+                onClick={() => !soloLectura && inputAvatarRef.current?.click()}
+                className={"relative w-24 h-24 sm:w-28 sm:h-28 aspect-square rounded-full p-[3px] bg-gradient-to-tr from-[#2563EB] to-[#FF6B00] shadow-lg " + (!soloLectura ? "cursor-pointer group" : "")}
+              >
+                <div className="w-full h-full rounded-full overflow-hidden bg-[#0B1120] text-[#F8FAFC] font-black text-2xl flex items-center justify-center relative">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt=""
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : null}
+                  <span>{inicialesCanal}</span>
+                  {!soloLectura && (
+                    <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                      <Camera className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+                </div>
               </div>
-
+              {perfil.es_fundador && (
+                <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#0B1120] border border-[#2A3A54] flex items-center justify-center shadow-md">
+                  <CheckCircle2 className="w-4 h-4 text-[#2563EB] fill-[#2563EB]/20" />
+                </span>
+              )}
               {!soloLectura && (
-                <button
-                  type="button"
-                  onClick={() => setEditorAbierto(!editorAbierto)}
-                  className="px-4 py-2 rounded-full border border-slate-300 hover:bg-[#E2E8F0] text-slate-800 text-xs font-extrabold inline-flex items-center gap-1.5 transition"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
-                </button>
+                <input
+                  ref={inputAvatarRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.;
+                    if (f) subirImagen(f, "avatar");
+                    e.target.value = "";
+                  }}
+                />
               )}
             </div>
 
-            <div className="mt-3 rounded-[14px] bg-[#F8FAFC] text-[#0F172A] p-4 shadow-xs border border-[#CBD5E1] text-center space-y-1.5">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-xl font-black text-slate-900 truncate">
-                  {nombreCanal || perfil.username}
-                </h2>
-                {perfil.username.toLowerCase() === "@rutftalentico" && (
-                  <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
-                )}
-                {soloLectura && onToggleFan && (
+            <div className="flex-1 min-w-0 text-center sm:text-left space-y-3">
+              <div className="space-y-1">
+                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                  <h2 className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight truncate">
+                    {nombreCanal}
+                  </h2>
+                  {perfil.es_fundador && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#2563EB]/20 border border-[#2563EB]/40 text-[#60A5FA] text-[10px] font-black uppercase tracking-wider">
+                      Oficial
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-bold text-[#94A3B8]">
+                  {perfil.username} • {seguidores} {seguidores === 1 ? "Fan" : "Fans"}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center sm:justify-start gap-2.5 flex-wrap">
+                {soloLectura ? (
                   <button
                     type="button"
-                    onClick={onToggleFan}
-                    className={`px-4 py-1.5 rounded-full text-xs font-black transition shadow-xs ${
-                      esFan
-                        ? "bg-slate-900 text-white"
-                        : "bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white"
-                    }`}
+                    onClick={toggleSuscripcion}
+                    disabled={procesandoSub}
+                    className={"px-5 py-2 rounded-full text-xs font-black transition cursor-pointer " + (suscrito ? "bg-[#0B1120] text-[#F8FAFC] border border-[#2A3A54] hover:border-[#FF6B00]" : "bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white shadow-md")}
                   >
-                    {esFan ? "Eres Fan ✓" : "Hazte Fan"}
+                    {suscrito ? "Eres Fan ✓" : "Hazte Fan"}
                   </button>
-                )}
-              </div>
-
-
-            <p className="text-xs font-bold text-[#334155]">
-              {perfil.username} • {seguidores.toLocaleString()}{" "}
-              {seguidores === 1 ? "Fan" : "Fans"}
-
-            </p>
-
-                         <div className="pt-1.5 flex items-end gap-1.5">
-                {perfil.bio ? (
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed line-clamp-2 flex-1">
-                    {perfil.bio}
-                  </p>
                 ) : (
-                  <p className="text-xs text-slate-400 italic flex-1">
-                    Sin descripción pública aún
-                  </p>
+                  <>
+                    {onAbrirSubir && (
+                      <button
+                        type="button"
+                        onClick={onAbrirSubir}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-md transition cursor-pointer"
+                      >
+                        <Video className="w-3.5 h-3.5" strokeWidth={2} />
+                        <span>Subir Video</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setEditorAbierto(!editorAbierto)}
+                      className="px-4 py-2 rounded-full bg-[#0B1120] border border-[#2A3A54] hover:border-[#2563EB] text-[#F8FAFC] text-xs font-extrabold inline-flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-[#FF6B00]" />
+                      <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
+                    </button>
+                  </>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setModalInfoCanal(true)}
-                  className="text-xs font-black text-blue-600 hover:text-blue-700 shrink-0 pb-0.5"
-                >
-                  ... más
-                </button>
               </div>
-
+            </div>
           </div>
 
-          {editorAbierto && (
-            <form
-              onSubmit={guardarCambios}
-              className="mt-5 pt-5 border-t border-slate-200 space-y-4"
-            >
-              <div>
-                <label className="block text-xs font-extrabold text-slate-700 mb-1">
-                  Nombre visible del Canal
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={40}
-                  value={nombreCanal}
-                  onChange={(e) => setNombreCanal(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600"
-                />
-              </div>
+          <div className="grid grid-cols-3 divide-x divide-[#2A3A54] rounded-[14px] bg-[#0B1120]/80 border border-[#2A3A54] py-3 text-center">
+            <div className="px-2">
+              <p className="text-base sm:text-lg font-black text-[#F8FAFC]">{videos.length}</p>
+              <p className="text-[10px] sm:text-xs font-bold text-[#94A3B8] uppercase tracking-wider">Videos</p>
+            </div>
+            <div className="px-2">
+              <p className="text-base sm:text-lg font-black text-[#FF6B00]">{seguidores}</p>
+              <p className="text-[10px] sm:text-xs font-bold text-[#94A3B8] uppercase tracking-wider">{seguidores === 1 ? "Fan" : "Fans"}</p>
+            </div>
+            <div className="px-2">
+              <p className="text-base sm:text-lg font-black text-[#60A5FA]">
+                {videos.reduce((acc, item) => acc + (item.vistas || 0), 0)}
+              </p>
+              <p className="text-[10px] sm:text-xs font-bold text-[#94A3B8] uppercase tracking-wider">Vistas Calificadas</p>
+            </div>
+          </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-extrabold text-slate-700">
-                    Descripción / Biografía del Canal
-                  </label>
-                  <span className="text-[11px] font-bold text-slate-400">
-                 {bio.length}/1000
-
-                  </span>
-                </div>
-                <textarea
-                  rows={3}
-                    maxLength={1000}
-
-
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Cuéntale a tu comunidad qué talento compartes..."
-                  className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:outline-none focus:border-blue-600 resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={guardando}
-                className="px-5 py-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-black inline-flex items-center gap-2 shadow transition disabled:opacity-50"
-              >
-                <Save className="w-4 h-4" />
-                <span>{guardando ? "Guardando..." : "Guardar Cambios"}</span>
-              </button>
-            </form>
-          )}
+          <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
+            {bio || "Creador oficial en RUTF Talentico."}
+          </p>
         </div>
       </div>
 
-             {soloLectura && videos.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm flex flex-col items-center justify-center text-center gap-2.5">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
-             <Play className="w-6 h-6" />
-            </div>
-            <p className="text-sm font-extrabold text-slate-800">
-              Este canal aún no ha publicado videos.
-            </p>
-            <p className="text-xs text-slate-500 max-w-xs">
-              Cuando este creador comparta su primer talento aparecerá aquí automáticamente.
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-sm space-y-3">
-            <h3 className="text-base font-black text-slate-900">
-             {soloLectura ? `Videos Publicados (${videos.length})` : `Mis Videos Publicados (${videos.length})`}
+      <div className="bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-[18px] p-5 sm:p-6 shadow-sm space-y-4">
+        <h3 className="text-base font-black text-[#F8FAFC]">
+          {soloLectura ? "Videos Publicados (" + videos.length + ")" : "Mis Videos Publicados (" + videos.length + ")"}
+        </h3>
 
-            </h3>
-
-            {videos.length === 0 ? (
+        {videos.length === 0 ? (
               <div className="py-3 flex flex-col items-center text-center gap-2.5">
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm">
+                <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed max-w-sm">
                   Sube tu primer video y empieza a monetizar tu talento
                 </p>
                 {!soloLectura && onAbrirSubir && (
@@ -631,7 +474,7 @@ onToggleFan,
             {videos.map((v) => (
                            <div
                 key={v.id}
-                className="group relative border border-slate-200 rounded-2xl overflow-visible hover:shadow-md transition bg-[#E2E8F0]"
+                className="group relative border border-[#2A3A54] rounded-2xl overflow-visible hover:shadow-md transition bg-[#0B1120]"
               >
                 <div
                   onClick={() => onAbrirVideo(v)}
@@ -653,7 +496,7 @@ onToggleFan,
                     />
                   )}
                   <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                    <div className="w-10 h-10 rounded-full bg-white/90 text-slate-900 flex items-center justify-center shadow">
+                    <div className="w-10 h-10 rounded-full bg-white/90 text-[#F8FAFC] flex items-center justify-center shadow">
                       <Play className="w-4 h-4 fill-current ml-0.5" />
                     </div>
                   </div>
@@ -661,8 +504,8 @@ onToggleFan,
 
                 <div className="p-3 flex items-start justify-between gap-2">
                   <div onClick={() => onAbrirVideo(v)} className="min-w-0 flex-1 cursor-pointer">
-                    <p className="text-xs font-extrabold text-slate-900 line-clamp-1">{v.titulo}</p>
-                    <p className="text-[11px] font-bold text-slate-500 mt-1 flex items-center gap-1">
+                    <p className="text-xs font-extrabold text-[#F8FAFC] line-clamp-1">{v.titulo}</p>
+                    <p className="text-[11px] font-bold text-[#94A3B8] mt-1 flex items-center gap-1">
                       <Eye className="w-3.5 h-3.5" />
                       <span>{(v.vistas || 0).toLocaleString()} visualizaciones</span>
                     </p>
@@ -676,7 +519,7 @@ onToggleFan,
                         e.stopPropagation();
                         setMenuVideoId(menuVideoId === v.id ? null : v.id);
                       }}
-                      className="p-1.5 rounded-full hover:bg-slate-200 text-slate-600 transition"
+                      className="p-1.5 rounded-full hover:bg-slate-200 text-[#94A3B8] transition"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
@@ -684,7 +527,7 @@ onToggleFan,
                     {menuVideoId === v.id && (
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        className="absolute right-0 bottom-8 w-44 bg-white border border-slate-200 rounded-xl shadow-xl py-1 z-30"
+                        className="absolute right-0 bottom-8 w-44 bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-xl shadow-xl py-1 z-30"
                       >
                         <button
                           type="button"
@@ -715,16 +558,16 @@ onToggleFan,
 
            {modalInfoCanal && (
         <div className="fixed inset-0 z-50 bg-white overflow-y-auto flex flex-col">
-          <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+          <div className="sticky top-0 z-10 bg-[#0B1120]/95 backdrop-blur-md border-b border-[#2A3A54] px-4 py-3 flex items-center justify-between">
             <button
               type="button"
               onClick={() => setModalInfoCanal(false)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1E293B] hover:bg-slate-200 text-[#F8FAFC] text-xs font-extrabold transition"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Volver</span>
             </button>
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-black text-[#94A3B8] uppercase tracking-wider">
               Información del canal
             </span>
             <div className="w-16" />
@@ -732,18 +575,18 @@ onToggleFan,
 
           <div className="w-full max-w-2xl mx-auto px-5 py-6 flex-1 space-y-6">
             <div>
-              <h3 className="text-xl font-black text-slate-900">
+              <h3 className="text-xl font-black text-[#F8FAFC]">
                 {nombreCanal || perfil.username}
               </h3>
               <p className="text-xs font-bold text-[#334155] mt-0.5">{perfil.username}</p>
             </div>
 
-            <div className="space-y-2 border-b border-slate-200 pb-5">
+            <div className="space-y-2 border-b border-[#2A3A54] pb-5">
               <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400 block">
                 Descripción del canal
               </span>
               {bio || perfil.bio ? (
-                <p className="text-sm text-slate-800 leading-relaxed whitespace-pre-line break-words">
+                <p className="text-sm text-[#F8FAFC] leading-relaxed whitespace-pre-line break-words">
                   {bio || perfil.bio}
                 </p>
               ) : (
@@ -753,10 +596,10 @@ onToggleFan,
               )}
             </div>
 
-            <div className="space-y-3 text-sm text-slate-700">
+            <div className="space-y-3 text-sm text-[#CBD5E1]">
               <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500 font-semibold">Fecha de creación</span>
-                <span className="font-extrabold text-slate-900 text-right">
+                <span className="text-[#94A3B8] font-semibold">Fecha de creación</span>
+                <span className="font-extrabold text-[#F8FAFC] text-right">
                   {perfil.username.toLowerCase() === "@rutftalentico"
                     ? "Miembro fundador"
                     : `Se unió el ${new Date(
@@ -770,15 +613,15 @@ onToggleFan,
               </div>
 
               <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-500 font-semibold">Fans totales</span>
-                <span className="font-extrabold text-slate-900">
+                <span className="text-[#94A3B8] font-semibold">Fans totales</span>
+                <span className="font-extrabold text-[#F8FAFC]">
                   {seguidores.toLocaleString()}
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-2">
-                <span className="text-slate-500 font-semibold">Visualizaciones totales</span>
-                <span className="font-extrabold text-slate-900">
+                <span className="text-[#94A3B8] font-semibold">Visualizaciones totales</span>
+                <span className="font-extrabold text-[#F8FAFC]">
                   {vistasTotales.toLocaleString()}
                 </span>
               </div>
@@ -809,16 +652,16 @@ onToggleFan,
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] shadow-2xl p-6 space-y-4"
+            className="w-full max-w-sm bg-[#162032] rounded-[18px] border border-[#2A3A54] text-[#F8FAFC] shadow-2xl p-6 space-y-4"
           >
             <div className="flex items-center gap-2.5 text-red-600">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-black text-slate-900">¿Eliminar video?</h3>
+              <h3 className="text-base font-black text-[#F8FAFC]">¿Eliminar video?</h3>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-[#94A3B8] leading-relaxed">
               Estás a punto de eliminar <strong>“{videoAEliminar.titulo}”</strong> de forma permanente.
               Se borrarán también sus comentarios, likes y el archivo de video de nuestros servidores.
             </p>
@@ -828,7 +671,7 @@ onToggleFan,
                 type="button"
                 disabled={eliminandoVideo}
                 onClick={() => setVideoAEliminar(null)}
-                className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-xs font-extrabold hover:bg-[#E2E8F0]"
+                className="px-4 py-2 rounded-full border border-[#2A3A54] text-[#CBD5E1] text-xs font-extrabold hover:bg-[#0B1120]"
               >
                 Cancelar
               </button>
@@ -877,17 +720,17 @@ onToggleFan,
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] shadow-2xl p-5 sm:p-6 space-y-4"
+            className="w-full max-w-lg bg-[#162032] rounded-[18px] border border-[#2A3A54] text-[#F8FAFC] shadow-2xl p-5 sm:p-6 space-y-4"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-900">Vista previa del banner</h3>
+              <h3 className="text-base font-black text-[#F8FAFC]">Vista previa del banner</h3>
               <button
                 type="button"
                 onClick={() => {
                   URL.revokeObjectURL(bannerPendiente.preview);
                   setBannerPendiente(null);
                 }}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+                className="p-1.5 rounded-full hover:bg-[#1E293B] text-[#94A3B8]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -915,7 +758,7 @@ onToggleFan,
               onPointerUp={() => {
                 arrastreRef.current.activo = false;
               }}
-              className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 touch-none select-none cursor-grab active:cursor-grabbing"
+              className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-[#2A3A54] touch-none select-none cursor-grab active:cursor-grabbing"
             >
               <img
                 src={bannerPendiente.preview}
@@ -952,7 +795,7 @@ onToggleFan,
               </div>
             </div>
 
-            <p className="text-center text-[11px] font-bold text-slate-500">
+            <p className="text-center text-[11px] font-bold text-[#94A3B8]">
               Desliza la imagen con tu dedo para encuadrarla y toca un dispositivo para ver el recorte en rojo
             </p>
 
@@ -963,7 +806,7 @@ onToggleFan,
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
                   vistaDispositivo === "tv"
                     ? "bg-red-600 text-white border-red-600 shadow-xs"
-                    : "bg-[#E2E8F0] text-slate-600 border-slate-200 hover:bg-slate-100"
+                    : "bg-[#0B1120] text-[#94A3B8] border-[#2A3A54] hover:bg-[#1E293B]"
                 }`}
               >
                 <Tv className="w-3.5 h-3.5" /> TV (16:9)
@@ -974,7 +817,7 @@ onToggleFan,
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
                   vistaDispositivo === "pc"
                     ? "bg-red-600 text-white border-red-600 shadow-xs"
-                    : "bg-[#E2E8F0] text-slate-600 border-slate-200 hover:bg-slate-100"
+                    : "bg-[#0B1120] text-[#94A3B8] border-[#2A3A54] hover:bg-[#1E293B]"
                 }`}
               >
                 <Monitor className="w-3.5 h-3.5" /> Escritorio
@@ -985,7 +828,7 @@ onToggleFan,
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
                   vistaDispositivo === "movil"
                     ? "bg-red-600 text-white border-red-600 shadow-xs"
-                    : "bg-[#E2E8F0] text-slate-600 border-slate-200 hover:bg-slate-100"
+                    : "bg-[#0B1120] text-[#94A3B8] border-[#2A3A54] hover:bg-[#1E293B]"
                 }`}
               >
                 <Smartphone className="w-3.5 h-3.5" /> Móvil
@@ -1000,7 +843,7 @@ onToggleFan,
                   URL.revokeObjectURL(bannerPendiente.preview);
                   setBannerPendiente(null);
                 }}
-                className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-xs font-extrabold"
+                className="px-4 py-2 rounded-full border border-[#2A3A54] text-[#CBD5E1] text-xs font-extrabold"
               >
                 Cancelar
               </button>
@@ -1092,35 +935,35 @@ export function ModalCompartir({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] shadow-2xl p-6 space-y-4"
+        className="w-full max-w-md bg-[#162032] rounded-[18px] border border-[#2A3A54] text-[#F8FAFC] shadow-2xl p-6 space-y-4"
       >
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-black text-slate-900">Compartir talento</h3>
+          <h3 className="text-base font-black text-[#F8FAFC]">Compartir talento</h3>
           <button
             type="button"
             onClick={onCerrar}
-            className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+            className="p-1.5 rounded-full hover:bg-[#1E293B] text-[#94A3B8]"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-xs font-bold text-slate-700 line-clamp-2">{titulo}</p>
+        <p className="text-xs font-bold text-[#CBD5E1] line-clamp-2">{titulo}</p>
 
         {preparando ? (
-          <div className="py-12 flex flex-col items-center justify-center gap-3 bg-[#E2E8F0] rounded-2xl border border-slate-200/80">
+          <div className="py-12 flex flex-col items-center justify-center gap-3 bg-[#0B1120] rounded-2xl border border-[#2A3A54]/80">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs font-extrabold text-slate-700">
+            <p className="text-xs font-extrabold text-[#CBD5E1]">
               Generando enlace directo del video y código QR...
             </p>
           </div>
         ) : (
           <>
-            <div className="flex flex-col items-center justify-center p-4 bg-[#E2E8F0] rounded-2xl border border-slate-200/80">
-              <div className="p-2.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
+            <div className="flex flex-col items-center justify-center p-4 bg-[#0B1120] rounded-2xl border border-[#2A3A54]/80">
+              <div className="p-2.5 bg-white rounded-2xl border border-[#2A3A54] shadow-xs">
                 <QRCodeSVG value={url} size={136} bgColor="#ffffff" fgColor="#0f172a" level="M" />
               </div>
-              <span className="text-[11px] font-bold text-slate-500 mt-2 text-center">
+              <span className="text-[11px] font-bold text-[#94A3B8] mt-2 text-center">
                 Escanea con tu cámara para abrir este video al instante
               </span>
             </div>
@@ -1143,7 +986,7 @@ export function ModalCompartir({
               <a
                 href={twHref}
                 onClick={(e) => abrirRed(e, twHref)}
-                className="py-2 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 border border-slate-200 text-center transition"
+                className="py-2 px-2 rounded-xl bg-[#1E293B] hover:bg-slate-200 text-[#F8FAFC] border border-[#2A3A54] text-center transition"
               >
                 X / Twitter
               </a>
@@ -1164,8 +1007,8 @@ export function ModalCompartir({
               </button>
             </div>
 
-            <div className="flex items-center gap-2 p-2 bg-slate-100 rounded-xl border border-slate-200">
-              <span className="text-[11px] font-mono text-slate-700 truncate flex-1 px-1">{url}</span>
+            <div className="flex items-center gap-2 p-2 bg-[#1E293B] rounded-xl border border-[#2A3A54]">
+              <span className="text-[11px] font-mono text-[#CBD5E1] truncate flex-1 px-1">{url}</span>
               <button
                 type="button"
                 onClick={copiar}
@@ -1182,6 +1025,8 @@ export function ModalCompartir({
     </div>
   );
 }
+
+
 
 
 

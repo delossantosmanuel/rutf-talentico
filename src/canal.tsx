@@ -45,6 +45,8 @@ type VideoCanal = {
   id: string;
   titulo: string;
   video_url: string;
+  miniatura_url?: string | null;
+  tipo?: string;
   vistas?: number;
   likes?: number;
   creado_en?: string;
@@ -633,14 +635,23 @@ onToggleFan,
               >
                 <div
                   onClick={() => onAbrirVideo(v)}
-                  className="relative aspect-video bg-slate-950 rounded-t-2xl overflow-hidden cursor-pointer"
+                  className="relative aspect-video bg-gradient-to-br from-[#1E293B] via-[#2563EB]/30 to-[#FF6B00]/25 rounded-t-2xl overflow-hidden cursor-pointer group"
                 >
-                  <video
-                    src={v.video_url}
-                    className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition"
-                    muted
-                    playsInline
-                  />
+                  {v.miniatura_url ? (
+                    <img
+                      src={v.miniatura_url}
+                      alt={v.titulo}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <video
+                      src={`${v.video_url}#t=0.5`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      preload="metadata"
+                      muted
+                      playsInline
+                    />
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center bg-black/25">
                     <div className="w-10 h-10 rounded-full bg-white/90 text-slate-900 flex items-center justify-center shadow">
                       <Play className="w-4 h-4 fill-current ml-0.5" />
@@ -1171,6 +1182,8 @@ export function ModalCompartir({
     </div>
   );
 }
+
+
 
 
 

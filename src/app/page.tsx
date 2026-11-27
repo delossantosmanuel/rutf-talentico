@@ -1775,7 +1775,17 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     </div>
 
                     {abiertoComShort && shortComentandoId === actual.id && (
-                      <div className="relative z-40 bg-slate-950/95 backdrop-blur-md border border-white/20 rounded-2xl p-3 space-y-2.5 max-h-56 overflow-y-auto shadow-2xl">
+                    <div className="fixed z-50 max-md:inset-x-3 max-md:bottom-16 max-md:max-h-[55dvh] md:top-24 md:right-8 md:w-[380px] md:max-h-[76vh] bg-[#162032]/98 backdrop-blur-xl border border-[#2A3A54] rounded-3xl p-4 space-y-3 overflow-y-auto overflow-x-hidden shadow-2xl">
+                      <div className="flex items-center justify-between pb-2 border-b border-[#2A3A54]">
+                        <span className="text-xs font-black text-[#F8FAFC]">Comentarios ({comentarios.length})</span>
+                        <button
+                          type="button"
+                          onClick={() => { setAbiertoComShort(false); setShortComentandoId(null); }}
+                          className="text-xs font-bold text-[#94A3B8] hover:text-[#F8FAFC] px-2 py-0.5 rounded-lg bg-[#0B1120] cursor-pointer"
+                        >
+                          Cerrar ✕
+                        </button>
+                      </div>
                         {!usuario ? (
                           <div className="flex items-center justify-between gap-2 bg-[#162032]/10 border border-white/15 rounded-xl px-3 py-2">
                             <span className="text-[11px] font-bold text-slate-200">Inicia sesión primero para poder comentar</span>
@@ -1954,6 +1964,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

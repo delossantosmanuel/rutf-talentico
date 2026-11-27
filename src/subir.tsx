@@ -99,6 +99,16 @@ async function extraerMejorFotograma(file: File, esVertical: boolean): Promise<{
 }
 
 
+const ESENCIAS_RUTF = [
+  "Ritmo y Voz",
+  "Arte Visual",
+  "Escena y Humor",
+  "Acción y Deporte",
+  "Mente e Innovación",
+  "Saber y Guía",
+  "Mundo y Vida",
+];
+
 type Props = {
   supabase: any;
   canalActual: string;
@@ -108,7 +118,7 @@ type Props = {
 export default function SubirVideoForm({ supabase, canalActual, onPublicado }: Props) {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [etiquetas, setEtiquetas] = useState("");
+  const [etiquetas, setEtiquetas] = useState<string>(() => (typeof window !== "undefined" ? localStorage.getItem("rutf_esencia_" + canalActual.toLowerCase()) || "Mente e Innovación" : "Mente e Innovación"));
   const [hashtags, setHashtags] = useState("");
   const [tipo, setTipo] = useState<"largo" | "vertical">("largo");
   const [archivo, setArchivo] = useState<File | null>(null);
@@ -283,11 +293,11 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     }
   };
   return (
-    <form onSubmit={publicar} className="max-w-2xl mx-auto bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
-      <div className="border-b border-slate-100 pb-4 flex flex-wrap items-center justify-between gap-2">
+    <form onSubmit={publicar} className="max-w-2xl mx-auto bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-3xl p-6 sm:p-8 shadow-sm space-y-5">
+      <div className="border-b border-[#2A3A54] pb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Publicar en RUTF Talentico</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Publicando como canal único protegido</p>
+          <h2 className="text-xl font-black text-[#F8FAFC]">Publicar en RUTF Talentico</h2>
+          <p className="text-xs text-[#94A3B8] mt-0.5">Publicando como canal único protegido</p>
         </div>
         <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full text-xs font-extrabold">
           {canalActual}
@@ -296,13 +306,13 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       </div>
 
       <div>
-        <label className="text-xs font-bold text-slate-700 mb-1 block">Formato del Video</label>
+        <label className="text-xs font-bold text-[#CBD5E1] mb-1 block">Formato del Video</label>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setTipo("largo")}
             className={`py-2.5 rounded-xl text-xs font-bold border ${
-              tipo === "largo" ? "bg-blue-600 text-white border-blue-600" : "bg-slate-50 text-slate-700 border-slate-200"
+              tipo === "largo" ? "bg-blue-600 text-white border-blue-600" : "bg-[#0B1120] text-[#CBD5E1] border-[#2A3A54]"
             }`}
           >
             Video Horizontal (16:9)
@@ -311,7 +321,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
             type="button"
             onClick={() => setTipo("vertical")}
             className={`py-2.5 rounded-xl text-xs font-bold border ${
-              tipo === "vertical" ? "bg-orange-500 text-white border-orange-500" : "bg-slate-50 text-slate-700 border-slate-200"
+              tipo === "vertical" ? "bg-orange-500 text-white border-orange-500" : "bg-[#0B1120] text-[#CBD5E1] border-[#2A3A54]"
             }`}
           >
             Short Vertical (9:16)
@@ -321,10 +331,10 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
       <div>
         <div className="flex justify-between text-xs font-bold mb-1">
-          <span className="flex items-center gap-1 text-slate-700">
+          <span className="flex items-center gap-1 text-[#CBD5E1]">
             <Type className="w-3.5 h-3.5 text-blue-600" /> Título del Talento
           </span>
-          <span className={titulo.length < 10 ? "text-orange-500" : "text-emerald-600"}>{titulo.length} / 80</span>
+          <span className={titulo.trim().length >= 15 && titulo.trim().length <= 65 ? "text-[#10B981]" : "text-amber-400"}>{titulo.length} / 80</span>
         </div>
         <input
           required
@@ -333,16 +343,27 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
           placeholder="Ej: Mi presentación acústica en vivo..."
-          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600"
+          className="w-full px-4 py-2.5 rounded-xl bg-[#0B1120] border border-[#2A3A54] text-sm text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#FF6B00]"
         />
+        <div className="mt-1.5">
+          {titulo.trim().length >= 15 && titulo.trim().length <= 65 ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#34D399] text-[11px] font-extrabold">
+              ✓ ¡Excelente! Título optimizado para el Escenario Principal
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
+              Falta contexto — escribe entre 15 y 65 letras para destacar mejor
+            </span>
+          )}
+        </div>
       </div>
 
       <div>
         <div className="flex justify-between text-xs font-bold mb-1">
-          <span className="flex items-center gap-1 text-slate-700">
-            <FileText className="w-3.5 h-3.5 text-blue-600" /> Descripción Completa
+          <span className="flex items-center gap-1 text-[#CBD5E1]">
+            <FileText className="w-3.5 h-3.5 text-[#FF6B00]" /> Historia y Contexto del Talento
           </span>
-          <span className={descripcion.length < 20 ? "text-orange-500" : "text-emerald-600"}>{descripcion.length} / 1000</span>
+          <span className={descripcion.trim().length > 30 ? "text-[#10B981]" : "text-amber-400"}>{descripcion.length} / 1000</span>
         </div>
         <textarea
           required
@@ -351,14 +372,21 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           rows={3}
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          placeholder="Cuenta de qué trata tu talento, quién participa y qué lo hace único..."
-          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-blue-600"
+          placeholder="Cuenta la historia de tu talento, quién participa y qué lo hace único..."
+          className="w-full px-4 py-2.5 rounded-xl bg-[#0B1120] border border-[#2A3A54] text-sm text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#FF6B00]"
         />
+        {descripcion.trim().length > 30 && (
+          <div className="mt-1.5">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#34D399] text-[11px] font-extrabold">
+              ✓ Ficha completa — presentación profesional
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1">
+          <label className="flex items-center gap-1 text-xs font-bold text-[#CBD5E1] mb-1">
             <Tag className="w-3.5 h-3.5 text-blue-600" /> Etiquetas (separadas por coma)
           </label>
           <input
@@ -366,11 +394,11 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
             value={etiquetas}
             onChange={(e) => setEtiquetas(e.target.value)}
             placeholder="música, canto, talento..."
-            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-blue-600"
+            className="w-full px-3.5 py-2 rounded-xl border border-[#2A3A54] text-xs focus:outline-none focus:border-blue-600"
           />
         </div>
         <div>
-          <label className="flex items-center gap-1 text-xs font-bold text-slate-700 mb-1">
+          <label className="flex items-center gap-1 text-xs font-bold text-[#CBD5E1] mb-1">
             <Hash className="w-3.5 h-3.5 text-blue-600" /> Hashtags
           </label>
           <input
@@ -378,17 +406,17 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
             placeholder="#RUTFTalentico #TalentoReal"
-            className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-blue-600"
+            className="w-full px-3.5 py-2 rounded-xl border border-[#2A3A54] text-xs focus:outline-none focus:border-blue-600"
           />
         </div>
       </div>
 
-      <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-5 cursor-pointer hover:bg-slate-50 border-slate-300 transition">
+      <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-5 cursor-pointer hover:bg-[#0B1120] border-slate-300 transition">
         <Upload className={`w-7 h-7 mb-1.5 ${archivo ? "text-emerald-600" : "text-blue-600"}`} />
-        <span className="text-xs font-extrabold text-slate-800 text-center">
+        <span className="text-xs font-extrabold text-[#F8FAFC] text-center">
           {archivo ? `Video listo: ${archivo.name}` : "Toca aquí para elegir tu video (.mp4 / .mov)"}
         </span>
-        <span className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+        <span className="text-[11px] text-[#94A3B8] mt-1 flex items-center gap-1">
           <AlertCircle className="w-3 h-3 text-blue-500" /> Máximo 500 MB • Alta definición recomendada
         </span>
         <input
@@ -403,9 +431,9 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         />
       </label>
 
-      <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+      <div className="p-4 rounded-2xl bg-[#0B1120] border border-[#2A3A54] space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-extrabold text-slate-800 inline-flex items-center gap-1.5">
+          <span className="text-xs font-extrabold text-[#F8FAFC] inline-flex items-center gap-1.5">
             <ImageIcon className="w-4 h-4 text-blue-600" />
             Miniatura / Portada del Video (Opcional)
           </span>
@@ -415,15 +443,15 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           </span>
         </div>
 
-        <p className="text-[11px] text-slate-600 leading-relaxed">
+        <p className="text-[11px] text-[#94A3B8] leading-relaxed">
           <strong>Requisitos:</strong> JPG, PNG o WebP (máx. 5 MB) con orientación{" "}
           <strong>{tipo === "largo" ? "Horizontal 16:9 (1280×720)" : "Vertical 9:16 (720×1280)"}</strong>. Se optimiza
           automáticamente a menos de 120 KB. Si no subes una, RUTF Talentico analiza tu video y elige la mejor escena.
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
-          <label className="px-3.5 py-2 rounded-xl bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 text-xs font-extrabold cursor-pointer transition">
-            Subir miniatura propia
+          <label className="px-3.5 py-2 rounded-xl bg-[#0B1120] hover:bg-[#1E293B] text-blue-700 border border-blue-200 text-xs font-extrabold cursor-pointer transition">
+            Elegir Portada de Escenario
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
@@ -448,7 +476,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
                   setMiniaturaPreview(auto.preview);
                 }
               }}
-              className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold transition"
+              className="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-[#F8FAFC] text-xs font-bold transition"
             >
               Usar mejor escena automática
             </button>
@@ -475,7 +503,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       </div>
 
       {subiendo && (
-        <div className="space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+        <div className="space-y-1.5 bg-[#0B1120] p-3.5 rounded-xl border border-[#2A3A54]">
           <div className={`flex justify-between text-xs font-extrabold ${progreso > 50 ? "text-emerald-600" : "text-blue-600"}`}>
             <span>{progreso >= 97 ? "¡Talento listo! Estrenando en RUTF..." : "Impulsando tu talento..."}</span>
             <span>{progreso}%</span>
@@ -489,14 +517,14 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         </div>
       )}
 
-      <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
+      <label className="flex items-start gap-2.5 p-3 rounded-xl bg-[#0B1120] border border-[#2A3A54] cursor-pointer">
         <input
           type="checkbox"
           checked={aceptaCopyright}
           onChange={(e) => setAceptaCopyright(e.target.checked)}
           className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shrink-0"
         />
-        <span className="text-xs text-slate-700 leading-relaxed">
+        <span className="text-xs text-[#CBD5E1] leading-relaxed">
           Declaro que este video y su audio son de mi <strong>autoría original</strong> (o cuento con derechos legales
           de uso) y no infringen normas de derechos de autor de terceros.
         </span>
@@ -512,6 +540,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

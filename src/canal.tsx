@@ -52,6 +52,16 @@ type VideoCanal = {
   creado_en?: string;
 };
 
+const ESENCIAS_RUTF = [
+  "Ritmo y Voz",
+  "Arte Visual",
+  "Escena y Humor",
+  "Acción y Deporte",
+  "Mente e Innovación",
+  "Saber y Guía",
+  "Mundo y Vida",
+];
+
 type Props = {
   supabase: any;
   perfil: PerfilCanal;
@@ -132,6 +142,7 @@ onToggleFan,
   const [avatarUrl, setAvatarUrl] = useState(perfil.avatar_url || "");
   const [bannerUrl, setBannerUrl] = useState(perfil.banner_url || "");
   const [guardando, setGuardando] = useState(false);
+  const [esenciaPrincipal, setEsenciaPrincipal] = useState<string>(() => (typeof window !== "undefined" ? localStorage.getItem("rutf_esencia_" + perfil.username.toLowerCase()) || "" : ""));
   const [subiendoImg, setSubiendoImg] = useState<"avatar" | "banner" | null>(null);
   const [barraActualizada, setBarraActualizada] = useState(false);
   const [editorAbierto, setEditorAbierto] = useState(false);
@@ -211,6 +222,7 @@ onToggleFan,
     setGuardando(true);
     try {
       const bioLimpia = bio.trim().slice(0, 1000);
+      if (typeof window !== "undefined") localStorage.setItem("rutf_esencia_" + perfil.username.toLowerCase(), esenciaPrincipal);
       const nombreLimpio = nombreCanal.trim() || perfil.username.replace("@", "");
       const { data: actualizado, error } = await supabase
         .from("usuarios_rutf")
@@ -438,12 +450,48 @@ onToggleFan,
             </div>
           </div>
 
-                    <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
+                              {esenciaPrincipal && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#34D399] text-xs font-extrabold">
+              <span>✦ Esencia: {esenciaPrincipal}</span>
+            </div>
+          )}
+
+          <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
             {bio || "Creador oficial en RUTF Talentico."}
           </p>
 
           {editorAbierto && !soloLectura && (
             <form onSubmit={guardarCambios} className="pt-2 space-y-3 border-t border-[#2A3A54]">
+                            <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div>
+                    <label className="text-xs font-black text-[#F8FAFC] block">Define tu Esencia</label>
+                    <span className="text-[11px] text-[#94A3B8]">Selecciona tu talento principal para conectar con tu audiencia</span>
+                  </div>
+                  {esenciaPrincipal ? (
+                    <span className="text-[11px] font-extrabold text-[#10B981]">✓ {esenciaPrincipal}</span>
+                  ) : (
+                    <span className="text-[11px] font-semibold text-amber-400">Aún no has definido tu esencia</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
+                  {ESENCIAS_RUTF.map((item) => {
+                    const activa = esenciaPrincipal === item;
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setEsenciaPrincipal(item)}
+                        className={"shrink-0 px-3.5 py-1.5 rounded-full text-xs font-extrabold border transition cursor-pointer inline-flex items-center gap-1.5 " + (activa ? "bg-[#10B981] border-[#10B981] text-white shadow-md shadow-[#10B981]/30" : "bg-[#0B1120] border-[#2A3A54] text-[#CBD5E1] hover:border-[#10B981]/60")}
+                      >
+                        {activa && <span>✓</span>}
+                        <span>{item}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <label className="text-xs font-black text-[#F8FAFC]">Descripción del canal</label>
                 <span className="text-[11px] font-bold text-[#94A3B8]">{bio.length}/1000</span>
@@ -469,7 +517,7 @@ onToggleFan,
                   disabled={guardando}
                   className="px-5 py-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-md transition cursor-pointer disabled:opacity-60"
                 >
-                  {guardando ? "Guardando..." : "Guardar Descripción"}
+                  {guardando ? "Guardando..." : "Activar mi Esencia"}
                 </button>
               </div>
             </form>
@@ -1057,6 +1105,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

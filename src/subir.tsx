@@ -118,6 +118,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
   const [analizandoFrame, setAnalizandoFrame] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [progreso, setProgreso] = useState(0);
+  const [detalleSubida, setDetalleSubida] = useState("");
   const [aceptaCopyright, setAceptaCopyright] = useState(false);
 
   const seleccionarArchivo = (file: File | null) => {
@@ -203,22 +204,13 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       }
 
       if (blobFinal) {
-        const resMin = await fetch("/api/subir", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            carpeta: "miniaturas",
-            nombreArchivo: `miniatura-${Date.now()}.webp`,
-          }),
-        });
+        setDetalleSubida("Subiendo miniatura...");
+        const fdMin = new FormData();
+        fdMin.append("file", blobFinal, `miniatura-${Date.now()}.webp`);
+        fdMin.append("carpeta", "miniaturas");
+        const resMin = await fetch("/api/subir-archivo", { method: "POST", body: fdMin });
         const dataMin = await resMin.json();
-        if (!resMin.ok) throw new Error(dataMin.error || "Error preparando miniatura en R2");
-
-        const putMin = await fetch(dataMin.uploadUrl, {
-          method: "PUT",
-          body: blobFinal,
-        });
-        if (!putMin.ok) throw new Error("Error subiendo miniatura a R2");
+        if (!resMin.ok) throw new Error(dataMin.error || "Error subiendo miniatura");
         miniaturaUrlFinal = dataMin.publicUrl;
       }
 
@@ -243,12 +235,12 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
           if (ev.lengthComputable) {
             const subidoMB = (ev.loaded / (1024 * 1024)).toFixed(1);
             const pct = Math.min(95, Math.max(5, Math.round((ev.loaded / ev.total) * 95)));
-            setProgreso(pct);
+            setProgreso(pct); setDetalleSubida(`${subidoMB} MB de ${totalMB} MB (${pct}%)`);
           }
         };
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            setProgreso(97);
+            setProgreso(97); setDetalleSubida(`${totalMB} MB completados (97%)`);
             resolve();
           } else {
             reject(new Error(`Error HTTP R2 (${xhr.status}): ${xhr.responseText || xhr.statusText}`));
@@ -524,11 +516,12 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 disabled:opacity-50 text-white font-black py-3.5 rounded-2xl shadow-md hover:opacity-95 transition text-sm"
       >
-        {subiendo ? `Subiendo video (${progreso}%)...` : archivo ? "Publicar Video Ahora" : "Selecciona un video para publicar"}
+        {subiendo ? `Subiendo ${detalleSubida || `${progreso}%`}...` : archivo ? "Publicar Video Ahora" : "Selecciona un video para publicar"}
       </button>
     </form>
   );
 }
+
 
 
 

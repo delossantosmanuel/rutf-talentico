@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AdMobManager from "./AdMobManager";
 
@@ -97,10 +97,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="antialiased bg-slate-50 text-slate-900 pb-16">
+      <body className="antialiased bg-slate-50 text-slate-900 pb-16 bg-[#0B1120] text-[#F8FAFC]">
         <AdMobManager />
         {children}
       </body>
     </html>
   );
 }
+

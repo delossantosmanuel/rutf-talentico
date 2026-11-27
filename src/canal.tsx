@@ -349,7 +349,7 @@ onToggleFan,
                   )}
                 </div>
               </div>
-              {perfil.es_fundador && (
+              {(Boolean(perfil.es_fundador) && (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
                 <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#0B1120] border border-[#2A3A54] flex items-center justify-center shadow-md">
                   <CheckCircle2 className="w-4 h-4 text-[#2563EB] fill-[#2563EB]/20" />
                 </span>
@@ -375,7 +375,7 @@ onToggleFan,
                   <h2 className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight truncate">
                     {nombreCanal}
                   </h2>
-                  {perfil.es_fundador && (
+                  {(Boolean(perfil.es_fundador) && (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
                     <span className="px-2 py-0.5 rounded-full bg-[#2563EB]/20 border border-[#2563EB]/40 text-[#60A5FA] text-[10px] font-black uppercase tracking-wider">
                       Oficial
                     </span>
@@ -495,7 +495,7 @@ onToggleFan,
                     />
                   )}
                   <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                    <div className="w-10 h-10 rounded-full bg-white/90 text-[#F8FAFC] flex items-center justify-center shadow">
+                    <div className="w-10 h-10 rounded-full bg-[#162032]/90 text-[#F8FAFC] flex items-center justify-center shadow">
                       <Play className="w-4 h-4 fill-current ml-0.5" />
                     </div>
                   </div>
@@ -556,7 +556,7 @@ onToggleFan,
 
 
            {modalInfoCanal && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto flex flex-col">
+        <div className="fixed inset-0 z-50 bg-[#162032] overflow-y-auto flex flex-col">
           <div className="sticky top-0 z-10 bg-[#0B1120]/95 backdrop-blur-md border-b border-[#2A3A54] px-4 py-3 flex items-center justify-between">
             <button
               type="button"
@@ -959,7 +959,7 @@ export function ModalCompartir({
         ) : (
           <>
             <div className="flex flex-col items-center justify-center p-4 bg-[#0B1120] rounded-2xl border border-[#2A3A54]/80">
-              <div className="p-2.5 bg-white rounded-2xl border border-[#2A3A54] shadow-xs">
+              <div className="p-2.5 bg-[#162032] rounded-2xl border border-[#2A3A54] shadow-xs">
                 <QRCodeSVG value={url} size={136} bgColor="#ffffff" fgColor="#0f172a" level="M" />
               </div>
               <span className="text-[11px] font-bold text-[#94A3B8] mt-2 text-center">
@@ -1024,6 +1024,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

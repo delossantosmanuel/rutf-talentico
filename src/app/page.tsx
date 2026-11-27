@@ -1369,8 +1369,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                            setRespondiendoA(respondiendoA?.id === c.id ? null : c);
                            setTextoRespuesta("");
                          }}
-                         className="px-2 py-0.5 rounded-full text-[10px] font-extrabold text-[#94A3B8] hover:text-blue-600 hover:bg-blue-50 transition"
-                        className="inline-flex items-center gap-1"><MessageSquare className="w-2.5 h-2.5" /><span>Aportar</span></button>
+                         className="px-2 py-0.5 rounded-full text-[10px] font-extrabold text-[#94A3B8] hover:text-blue-600 hover:bg-blue-50 transition inline-flex items-center gap-1"><MessageSquare className="w-2.5 h-2.5" /><span>Aportar</span></button>
                      </div>
 
                      {respondiendoA?.id === c.id && (
@@ -1962,6 +1961,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

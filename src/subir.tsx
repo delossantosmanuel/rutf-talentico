@@ -217,7 +217,6 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
         const putMin = await fetch(dataMin.uploadUrl, {
           method: "PUT",
-          headers: { "Content-Type": "image/webp" },
           body: blobFinal,
         });
         if (!putMin.ok) throw new Error("Error subiendo miniatura a R2");
@@ -238,7 +237,6 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
 
       const putVid = await fetch(dataVid.uploadUrl, {
         method: "PUT",
-        headers: { "Content-Type": archivo.type || "video/mp4" },
         body: archivo,
       });
       if (!putVid.ok) throw new Error("Error subiendo video a R2");
@@ -514,6 +512,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

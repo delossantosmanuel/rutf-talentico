@@ -774,11 +774,11 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
       )}
  {!(tab === "canal" && usuario) && <>
 
-           <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-md pb-1">
+           <header className="sticky top-0 z-40 bg-[#F8FAFC]/95 backdrop-blur-md border-b border-[#CBD5E1] shadow-md pb-1">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col gap-2">
           {/* Fila 1: Logo a la izquierda + Entrar / Crear Canal compacto arriba a la derecha */}
           {(barraVisible || tab === "monetizar" || tab === "subir" || !!videoActivo || tab === "shorts") && (
-          <div className="relative flex items-center justify-between gap-2 min-h-[40px]">
+          <div className="grid grid-cols-3 items-center gap-1 min-h-[44px]">
            <div className="flex items-center gap-2 select-none">
   <button
     type="button"
@@ -864,7 +864,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
               </button>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center justify-end gap-1.5 shrink-0">
               
                        {tab !== "subir" && (
                 <button
@@ -893,15 +893,29 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
               />
 
               {usuario ? (
-                <div className="absolute left-1/2 -translate-x-1/2 z-30">
+                <div className="relative justify-self-center z-30">
                   <button
                     type="button"
                     onClick={() => setMenuCuenta(!menuCuenta)}
                     title={usuario.username}
                     className="p-[2px] rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] shadow-sm cursor-pointer active:scale-95 transition"
                   >
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-[#0F172A] text-white font-black text-xs flex items-center justify-center">
-                      {usuario.avatar_url ? (<img src={usuario.avatar_url} alt="" className="w-full h-full object-cover" />) : (<span className="text-[11px] font-black leading-none tracking-tight">{usuario.username.replace(/^@/, "").slice(0, 2).toUpperCase()}</span>)}
+                    <div className="w-[38px] h-[38px] rounded-full overflow-hidden bg-[#0F172A] text-white font-black text-xs flex items-center justify-center">
+                      {usuario.avatar_url ? (
+                        <img
+                          src={usuario.avatar_url}
+                          alt=""
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : null}
+                      <span className="text-[11px] font-black leading-none tracking-tight">
+                        {usuario.username.replace(/^@/, "").slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                  </button>
+                  {menuCuenta && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-12
                     </div>
                   </button>
                   {menuCuenta && (
@@ -1451,11 +1465,11 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
           <div className="space-y-8">
             <section>
               <h3 className="font-extrabold mb-3 text-[#1E293B] flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />Escenario Principal</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 max-w-2xl mx-auto gap-5">
           {recomendados.filter(v => v.tipo === "largo").map((v, idx) => (
   <React.Fragment key={v.id}>
 
-                  <div key={v.id} className="bg-[#FFFFFF] rounded-[16px] border border-[#E2E8F0] overflow-hidden shadow-sm">
+                  <div key={v.id} className="bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] overflow-hidden shadow-sm">
                                       <div data-video-largo-id={v.id} onClick={() => abrirVideo(v)} className="relative aspect-video bg-slate-900 flex items-center justify-center cursor-pointer overflow-hidden group">
                       {videoAutoplayId === v.id ? (
                         <video
@@ -1477,7 +1491,12 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                           className="w-full h-full object-cover opacity-90"
                         />
                       )}
-                      {videoAutoplayId !== v.id && (
+                      {videoAutoplayId === v.id ? (
+                        <div className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0F172A]/85 backdrop-blur-md border border-white/15 text-white text-[10px] font-black tracking-wide shadow-md">
+                          <span className="w-2 h-2 rounded-full bg-[#FF6B00] animate-ping" />
+                          <span>En escena</span>
+                        </div>
+                      ) : (
                         <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
                           <div className="w-12 h-12 rounded-full bg-[#1E293B]/75 backdrop-blur-sm border border-white/25 flex items-center justify-center shadow-lg">
                             <Play className="w-5 h-5 text-white fill-white ml-0.5" />
@@ -1517,7 +1536,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     </div>
                   </div>
                       {(idx + 1) % 6 === 0 && (
-      <div className="bg-[#FFFFFF] rounded-[16px] border border-[#E2E8F0] p-4 shadow-sm flex flex-col justify-between space-y-2.5">
+      <div className="bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] p-4 shadow-sm flex flex-col justify-between space-y-2.5">
         <div className="flex items-center justify-between">
           <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider">
             Patrocinado • AdMob
@@ -1556,7 +1575,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     </div>
                   )}
                 </section>
-            <section className="bg-[#FFFFFF] border border-[#E2E8F0] rounded-[16px] shadow-sm p-4 sm:p-5"><div className="flex items-center justify-between mb-3"><h3 className="font-black text-base text-[#1E293B] flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />Verticales / Shorts</h3><button type="button" onClick={() => { setIndiceShort(0); setTab("shorts"); }} className="text-xs font-extrabold text-blue-600 hover:underline">Ver en pantalla completa</button></div><div className="flex gap-3.5 overflow-x-auto pb-2 snap-x snap-mandatory"><button type="button" onClick={() => (usuario ? setTab("subir") : setMostrarAuth(true))} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] rounded-2xl bg-gradient-to-br from-[#2563EB] via-[#1E293B] to-[#FF6B00] text-white p-4 flex flex-col items-center justify-center text-center gap-2.5 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer border border-white/20"><span className="w-11 h-14 rounded-xl bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-inner"><Video className="w-5 h-5 text-white" strokeWidth={2} /></span><span className="text-xs font-black leading-tight">Lanzar Vertical</span><span className="text-[10px] text-white/85 font-medium">Publica tu talento en 9:16</span></button>{listaShorts.map((v, idx) => (<div key={v.id} onClick={() => { setIndiceShort(idx); setTab("shorts"); }} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#1E293B] via-[#2563EB]/30 to-[#FF6B00]/25 shadow-md cursor-pointer group border border-slate-200/60">{v.miniatura_url ? (<img src={v.miniatura_url} alt={v.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />) : (<video src={`${v.video_url}#t=0.5`} muted playsInline preload="metadata" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />)}<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent p-3 flex flex-col justify-between text-white"><span className="self-start bg-black/55 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full">{v.vistas || 0} {(v.vistas || 0) === 1 ? "vista" : "vistas"}</span><div className="space-y-0.5"><p className="text-xs font-extrabold truncate leading-snug">{v.titulo}</p><p className="text-[10px] text-slate-300 font-semibold truncate">{v.creador}</p></div></div></div>))}
+            <section className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-[16px] shadow-sm p-4 sm:p-5"><div className="flex items-center justify-between mb-3"><h3 className="font-black text-base text-[#1E293B] flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />Verticales / Shorts</h3><button type="button" onClick={() => { setIndiceShort(0); setTab("shorts"); }} className="text-xs font-extrabold text-blue-600 hover:underline">Ver en pantalla completa</button></div><div className="flex gap-3.5 overflow-x-auto pb-2 snap-x snap-mandatory"><button type="button" onClick={() => (usuario ? setTab("subir") : setMostrarAuth(true))} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] rounded-2xl bg-gradient-to-br from-[#2563EB] via-[#1E293B] to-[#FF6B00] text-white p-4 flex flex-col items-center justify-center text-center gap-2.5 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer border border-white/20"><span className="w-11 h-14 rounded-xl bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-inner"><Video className="w-5 h-5 text-white" strokeWidth={2} /></span><span className="text-xs font-black leading-tight">Lanzar Vertical</span><span className="text-[10px] text-white/85 font-medium">Publica tu talento en 9:16</span></button>{listaShorts.map((v, idx) => (<div key={v.id} onClick={() => { setIndiceShort(idx); setTab("shorts"); }} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#1E293B] via-[#2563EB]/30 to-[#FF6B00]/25 shadow-md cursor-pointer group border border-slate-200/60">{v.miniatura_url ? (<img src={v.miniatura_url} alt={v.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />) : (<video src={`${v.video_url}#t=0.5`} muted playsInline preload="metadata" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />)}<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent p-3 flex flex-col justify-between text-white"><span className="self-start bg-black/55 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full">{v.vistas || 0} {(v.vistas || 0) === 1 ? "vista" : "vistas"}</span><div className="space-y-0.5"><p className="text-xs font-extrabold truncate leading-snug">{v.titulo}</p><p className="text-[10px] text-slate-300 font-semibold truncate">{v.creador}</p></div></div></div>))}
                   </div>
                   {hayMasVideos && (
                     <div className="mt-6 flex justify-center">
@@ -1659,7 +1678,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   <div style={{ background: "linear-gradient(transparent, rgba(15,23,42,0.85))" }} className="absolute inset-x-0 bottom-0 pt-16 pb-14 px-5 text-white space-y-2.5">
 
 
-                    <div className="relative flex items-center justify-between gap-2 min-h-[40px]">
+                    <div className="grid grid-cols-3 items-center gap-1 min-h-[44px]">
                     <div className="min-w-0 flex-1">
                       <button
                         type="button"
@@ -1803,7 +1822,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                               const votoCom = likesComentario[c.id];
                               return (
                                 <div key={c.id} className="bg-white/5 border border-white/10 rounded-xl p-2 space-y-1">
-                                  <div className="relative flex items-center justify-between gap-2 min-h-[40px]">
+                                  <div className="grid grid-cols-3 items-center gap-1 min-h-[44px]">
                                     <div className="flex items-center gap-1.5">
                                       <span className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-600 to-orange-500 text-white text-[10px] font-black flex items-center justify-center uppercase">
                                         {(c.usuario || "U").replace("@", "").charAt(0)}
@@ -1946,6 +1965,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

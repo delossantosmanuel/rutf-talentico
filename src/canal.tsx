@@ -295,7 +295,7 @@ onToggleFan,
                       setMenuOpciones(false);
                       setModalInfoCanal(true);
                     }}
-                    className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2"
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-[#E2E8F0] flex items-center gap-2"
                   >
                     <Info className="w-4 h-4 text-blue-600" />
                     <span>Información del canal</span>
@@ -310,7 +310,7 @@ onToggleFan,
                       setMenuOpciones(false);
                       setEditorAbierto(!editorAbierto);
                     }}
-                    className="w-full px-3.5 py-2.5 text-left hover:bg-slate-50 flex items-center gap-2"
+                    className="w-full px-3.5 py-2.5 text-left hover:bg-[#E2E8F0] flex items-center gap-2"
                   >
                     <Edit3 className="w-4 h-4 text-slate-600" />
                     <span>{editorAbierto ? "Cerrar edición" : "Editar canal"}</span>
@@ -342,7 +342,7 @@ onToggleFan,
             <button
               type="button"
               onClick={onAbrirSubir}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-sm transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-sm transition"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Subir Video</span>
@@ -352,7 +352,7 @@ onToggleFan,
       </div>
 
                <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-        <div className="relative h-36 sm:h-48 bg-gradient-to-r from-blue-950 via-blue-800 to-slate-900">
+        <div className="relative h-[120px] bg-gradient-to-r from-blue-950 via-blue-800 to-slate-900">
                        {bannerUrl ? (
           <img src={bannerUrl} alt="Banner del canal" className="w-full h-full object-cover" />
         ) : perfil.username.toLowerCase() === "@rutftalentico" ? (
@@ -475,7 +475,7 @@ onToggleFan,
                 <button
                   type="button"
                   onClick={() => setEditorAbierto(!editorAbierto)}
-                  className="px-4 py-2 rounded-full border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-extrabold inline-flex items-center gap-1.5 transition"
+                  className="px-4 py-2 rounded-full border border-slate-300 hover:bg-[#E2E8F0] text-slate-800 text-xs font-extrabold inline-flex items-center gap-1.5 transition"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   <span>{editorAbierto ? "Cancelar" : "Editar Canal"}</span>
@@ -483,7 +483,7 @@ onToggleFan,
               )}
             </div>
 
-            <div className="mt-3 rounded-[14px] bg-[#0F172A] text-white p-4 shadow-md border border-slate-800 text-center space-y-1.5">
+            <div className="mt-3 rounded-[14px] bg-[#F8FAFC] text-[#0F172A] p-4 shadow-xs border border-[#CBD5E1] text-center space-y-1.5">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 className="text-xl font-black text-slate-900 truncate">
                   {nombreCanal || perfil.username}
@@ -507,7 +507,7 @@ onToggleFan,
               </div>
 
 
-            <p className="text-xs font-bold text-slate-300">
+            <p className="text-xs font-bold text-[#334155]">
               {perfil.username} • {seguidores.toLocaleString()}{" "}
               {seguidores === 1 ? "Fan" : "Fans"}
 
@@ -631,7 +631,7 @@ onToggleFan,
             {videos.map((v) => (
                            <div
                 key={v.id}
-                className="group relative border border-slate-200 rounded-2xl overflow-visible hover:shadow-md transition bg-slate-50"
+                className="group relative border border-slate-200 rounded-2xl overflow-visible hover:shadow-md transition bg-[#E2E8F0]"
               >
                 <div
                   onClick={() => onAbrirVideo(v)}
@@ -735,7 +735,7 @@ onToggleFan,
               <h3 className="text-xl font-black text-slate-900">
                 {nombreCanal || perfil.username}
               </h3>
-              <p className="text-xs font-bold text-slate-300 mt-0.5">{perfil.username}</p>
+              <p className="text-xs font-bold text-[#334155] mt-0.5">{perfil.username}</p>
             </div>
 
             <div className="space-y-2 border-b border-slate-200 pb-5">
@@ -809,7 +809,7 @@ onToggleFan,
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4"
+            className="w-full max-w-sm bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] shadow-2xl p-6 space-y-4"
           >
             <div className="flex items-center gap-2.5 text-red-600">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
@@ -828,7 +828,7 @@ onToggleFan,
                 type="button"
                 disabled={eliminandoVideo}
                 onClick={() => setVideoAEliminar(null)}
-                className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-xs font-extrabold hover:bg-slate-50"
+                className="px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-xs font-extrabold hover:bg-[#E2E8F0]"
               >
                 Cancelar
               </button>
@@ -877,7 +877,7 @@ onToggleFan,
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-5 sm:p-6 space-y-4"
+            className="w-full max-w-lg bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] shadow-2xl p-5 sm:p-6 space-y-4"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900">Vista previa del banner</h3>
@@ -963,7 +963,7 @@ onToggleFan,
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
                   vistaDispositivo === "tv"
                     ? "bg-red-600 text-white border-red-600 shadow-xs"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    : "bg-[#E2E8F0] text-slate-600 border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 <Tv className="w-3.5 h-3.5" /> TV (16:9)
@@ -974,7 +974,7 @@ onToggleFan,
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
                   vistaDispositivo === "pc"
                     ? "bg-red-600 text-white border-red-600 shadow-xs"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    : "bg-[#E2E8F0] text-slate-600 border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 <Monitor className="w-3.5 h-3.5" /> Escritorio
@@ -985,7 +985,7 @@ onToggleFan,
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-extrabold border transition ${
                   vistaDispositivo === "movil"
                     ? "bg-red-600 text-white border-red-600 shadow-xs"
-                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    : "bg-[#E2E8F0] text-slate-600 border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 <Smartphone className="w-3.5 h-3.5" /> Móvil
@@ -1092,7 +1092,7 @@ export function ModalCompartir({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 space-y-4"
+        className="w-full max-w-md bg-[#F8FAFC] rounded-[16px] border border-[#CBD5E1] shadow-2xl p-6 space-y-4"
       >
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="text-base font-black text-slate-900">Compartir talento</h3>
@@ -1108,7 +1108,7 @@ export function ModalCompartir({
         <p className="text-xs font-bold text-slate-700 line-clamp-2">{titulo}</p>
 
         {preparando ? (
-          <div className="py-12 flex flex-col items-center justify-center gap-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <div className="py-12 flex flex-col items-center justify-center gap-3 bg-[#E2E8F0] rounded-2xl border border-slate-200/80">
             <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
             <p className="text-xs font-extrabold text-slate-700">
               Generando enlace directo del video y código QR...
@@ -1116,7 +1116,7 @@ export function ModalCompartir({
           </div>
         ) : (
           <>
-            <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+            <div className="flex flex-col items-center justify-center p-4 bg-[#E2E8F0] rounded-2xl border border-slate-200/80">
               <div className="p-2.5 bg-white rounded-2xl border border-slate-200 shadow-xs">
                 <QRCodeSVG value={url} size={136} bgColor="#ffffff" fgColor="#0f172a" level="M" />
               </div>
@@ -1182,6 +1182,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

@@ -244,13 +244,11 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
             const subidoMB = (ev.loaded / (1024 * 1024)).toFixed(1);
             const pct = Math.min(95, Math.max(5, Math.round((ev.loaded / ev.total) * 95)));
             setProgreso(pct);
-            setEstadoTexto(`Subiendo video real: ${subidoMB} MB de ${totalMB} MB (${pct}%)...`);
           }
         };
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             setProgreso(97);
-            setEstadoTexto(`Video subido (${totalMB} MB). Guardando en RUTF Talentico...`);
             resolve();
           } else {
             reject(new Error(`Error HTTP R2 (${xhr.status}): ${xhr.responseText || xhr.statusText}`));

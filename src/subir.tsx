@@ -204,7 +204,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       }
 
       if (blobFinal) {
-        setDetalleSubida("Subiendo miniatura...");
+        setDetalleSubida("Preparando portada...");
         const { data: dataMin, error: errMin } = await supabase.functions.invoke("firmar-r2", {
           body: { carpeta: "miniaturas", nombreArchivo: `miniatura-${Date.now()}.webp` },
         });
@@ -477,7 +477,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       {subiendo && (
         <div className="space-y-1.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
           <div className={`flex justify-between text-xs font-extrabold ${progreso > 50 ? "text-emerald-600" : "text-blue-600"}`}>
-            <span>{progreso > 50 ? "¡Ya casi listo! Publicando en RUTF Talentico..." : "Subiendo video y miniatura..."}</span>
+            <span>{progreso >= 97 ? "¡Talento listo! Estrenando en RUTF..." : "Impulsando tu talento..."}</span>
             <span>{progreso}%</span>
           </div>
           <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
@@ -512,6 +512,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

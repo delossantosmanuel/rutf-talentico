@@ -217,7 +217,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         }
         const putMin = await fetch(dataMin.uploadUrl, {
           method: "PUT",
-          body: blobFinal,
+          body: await blobFinal.arrayBuffer(),
         });
         if (!putMin.ok) throw new Error(`Error subiendo miniatura a R2 (${putMin.status})`);
         miniaturaUrlFinal = dataMin.publicUrl;
@@ -260,7 +260,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         xhr.onerror = () => {
           reject(new Error("Bloqueo de red/CORS al enviar el video directo a Cloudflare R2"));
         };
-        xhr.send(archivo);
+        archivo.arrayBuffer().then((buf) => xhr.send(buf)).catch(reject);
       });
 
       const urlVideoFinal = dataVid.publicUrl;
@@ -532,6 +532,7 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
     </form>
   );
 }
+
 
 
 

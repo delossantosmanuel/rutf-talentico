@@ -178,7 +178,7 @@ onToggleFan,
       }
       const putR2 = await fetch(dataR2.uploadUrl, {
         method: "PUT",
-        body: optimizado,
+        body: await optimizado.arrayBuffer(),
       });
       if (!putR2.ok) {
         alert(`No se pudo subir la imagen a R2 (${putR2.status}).`);
@@ -1178,6 +1178,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

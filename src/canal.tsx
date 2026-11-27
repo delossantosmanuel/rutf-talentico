@@ -361,7 +361,7 @@ onToggleFan,
                   accept="image/*"
                   className="hidden"
                   onChange={(e) => {
-                    const f = e.target.files?.;
+                    const f = e.target.files?.[0];
                     if (f) subirImagen(f, "avatar");
                     e.target.value = "";
                   }}
@@ -1025,6 +1025,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

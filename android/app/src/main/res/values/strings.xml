@@ -1,7 +1,9 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">RUTF Talentico</string>
     <string name="title_activity_main">RUTF Talentico</string>
     <string name="package_name">com.rutftalentico.app</string>
     <string name="custom_url_scheme">com.rutftalentico.app</string>
+    <string name="server_client_id">://googleusercontent.com</string>
 </resources>
+

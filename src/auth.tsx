@@ -38,22 +38,73 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
   const entrarConGoogle = async () => {
     setCargando(true);
     const esNativo = Capacitor.isNativePlatform();
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    if (esNativo) {
+      try {
+        const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
+        await GoogleAuth.initialize({
+          clientId: "://googleusercontent.com",
+          scopes: ["profile", "email"],
+          grantOfflineAccess: true,
+        });
+        const googleUser = await GoogleAuth.signIn();
+        const idToken = googleUser?.authentication?.idToken;
+        if (!idToken) {
+          throw new Error("No se recibió el token de Google. Intenta de nuevo.");
+        }
+        const { data: authData, error: authErr } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: idToken,
+        });
+        if (authErr) throw authErr;
+
+        const emailNorm = (googleUser.email || authData?.user?.email || "").trim().toLowerCase();
+        let { data: perfilDb } = await supabase
+          .from("usuarios_rutf")
+          .select("id, username, email, es_fundador, avatar_url, banner_url, nombre_canal, creado_en")
+          .eq("email", emailNorm)
+          .maybeSingle();
+
+        if (!perfilDb && emailNorm) {
+          const baseHandle = "@" + emailNorm.split("@").replace(/[^a-z0-9_]/g, "").slice(0, 14) + "_" + (authData?.user?.id || "rutf").replace(/-/g, "").slice(0, 4);
+          const { data: creado, error: insErr } = await supabase
+            .from("usuarios_rutf")
+            .insert([{
+              id: authData?.user?.id,
+              email: emailNorm,
+              username: baseHandle,
+              username_lower: baseHandle.toLowerCase(),
+              avatar_url: googleUser.imageUrl || "",
+              es_fundador: false,
+            }])
+            .select("id, username, email, es_fundador, avatar_url, banner_url, nombre_canal, creado_en")
+            .single();
+          if (insErr) throw insErr;
+          perfilDb = creado;
+        }
+
+        if (perfilDb) {
+          localStorage.setItem("rutf_usuario", JSON.stringify(perfilDb));
+          onLogin(perfilDb, false);
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "No se pudo completar el acceso con Google";
+        if (!msg.toLowerCase().includes("cancel")) {
+          alert("Error con Google: " + msg);
+        }
+      } finally {
+        setCargando(false);
+      }
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: esNativo
-          ? "https://vercel.app"
-          : (typeof window !== "undefined" ? window.location.origin : undefined),
-        skipBrowserRedirect: esNativo,
+        redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
       },
     });
     if (error) {
       alert("Error al iniciar con Google: " + error.message);
-      setCargando(false);
-      return;
-    }
-    if (esNativo && data?.url) {
-      await Browser.open({ url: data.url });
       setCargando(false);
     }
   };
@@ -327,6 +378,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     </div>
   );
 }
+
 
 
 

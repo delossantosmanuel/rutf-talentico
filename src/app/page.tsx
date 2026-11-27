@@ -1,7 +1,7 @@
 ﻿"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { Play, Video, ThumbsUp, ThumbsDown, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
+import { Play, Video, ThumbsUp, ThumbsDown, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, SlidersHorizontal, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import SubirVideoForm from "../subir";
 import AuthModal from "../auth";
 import EstudioCanal, { ModalCompartir, PerfilCanal } from "../canal";
@@ -1273,10 +1273,10 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <button onClick={() => reaccionar(videoActivo, "like")} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition border ${votos[videoActivo.id] === "like" ? "bg-blue-600 text-white border-blue-600" : "bg-blue-50 text-blue-700 border-blue-200"}`}>
-                    <Sparkles className="w-4 h-4" /> Esto me gustó ({videoActivo.likes || 0})
+                    <Sparkles className="w-4 h-4" /> Aplaudir Talento ({videoActivo.likes || 0})
                   </button>
                   <button onClick={() => reaccionar(videoActivo, "dislike")} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer transition border ${votos[videoActivo.id] === "dislike" ? "bg-orange-600 text-white border-orange-600" : "bg-orange-50 text-orange-700 border-orange-200"}`}>
-                    <ShieldAlert className="w-4 h-4" /> No me gustó ({videoActivo.dislikes || 0})
+                    <SlidersHorizontal className="w-4 h-4" /> Por Mejorar ({videoActivo.dislikes || 0})
                   </button>
                   <button onClick={() => setVideoCompartir(videoActivo)} className="flex items-center gap-1.5 bg-[#0B1120] hover:bg-slate-200 text-slate-800 px-3.5 py-2 rounded-xl text-xs font-bold cursor-pointer"><Share2 className="w-4 h-4 text-blue-600" /> Compartir</button>
                                   <button
@@ -1339,7 +1339,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                              : "bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] text-[#94A3B8] hover:bg-[#0B1120]"
                          }`}
                        >
-                         <ThumbsUp className="w-2.5 h-2.5" />
+                         <Sparkles className="w-2.5 h-2.5 text-amber-300" />
                        <span>{conteoLikesCom[c.id]?.like || 0}</span>
                        </button>
 
@@ -1354,7 +1354,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                              : "bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] text-[#94A3B8] hover:bg-[#0B1120]"
                          }`}
                        >
-                         <ThumbsDown className="w-2.5 h-2.5" />
+                         <SlidersHorizontal className="w-2.5 h-2.5 text-amber-300" />
                          <span>{conteoLikesCom[c.id]?.dislike || 0}</span>
 
                        </button>
@@ -1370,9 +1370,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                            setTextoRespuesta("");
                          }}
                          className="px-2 py-0.5 rounded-full text-[10px] font-extrabold text-[#94A3B8] hover:text-blue-600 hover:bg-blue-50 transition"
-                       >
-                         Responder
-                       </button>
+                        className="inline-flex items-center gap-1"><MessageSquare className="w-2.5 h-2.5" /><span>Aportar</span></button>
                      </div>
 
                      {respondiendoA?.id === c.id && (
@@ -1385,7 +1383,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                            required
                            value={textoRespuesta}
                            onChange={(e) => setTextoRespuesta(e.target.value)}
-                           placeholder={`Responder a ${c.usuario}...`}
+                           placeholder={`Aportar a ${c.usuario}...`}
                            className="flex-1 bg-[#162032] border border-[#2A3A54] rounded-lg px-2.5 py-1.5 text-[11px] outline-none focus:border-blue-500"
                          />
                          <button
@@ -1637,7 +1635,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
 
                                    {mostrarGuiaSwipe && (
                     <div onClick={irSiguiente} className="absolute inset-x-0 top-4 z-20 flex justify-center cursor-pointer">
-                      <div className="bg-gradient-to-r from-blue-600/95 via-slate-900/95 to-orange-500/95 backdrop-blur-md text-white border border-white/30 px-4 py-2 rounded-full text-[11px] font-extrabold flex items-center gap-2 shadow-xl animate-bounce">
+                      <div className="bg-gradient-to-r from-blue-600/95 via-slate-900/95 to-orange-500/95 backdrop-blur-md text-white border border-white/30 px-4 md:pl-11 py-2 rounded-full text-[11px] font-extrabold flex items-center gap-2 shadow-xl animate-bounce">
                         <span>Desliza a la derecha para más talentos</span>
                         <span className="text-sm font-black">→</span>
                       </div>
@@ -1727,7 +1725,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         onClick={() => reaccionar(actual, "like")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold border transition ${votos[actual.id] === "like" ? "bg-blue-600 border-blue-400 text-white" : "bg-[#162032]/15 border-white/20 text-white hover:bg-[#162032]/25"}`}
                       >
-                        <ThumbsUp className="w-3.5 h-3.5" />
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                         <span>{actual.likes || 0}</span>
                       </button>
                       <button
@@ -1735,7 +1733,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         onClick={() => reaccionar(actual, "dislike")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold border transition ${votos[actual.id] === "dislike" ? "bg-red-600 border-red-400 text-white" : "bg-[#162032]/15 border-white/20 text-white hover:bg-[#162032]/25"}`}
                       >
-                        <ThumbsDown className="w-3.5 h-3.5" />
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-amber-300" />
                         <span>{actual.dislikes || 0}</span>
                       </button>
                                             <button
@@ -1775,7 +1773,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     </div>
 
                     {abiertoComShort && shortComentandoId === actual.id && (
-                    <div className="fixed z-50 max-md:inset-x-3 max-md:bottom-16 max-md:max-h-[55dvh] md:top-24 md:right-8 md:w-[380px] md:max-h-[76vh] bg-[#162032]/98 backdrop-blur-xl border border-[#2A3A54] rounded-3xl p-4 space-y-3 overflow-y-auto overflow-x-hidden shadow-2xl">
+                    <div className="fixed z-50 max-md:inset-x-3 max-md:bottom-16 max-md:max-h-[55dvh] md:top-28 md:right-8 md:w-[380px] md:max-h-[76vh] bg-[#162032]/98 backdrop-blur-xl border border-[#2A3A54] rounded-3xl p-4 space-y-3 overflow-y-auto overflow-x-hidden shadow-2xl">
                       <div className="flex items-center justify-between pb-2 border-b border-[#2A3A54]">
                         <span className="text-xs font-black text-[#F8FAFC]">Comentarios ({comentarios.length})</span>
                         <button
@@ -1845,8 +1843,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                                       }}
                                       className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${votoCom === "like" ? "bg-blue-600 border-blue-400 text-white" : "bg-[#162032]/5 border-white/15 text-slate-300"}`}
                                     >
-                                      <ThumbsUp className="w-2.5 h-2.5" />
-                                      <span>Esto me gustó ({votoCom === "like" ? 1 : 0})</span>
+                                      <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                                      <span>Aplaudir Talento ({votoCom === "like" ? 1 : 0})</span>
                                     </button>
                                     <button
                                       type="button"
@@ -1861,8 +1859,8 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                                       }}
                                       className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${votoCom === "dislike" ? "bg-red-600 border-red-400 text-white" : "bg-[#162032]/5 border-white/15 text-slate-300"}`}
                                     >
-                                      <ThumbsDown className="w-2.5 h-2.5" />
-                                      <span>No me gustó ({votoCom === "dislike" ? 1 : 0})</span>
+                                      <SlidersHorizontal className="w-2.5 h-2.5 text-amber-300" />
+                                      <span>Por Mejorar ({votoCom === "dislike" ? 1 : 0})</span>
                                     </button>
                                   </div>
                                 </div>
@@ -1964,6 +1962,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

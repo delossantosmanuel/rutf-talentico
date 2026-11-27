@@ -178,7 +178,6 @@ onToggleFan,
       }
       const putR2 = await fetch(dataR2.uploadUrl, {
         method: "PUT",
-        headers: { "Content-Type": "image/jpeg" },
         body: optimizado,
       });
       if (!putR2.ok) {
@@ -1179,6 +1178,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

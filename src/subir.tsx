@@ -217,7 +217,6 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         }
         const putMin = await fetch(dataMin.uploadUrl, {
           method: "PUT",
-          headers: { "Content-Type": "image/webp" },
           body: blobFinal,
         });
         if (!putMin.ok) throw new Error(`Error subiendo miniatura a R2 (${putMin.status})`);
@@ -241,7 +240,6 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", dataVid.uploadUrl, true);
-        xhr.setRequestHeader("Content-Type", archivo.type || "video/mp4");
         xhr.upload.onprogress = (ev) => {
           if (ev.lengthComputable) {
             const subidoMB = (ev.loaded / (1024 * 1024)).toFixed(1);
@@ -529,11 +527,12 @@ export default function SubirVideoForm({ supabase, canalActual, onPublicado }: P
         type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 disabled:opacity-50 text-white font-black py-3.5 rounded-2xl shadow-md hover:opacity-95 transition text-sm"
       >
-        {subiendo ? `Subiendo ${detalleSubida || `${progreso}%`}...` : archivo ? "Publicar Video Ahora" : "Selecciona un video para publicar"}
+        {subiendo ? `${detalleSubida || `Subiendo video (${progreso}%)...`}` : archivo ? "Publicar Video Ahora" : "Selecciona un video para publicar"}
       </button>
     </form>
   );
 }
+
 
 
 

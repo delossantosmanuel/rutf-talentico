@@ -163,6 +163,7 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
   const [notifCreador, setNotifCreador] = useState<Record<string, "todas" | "ninguna">>({});
   const [menuEngranaje, setMenuEngranaje] = useState<string | null>(null);
   const [conteoSeguidores, setConteoSeguidores] = useState<Record<string, number>>({});
+  const [avataresCreadores, setAvataresCreadores] = useState<Record<string, string>>({});
   const [videoActivo, setVideoActivo] = useState<Video | null>(null);
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
     const [indiceShort, setIndiceShort] = useState(0);
@@ -170,6 +171,7 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
   const [toqueInicioY, setToqueInicioY] = useState<number | null>(null);
     const videoAnteriorRef = useRef<Video | null>(null);
   const [apoyandoVideo, setApoyandoVideo] = useState(false);
+  const [modalAppWeb, setModalAppWeb] = useState<any>(null);
 
   useEffect(() => {
     controlarVisibilidadBanner(tab === "monetizar");
@@ -208,7 +210,19 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
 
 
   const [nuevoCom, setNuevoCom] = useState("");
-    const [abiertoComShort, setAbiertoComShort] = useState(false);
+      useEffect(() => {
+    const alReproducir = (e: Event) => {
+      const actualVid = e.target as HTMLVideoElement;
+      document.querySelectorAll("video").forEach((v) => {
+        if (v !== actualVid && !v.paused) v.pause();
+      });
+    };
+    document.addEventListener("play", alReproducir, true);
+    return () => document.removeEventListener("play", alReproducir, true);
+  }, []);
+
+  const [abiertoComShort, setAbiertoComShort] = useState(false);
+  const [shortComentandoId, setShortComentandoId] = useState<string | null>(null);
   const [likesComentario, setLikesComentario] = useState<Record<string, "like" | "dislike">>({});
     const [conteoLikesCom, setConteoLikesCom] = useState<Record<string, { like: number; dislike: number }>>({});
 
@@ -608,18 +622,37 @@ const [menuCuenta, setMenuCuenta] = useState(false);
   const enviarComentario = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!usuario) return setMostrarAuth(true);
-    if (!videoActivo || !nuevoCom.trim()) return;
-    await supabase.from("comentarios").insert([{ video_id: videoActivo.id, usuario: usuario.username, texto: nuevoCom.trim() }]);
+    const objetivoCom = (abiertoComShort && shortComentandoId) ? listaShorts.find((s) => s.id === shortComentandoId) : videoActivo;
+    if (!objetivoCom || !nuevoCom.trim()) return;
+    await supabase.from("comentarios").insert([{ video_id: objetivoCom.id, usuario: usuario.username, texto: nuevoCom.trim() }]);
     setNuevoCom("");
-    cargarComentarios(videoActivo.id);
+    cargarComentarios(objetivoCom.id);
   };
 
-  const renderCreador = (nombre: string) => (
-    <span className="inline-flex items-center gap-1 text-blue-600 font-bold">
-      {nombre}
-      {nombre.toLowerCase() === "@rutftalentico" && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 fill-blue-100" />}
-    </span>
-  );
+  const renderCreador = (nombre: string) => {
+    const foto = avataresCreadores[nombre.toLowerCase()] || (esMiCanal(nombre) ? usuario?.avatar_url : "");
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setCanalVisitado(nombre);
+          setTab("canal");
+        }}
+        className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-bold cursor-pointer group"
+      >
+        {foto ? (
+          <img src={foto} alt={nombre} className="w-6 h-6 rounded-full object-cover border border-blue-200 shrink-0" />
+        ) : (
+          <span className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-[10px] font-black flex items-center justify-center shrink-0">
+            {nombre.replace(/^@/, "").slice(0, 2).toUpperCase()}
+          </span>
+        )}
+        <span className="group-hover:underline">{nombre}</span>
+        {nombre.toLowerCase() === "@rutftalentico" && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 fill-blue-100 shrink-0" />}
+      </button>
+    );
+  };
 
   const esMiCanal = (creador: string) => !!usuario && usuario.username.toLowerCase() === creador.toLowerCase();
 
@@ -824,15 +857,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
               title={usuario.username}
               className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full overflow-hidden bg-gradient-to-r from-blue-600 to-orange-500 text-white font-black text-xs flex items-center justify-center shadow shrink-0 cursor-pointer"
             >
-                          {usuario.avatar_url || usuario.username.toLowerCase() === "@rutftalentico" ? (
-                <img
-                  src={usuario.avatar_url || "/logo-rutf.png"}
-                  alt={usuario.username}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                usuario.username.replace("@", "").slice(0, 2).toUpperCase()
-              )}
+                          {usuario.avatar_url ? (<img src={usuario.avatar_url} alt="" className="w-full h-full object-cover" />) : (<span className="text-[11px] font-black leading-none tracking-tight">{usuario.username.replace(/^@/, "").slice(0, 2).toUpperCase()}</span>)}
 
             </button>
 
@@ -1030,7 +1055,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
  </>}
 
 
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-4 py-6 pb-20">
               {videoActivo && (
           <div className="mb-8 -mx-4 sm:mx-0 bg-white sm:border sm:border-slate-200 rounded-none sm:rounded-3xl overflow-hidden shadow-lg">
             <div
@@ -1156,7 +1181,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                   <h2 className="font-black text-lg sm:text-xl text-slate-900">{videoActivo.titulo}</h2>
                   <div className="flex flex-wrap items-center gap-2.5 text-xs">
                     {renderCreador(videoActivo.creador)}
-                                        <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} Fans • {videoActivo.vistas || 0} vistas calificadas</span>
+                                        <span className="text-slate-500 font-bold">• {conteoSeguidores[videoActivo.creador] || 0} {(conteoSeguidores[videoActivo.creador] || 0) === 1 ? "Fan" : "Fans"} • {videoActivo.vistas || 0} {(videoActivo.vistas || 0) === 1 ? "vista calificada" : "vistas calificadas"}</span>
            
 {esMiCanal(videoActivo.creador) ? (
   <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-extrabold border border-blue-200">
@@ -1432,7 +1457,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                           <button onClick={() => reaccionar(v, "dislike")} className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer ${votos[v.id] === "dislike" ? "bg-orange-600 text-white" : "bg-orange-50 text-orange-700"}`}><ShieldAlert className="w-3.5 h-3.5" /> ({v.dislikes || 0})</button>
                           <button onClick={() => setVideoCompartir(v)} title="Compartir" className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer"><Share2 className="w-3.5 h-3.5" /></button>
                         </div>
-                        <span className="text-[11px] text-slate-400 font-bold">{v.vistas || 0} vistas</span>
+                        <span className="text-[11px] text-slate-400 font-bold">{v.vistas || 0} {(v.vistas || 0) === 1 ? "vista" : "vistas"}</span>
                       </div>
                     </div>
                   </div>
@@ -1476,7 +1501,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     </div>
                   )}
                 </section>
-            <section className="bg-slate-900/5 border border-slate-200/80 rounded-3xl p-4 sm:p-5"><div className="flex items-center justify-between mb-3"><h3 className="font-black text-base text-slate-900 flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />Verticales / Shorts</h3><button type="button" onClick={() => { setIndiceShort(0); setTab("shorts"); }} className="text-xs font-extrabold text-blue-600 hover:underline">Ver pantalla completa ?</button></div><div className="flex gap-3.5 overflow-x-auto pb-2 snap-x snap-mandatory"><button type="button" onClick={() => (usuario ? setTab("subir") : setMostrarAuth(true))} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-700 to-orange-500 text-white p-4 flex flex-col items-center justify-center text-center gap-2.5 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer border border-white/20"><span className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-black shadow-inner">+</span><span className="text-xs font-black leading-tight">Crear Short Vertical</span><span className="text-[10px] text-white/85 font-medium">Publica tu talento en 9:16</span></button>{listaShorts.map((v, idx) => (<div key={v.id} onClick={() => { setIndiceShort(idx); setTab("shorts"); }} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] relative rounded-2xl overflow-hidden bg-slate-950 shadow-md cursor-pointer group border border-slate-800/40"><video src={v.video_url} muted playsInline preload="metadata" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /><div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent p-3 flex flex-col justify-between text-white"><span className="self-start bg-black/55 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full">{v.vistas || 0} vistas</span><div className="space-y-0.5"><p className="text-xs font-extrabold line-clamp-2 leading-snug">{v.titulo}</p><p className="text-[10px] text-slate-300 font-semibold truncate">{v.creador}</p></div></div></div>))}
+            <section className="bg-slate-900/5 border border-slate-200/80 rounded-3xl p-4 sm:p-5"><div className="flex items-center justify-between mb-3"><h3 className="font-black text-base text-slate-900 flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />Verticales / Shorts</h3><button type="button" onClick={() => { setIndiceShort(0); setTab("shorts"); }} className="text-xs font-extrabold text-blue-600 hover:underline">Ver pantalla completa ?</button></div><div className="flex gap-3.5 overflow-x-auto pb-2 snap-x snap-mandatory"><button type="button" onClick={() => (usuario ? setTab("subir") : setMostrarAuth(true))} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-700 to-orange-500 text-white p-4 flex flex-col items-center justify-center text-center gap-2.5 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer border border-white/20"><span className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-black shadow-inner">+</span><span className="text-xs font-black leading-tight">Crear Short Vertical</span><span className="text-[10px] text-white/85 font-medium">Publica tu talento en 9:16</span></button>{listaShorts.map((v, idx) => (<div key={v.id} onClick={() => { setIndiceShort(idx); setTab("shorts"); }} className="snap-start shrink-0 w-36 sm:w-44 aspect-[9/16] relative rounded-2xl overflow-hidden bg-slate-950 shadow-md cursor-pointer group border border-slate-800/40"><video src={v.video_url} muted playsInline preload="metadata" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /><div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent p-3 flex flex-col justify-between text-white"><span className="self-start bg-black/55 backdrop-blur-sm text-[10px] font-bold px-2 py-0.5 rounded-full">{v.vistas || 0} {(v.vistas || 0) === 1 ? "vista" : "vistas"}</span><div className="space-y-0.5"><p className="text-xs font-extrabold truncate leading-snug">{v.titulo}</p><p className="text-[10px] text-slate-300 font-semibold truncate">{v.creador}</p></div></div></div>))}
                   </div>
                   {hayMasVideos && (
                     <div className="mt-6 flex justify-center">
@@ -1577,30 +1602,62 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     </button>
                   )}
 
-                  <div className="absolute inset-x-0 bottom-12 bg-gradient-to-t from-black/95 via-black/75 to-transparent p-4 text-white space-y-2.5">
+                  <div className="absolute inset-x-0 bottom-14 bg-gradient-to-t from-black/95 via-black/75 to-transparent px-5 py-4 text-white space-y-2.5">
 
 
                     <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="text-xs font-black text-orange-400 truncate">
-                          {actual.creador} • {conteoSeguidores[actual.creador] || 0} Fans
-                        </div>
-                        <p className="text-sm font-black line-clamp-2 leading-snug">{actual.titulo}</p>
-                      </div>
+                    <div className="min-w-0 flex-1">
                       <button
                         type="button"
                         onClick={() => {
-                          if (esMiCanal(actual.creador)) setTab("canal");
-                          else {
-                            setBusqueda(actual.creador);
-                            setTab("inicio");
-                          }
+                          setCanalVisitado(actual.creador);
+                          setTab("canal");
                         }}
-                        className="shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-black bg-white/20 hover:bg-white/30 text-white border border-white/30 transition"
+                        className="flex items-center gap-2 text-left max-w-full cursor-pointer group"
+                      >
+                        {(avataresCreadores[actual.creador.toLowerCase()] || (esMiCanal(actual.creador) ? usuario?.avatar_url : "")) ? (
+                          <img
+                            src={avataresCreadores[actual.creador.toLowerCase()] || usuario?.avatar_url}
+                            alt={actual.creador}
+                            className="w-7 h-7 rounded-full object-cover border border-white/50 shrink-0"
+                          />
+                        ) : (
+                          <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-rose-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 border border-white/40">
+                            {actual.creador.replace(/^@/, "").slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                        <span className="text-xs font-black text-orange-400 group-hover:underline truncate">
+                          {actual.creador} • {conteoSeguidores[actual.creador] || 0} {(conteoSeguidores[actual.creador] || 0) === 1 ? "Fan" : "Fans"}
+                        </span>
+                      </button>
+                      <p className="text-sm font-black line-clamp-2 leading-snug mt-1">{actual.titulo}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {!esMiCanal(actual.creador) && (
+                        <button
+                          type="button"
+                          onClick={() => toggleSuscripcion(actual.creador)}
+                          className={`px-3 py-1.5 rounded-full text-[11px] font-black transition cursor-pointer ${
+                            suscritos[actual.creador]
+                              ? "bg-white/20 text-white border border-white/30"
+                              : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white shadow-sm"
+                          }`}
+                        >
+                          {suscritos[actual.creador] ? "Eres Fan ✓" : "Hazte Fan"}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCanalVisitado(actual.creador);
+                          setTab("canal");
+                        }}
+                        className="px-3 py-1.5 rounded-full text-[11px] font-black bg-white/20 hover:bg-white/30 text-white border border-white/30 transition cursor-pointer"
                       >
                         {esMiCanal(actual.creador) ? "Mi Canal" : "Ver Canal"}
                       </button>
                     </div>
+                  </div>
 
                     <div className="flex flex-wrap items-center gap-2 pt-0.5">
                       <button
@@ -1622,16 +1679,16 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                                             <button
                         type="button"
                         onClick={async () => {
-                          const abrir = !abiertoComShort;
-                          setAbiertoComShort(abrir);
-                          if (abrir) {
-                            setVideoActivo(actual);
-                            await cargarComentarios(actual.id);
-                          }
+                          const abrir = !(abiertoComShort && shortComentandoId === actual.id);
+                      setAbiertoComShort(abrir);
+                      setShortComentandoId(abrir ? actual.id : null);
+                      if (abrir) {
+                        await cargarComentarios(actual.id);
+                      }
                         }}
                         className="relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-blue-600 to-orange-500 border border-white/30 text-white hover:opacity-95 shadow-md transition"
                       >
-                        <span className="absolute -top-2 -right-1.5 flex items-center justify-center w-5 h-5 rounded-full bg-slate-950 border border-amber-400/80 shadow">
+                        <span className="absolute -top-2.5 -right-2 pointer-events-none flex items-center justify-center w-5 h-5 rounded-full bg-slate-950 border border-amber-400/80 shadow">
                           <svg viewBox="0 0 24 24" className="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                             <path d="M9.5 11.5h5" />
@@ -1641,7 +1698,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>Comentar</span>
                         <span className="bg-black/30 px-2 py-0.5 rounded-full text-[11px] font-black">
-                          {abiertoComShort && videoActivo?.id === actual.id ? comentarios.length : (conteoComs[actual.id] || 0)}
+                          {abiertoComShort && shortComentandoId === actual.id ? comentarios.length : (conteoComs[actual.id] || 0)}
                         </span>
                       </button>
 
@@ -1655,7 +1712,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                       </button>
                     </div>
 
-                    {abiertoComShort && videoActivo?.id === actual.id && (
+                    {abiertoComShort && shortComentandoId === actual.id && (
                       <div className="bg-slate-950/95 backdrop-blur-md border border-white/20 rounded-2xl p-3 space-y-2.5 max-h-56 overflow-y-auto shadow-2xl">
                         {!usuario ? (
                           <div className="flex items-center justify-between gap-2 bg-white/10 border border-white/15 rounded-xl px-3 py-2">
@@ -1808,9 +1865,35 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
           cargarDatos();
         }}
       />
+      {modalAppWeb && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setModalAppWeb(null)}>
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-2xl flex items-center justify-center shadow-lg">
+              RT
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-black text-slate-900">RUTF Talentico App Oficial</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Descarga la aplicación móvil de <strong>RUTF Talentico</strong> para apoyar a <strong>@{modalAppWeb.creador}</strong> con anuncios recompensados y disfrutar del mejor contenido viral.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setModalAppWeb(null)}
+              className="w-full py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition cursor-pointer"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
 
 
     </div>
   );
 }
+
+
+
+
 

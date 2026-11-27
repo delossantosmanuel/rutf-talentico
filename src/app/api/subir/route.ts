@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     const limpio = String(nombreArchivo).replace(/[^a-zA-Z0-9._-]/g, "_");
     const ruta = `${carpeta}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${limpio}`;
     const bucket = process.env.R2_BUCKET_NAME || "rutf-talentico";
-    const endpoint = `https://${bucket}.${process.env.R2_ACCOUNT_ID}://{ruta}?X-Amz-Expires=3600`;
+    const endpoint = `https://${process.env.R2_ACCOUNT_ID}://{bucket}/${ruta}?X-Amz-Expires=3600`;
 
     const firmada = await r2.sign(
       new Request(endpoint, { method: "PUT" }),

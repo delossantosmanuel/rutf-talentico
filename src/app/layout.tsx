@@ -97,13 +97,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-            <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var ua=navigator.userAgent||"";var isAndroid=/Android/i.test(ua);var isCap=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());var hasAuth=(window.location.search.indexOf("code=")!==-1)||(window.location.hash.indexOf("access_token=")!==-1);if(isAndroid&&!isCap&&hasAuth){window.location.replace("com.rutftalentico.app://login-callback"+window.location.search+window.location.hash);}}catch(e){}})();`
-          }}
-        />
-      </head>
       <body className="antialiased bg-slate-50 text-slate-900 pb-16 bg-[#0B1120] text-[#F8FAFC]">
         <AdMobManager />
         {children}
@@ -111,5 +104,6 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 

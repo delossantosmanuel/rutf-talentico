@@ -413,10 +413,9 @@ onToggleFan,
                       <button
                         type="button"
                         onClick={onAbrirSubir}
-                        className="rutf-shimmer inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-md transition cursor-pointer"
+                        className="rutf-shimmer inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-[11px] font-extrabold shadow-sm transition cursor-pointer"
                       >
-                        <Video className="w-3.5 h-3.5" strokeWidth={2} />
-                        <span>Subir Video</span>
+                        <Video className="w-3 h-3" strokeWidth={2} /><span>Subir Video</span>
                       </button>
                     )}
                     <button
@@ -653,7 +652,7 @@ onToggleFan,
             <div className="w-16" />
           </div>
 
-          <div className="w-full max-w-2xl mx-auto px-5 py-6 flex-1 space-y-6">
+          <div className="w-full max-w-md mx-auto px-6 sm:px-8 py-6 pb-28 flex-1 space-y-5">
             <div>
               <h3 className="text-xl font-black text-[#F8FAFC]">
                 {nombreCanal || perfil.username}
@@ -694,14 +693,14 @@ onToggleFan,
 
               <div className="flex items-center justify-between py-2 border-b border-slate-100">
                 <span className="text-[#94A3B8] font-semibold">Fans totales</span>
-                <span className="font-extrabold text-[#F8FAFC]">
+                <span className="font-extrabold text-[#F8FAFC]" tabular-nums text-right pl-4>
                   {seguidores.toLocaleString()}
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-2">
                 <span className="text-[#94A3B8] font-semibold">Alcance histórico</span>
-                <span className="font-extrabold text-[#F8FAFC]">
+                <span className="font-extrabold text-[#F8FAFC]" tabular-nums text-right pl-4>
                   {vistasTotales.toLocaleString()}
                 </span>
               </div>
@@ -1105,6 +1104,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

@@ -1,4 +1,4 @@
-﻿export interface IdiomaOpcion {
+export interface IdiomaOpcion {
   codigo: string;
   nativo: string;
   espanol: string;
@@ -34,12 +34,12 @@ export const IDIOMAS_MUNDO: IdiomaOpcion[] = [
 ];
 
 const cacheMemoria: Record<string, Record<string, string>> = {};
-const pendientes = new Set<string>();
+const pendientes = new Map<string, Promise<string>>();
 
 function leerCache(codigo: string): Record<string, string> {
   if (cacheMemoria[codigo]) return cacheMemoria[codigo];
   try {
-    const raw = localStorage.getItem("rutf_trad_" + codigo);
+    const raw = localStorage.getItem("rutf_trad_v2_" + codigo);
     cacheMemoria[codigo] = raw ? JSON.parse(raw) : {};
   } catch {
     cacheMemoria[codigo] = {};
@@ -50,30 +50,39 @@ function leerCache(codigo: string): Record<string, string> {
 function guardarCache(codigo: string, mapa: Record<string, string>) {
   cacheMemoria[codigo] = mapa;
   try {
-    localStorage.setItem("rutf_trad_" + codigo, JSON.stringify(mapa));
+    localStorage.setItem("rutf_trad_v2_" + codigo, JSON.stringify(mapa));
   } catch {}
 }
 
-async function traducirTextoReal(texto: string, codigo: string): Promise<string> {
+export function traducirTextoReal(texto: string, codigo: string): Promise<string> {
   const mapa = leerCache(codigo);
-  if (mapa[texto]) return mapa[texto];
+  if (mapa[texto]) return Promise.resolve(mapa[texto]);
   const clave = codigo + "::" + texto;
-  if (pendientes.has(clave)) return texto;
-  pendientes.add(clave);
-  try {
-    const url = "https://googleapis.com" + encodeURIComponent(codigo) + "&dt=t&q=" + encodeURIComponent(texto);
-    const res = await fetch(url);
-    const data = await res.json();
-    const traducido = Array.isArray(data?.[0]) ? data[0].map((seg: unknown[]) => seg?.[0] || "").join("") : texto;
-    if (traducido) {
-      mapa[texto] = traducido;
-      guardarCache(codigo, mapa);
-      return traducido;
+  const enCurso = pendientes.get(clave);
+  if (enCurso) return enCurso;
+
+  const tarea = (async () => {
+    try {
+      const url = "https://googleapis.com" + encodeURIComponent(codigo) + "&dt=t&q=" + encodeURIComponent(texto);
+      const res = await fetch(url);
+      const data = await res.json();
+      const bloques = Array.isArray(data) ? data[0] : null;
+      const traducido = Array.isArray(bloques)
+        ? bloques.map((seg: unknown) => (Array.isArray(seg) ? String(seg[0] || "") : "")).join("")
+        : texto;
+      if (traducido && traducido !== texto) {
+        mapa[texto] = traducido;
+        guardarCache(codigo, mapa);
+        return traducido;
+      }
+    } catch {} finally {
+      pendientes.delete(clave);
     }
-  } catch {} finally {
-    pendientes.delete(clave);
-  }
-  return texto;
+    return texto;
+  })();
+
+  pendientes.set(clave, tarea);
+  return tarea;
 }
 
 function esTraducible(texto: string): boolean {
@@ -88,10 +97,11 @@ export function obtenerNombreIdioma(codigo: string): string {
   return IDIOMAS_MUNDO.find((i) => i.codigo === codigo)?.nativo || "Español";
 }
 
-export function aplicarIdiomaPlataforma(codigo: string) {
+export async function aplicarIdiomaPlataforma(codigo: string): Promise<void> {
   if (typeof document === "undefined") return;
   document.documentElement.lang = codigo || "es";
   const mapa = codigo !== "es" ? leerCache(codigo) : {};
+  const promesas: Promise<unknown>[] = [];
 
   document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[placeholder], textarea[placeholder]").forEach((el) => {
     if (el.closest("[data-sin-traducir='true']")) return;
@@ -102,9 +112,11 @@ export function aplicarIdiomaPlataforma(codigo: string) {
     } else if (mapa[origPh]) {
       el.placeholder = mapa[origPh];
     } else if (esTraducible(origPh)) {
-      traducirTextoReal(origPh, codigo).then((tr) => {
-        if ((localStorage.getItem("rutf_idioma") || "es") === codigo) el.placeholder = tr;
-      });
+      promesas.push(
+        traducirTextoReal(origPh, codigo).then((tr) => {
+          if ((localStorage.getItem("rutf_idioma") || "es") === codigo) el.placeholder = tr;
+        })
+      );
     }
   });
 
@@ -124,15 +136,20 @@ export function aplicarIdiomaPlataforma(codigo: string) {
           nodo.nodeValue = base.replace(limpio, mapa[limpio]);
         } else {
           const nodoActual = nodo;
-          traducirTextoReal(limpio, codigo).then((tr) => {
-            if ((localStorage.getItem("rutf_idioma") || "es") === codigo) {
-              nodoActual.nodeValue = base.replace(limpio, tr);
-            }
-          });
+          promesas.push(
+            traducirTextoReal(limpio, codigo).then((tr) => {
+              if ((localStorage.getItem("rutf_idioma") || "es") === codigo) {
+                nodoActual.nodeValue = base.replace(limpio, tr);
+              }
+            })
+          );
         }
       }
     }
     nodo = walker.nextNode();
   }
-}
 
+  if (promesas.length > 0) {
+    await Promise.allSettled(promesas);
+  }
+}

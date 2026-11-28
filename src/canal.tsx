@@ -154,6 +154,7 @@ onToggleFan,
   const [idiomaActivo, setIdiomaActivo] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("rutf_idioma") || "es" : "es"));
   const [idiomaTemp, setIdiomaTemp] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("rutf_idioma") || "es" : "es"));
   const [busquedaIdioma, setBusquedaIdioma] = useState("");
+  const [aplicandoIdioma, setAplicandoIdioma] = useState(false);
     const [menuVideoId, setMenuVideoId] = useState<string | null>(null);
   const [videoAEliminar, setVideoAEliminar] = useState<VideoCanal | null>(null);
   const [eliminandoVideo, setEliminandoVideo] = useState(false);
@@ -717,12 +718,7 @@ onToggleFan,
                     {seleccionado && (
                       <button
                         type="button"
-                        onClick={() => {
-                          setIdiomaActivo(item.codigo);
-                          localStorage.setItem("rutf_idioma", item.codigo);
-                          aplicarIdiomaPlataforma(item.codigo);
-                          setModalIdioma(false);
-                        }}
+                        disabled={aplicandoIdioma} onClick={async () => { setAplicandoIdioma(true); setIdiomaActivo(item.codigo); localStorage.setItem("rutf_idioma", item.codigo); await Promise.all([aplicarIdiomaPlataforma(item.codigo), new Promise((r) => setTimeout(r, 2800))]); await aplicarIdiomaPlataforma(item.codigo); setAplicandoIdioma(false); setModalIdioma(false); }}
                         className="px-4 py-3 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-lg shrink-0 transition cursor-pointer"
                       >
                         Confirmar
@@ -1217,6 +1213,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

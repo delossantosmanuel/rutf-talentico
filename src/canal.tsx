@@ -360,7 +360,7 @@ onToggleFan,
                   )}
                 </div>
               </div>
-              {(Boolean(perfil.es_fundador) || (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
+              {(Boolean(perfil.es_fundador) || (perfil.username.toLowerCase() === "@rutftalentico" )) && (
                 <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#0B1120] border border-[#2A3A54] flex items-center justify-center shadow-md">
                   <CheckCircle2 className="w-4 h-4 text-[#2563EB] fill-[#2563EB]/20" />
                 </span>
@@ -386,7 +386,7 @@ onToggleFan,
                   <h2 className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight truncate">
                     {nombreCanal}
                   </h2>
-                  {(Boolean(perfil.es_fundador) || (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
+                  {(Boolean(perfil.es_fundador) || (perfil.username.toLowerCase() === "@rutftalentico" )) && (
                     <span className="px-2 py-0.5 rounded-full bg-[#2563EB]/20 border border-[#2563EB]/40 text-[#60A5FA] text-[10px] font-black uppercase tracking-wider">
                       Oficial
                     </span>
@@ -1103,6 +1103,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

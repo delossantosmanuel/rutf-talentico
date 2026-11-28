@@ -716,7 +716,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
   };
 
   const renderCreador = (nombre: string) => {
-    const foto = avataresCreadores[nombre.toLowerCase()] || (esMiCanal(nombre) ? usuario?.avatar_url : "");
+    const foto = avataresCreadores[nombre.toLowerCase()] || (esMiCanal(nombre) ? usuario?.avatar_url : "") || (nombre.toLowerCase() === "@rutftalentico" ? "/icon.png" : "");
     return (
       <button
         type="button"
@@ -735,7 +735,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
           </span>
         )}
         <span className="group-hover:underline">{nombre}</span>
-        {(nombre.toLowerCase() === "@rutftalentico" || (conteoSeguidores[nombre] || 0) >= 1000) && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 fill-blue-100 shrink-0" />}
+        {(nombre.toLowerCase() === "@rutftalentico" ) && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 fill-blue-100 shrink-0" />}
       </button>
     );
   };
@@ -951,17 +951,13 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                     className="p-[2px] rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] shadow-sm cursor-pointer active:scale-95 transition"
                   >
                     <div className="w-[38px] h-[38px] rounded-full overflow-hidden bg-[#0F172A] text-white font-black text-xs flex items-center justify-center">
-                      {usuario.avatar_url ? (
-                        <img
-                          src={usuario.avatar_url}
+                      {(usuario.avatar_url || (usuario.username.toLowerCase() === "@rutftalentico" ? "/icon.png" : "")) ? (<img src={usuario.avatar_url || "/icon.png"}
                           alt=""
                           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                           className="w-full h-full object-cover"
                         />
                       ) : null}
-                      <span className="text-[11px] font-black leading-none tracking-tight">
-                        {usuario.username.replace(/^@/, "").slice(0, 2).toUpperCase()}
-                      </span>
+                      {!(usuario.avatar_url || usuario.username.toLowerCase() === "@rutftalentico") && (<span className="text-[11px] font-black leading-none tracking-tight">{usuario.username.replace(/^@/, "").slice(0, 2).toUpperCase()}</span>)}
                     </div>
                   </button>
                   {menuCuenta && (
@@ -2011,6 +2007,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

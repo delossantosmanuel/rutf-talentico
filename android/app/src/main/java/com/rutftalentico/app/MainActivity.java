@@ -1,4 +1,4 @@
-package com.rutftalentico.app;
+﻿package com.rutftalentico.app;
 
 import com.getcapacitor.BridgeActivity;
 

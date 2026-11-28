@@ -40,14 +40,9 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     const esNativo = Capacitor.isNativePlatform();
     if (esNativo) {
       try {
-        const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
-        await GoogleAuth.initialize({
-          clientId: "://googleusercontent.com",
-          scopes: ["profile", "email"],
-          grantOfflineAccess: true,
-        });
-        const googleUser = await GoogleAuth.signIn();
-        const idToken = googleUser?.authentication?.idToken;
+        const { SocialLogin } = await import("@capgo/capacitor-social-login");
+        await SocialLogin.initialize({ google: { webClientId: "://googleusercontent.com" } });
+        const res = await SocialLogin.login({ provider: "google", options: { scopes: ["email", "profile"] } }); const rData = res?.result as { idToken?: string; profile?: { email?: string; imageUrl?: string } } | undefined; const idToken = rData?.idToken;
         if (!idToken) {
           throw new Error("No se recibió el token de Google. Intenta de nuevo.");
         }
@@ -57,7 +52,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
         });
         if (authErr) throw authErr;
 
-        const emailNorm = (googleUser.email || authData?.user?.email || "").trim().toLowerCase();
+        const emailNorm = (rData?.profile?.email || authData?.user?.email || "").trim().toLowerCase();
         let { data: perfilDb } = await supabase
           .from("usuarios_rutf")
           .select("id, username, email, es_fundador, avatar_url, banner_url, nombre_canal, creado_en")
@@ -73,7 +68,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
               email: emailNorm,
               username: baseHandle,
               username_lower: baseHandle.toLowerCase(),
-              avatar_url: googleUser.imageUrl || "",
+              avatar_url: rData?.profile?.imageUrl || "",
               es_fundador: false,
             }])
             .select("id, username, email, es_fundador, avatar_url, banner_url, nombre_canal, creado_en")
@@ -378,6 +373,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     </div>
   );
 }
+
 
 
 

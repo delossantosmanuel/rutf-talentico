@@ -139,6 +139,7 @@ onToggleFan,
     perfil.nombre_canal || perfil.username.replace("@", "")
   );
   const [bio, setBio] = useState(perfil.bio || "");
+  useEffect(() => { setBio(perfil.bio || ""); setNombreCanal(perfil.nombre_canal || ""); }, [perfil.id, perfil.bio, perfil.nombre_canal]);
   const [avatarUrl, setAvatarUrl] = useState(perfil.avatar_url || "");
   const [bannerUrl, setBannerUrl] = useState(perfil.banner_url || "");
   const [guardando, setGuardando] = useState(false);
@@ -1104,6 +1105,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

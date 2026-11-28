@@ -1,4 +1,5 @@
-﻿"use client";
+﻿import { IDIOMAS_MUNDO, obtenerNombreIdioma, aplicarIdiomaPlataforma } from "./idiomas";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -11,7 +12,7 @@ import {
   Video, VideoOff,
   MoreVertical,
   Edit3,
-  Info,
+  Info, Globe, Check, Search,
    LogOut,
   X,
   Tv,
@@ -149,6 +150,10 @@ onToggleFan,
   const [editorAbierto, setEditorAbierto] = useState(false);
   const [menuOpciones, setMenuOpciones] = useState(false);
   const [modalInfoCanal, setModalInfoCanal] = useState(false);
+  const [modalIdioma, setModalIdioma] = useState(false);
+  const [idiomaActivo, setIdiomaActivo] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("rutf_idioma") || "es" : "es"));
+  const [idiomaTemp, setIdiomaTemp] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("rutf_idioma") || "es" : "es"));
+  const [busquedaIdioma, setBusquedaIdioma] = useState("");
     const [menuVideoId, setMenuVideoId] = useState<string | null>(null);
   const [videoAEliminar, setVideoAEliminar] = useState<VideoCanal | null>(null);
   const [eliminandoVideo, setEliminandoVideo] = useState(false);
@@ -316,7 +321,25 @@ onToggleFan,
                   </button>
                   )}
 
-                  {onCerrarSesion && (
+                                      <button
+                      type="button"
+                      onClick={() => {
+                        setMenuOpciones(false);
+                        setIdiomaTemp(idiomaActivo);
+                        setBusquedaIdioma("");
+                        setModalIdioma(true);
+                      }}
+                      className="w-full px-3.5 py-2.5 text-left hover:bg-[#0B1120] flex items-center justify-between gap-2 border-t border-[#2A3A54]/70"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-[#FF6B00]" />
+                        <span>Idioma del Escenario</span>
+                      </span>
+                      <span data-sin-traducir="true" className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#1E293B] text-[#3B82F6]">
+                        {obtenerNombreIdioma(idiomaActivo)}
+                      </span>
+                    </button>
+                    {onCerrarSesion && (
                     <button
                       type="button"
                       onClick={() => {
@@ -634,7 +657,83 @@ onToggleFan,
 
 
 
-           {modalInfoCanal && (
+                 {modalIdioma && (
+        <div className="fixed inset-0 z-50 bg-[#162032] overflow-y-auto flex flex-col">
+          <div className="sticky top-0 z-10 bg-[#0B1120]/95 backdrop-blur-md border-b border-[#2A3A54] px-4 py-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setModalIdioma(false)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1E293B] hover:bg-slate-700 text-[#F8FAFC] text-xs font-extrabold transition cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Volver</span>
+            </button>
+            <span className="text-xs font-black text-[#94A3B8] uppercase tracking-wider">
+              Idioma del Escenario
+            </span>
+            <div className="w-16" />
+          </div>
+
+          <div className="w-full max-w-md mx-auto px-5 sm:px-8 py-5 pb-32 flex-1 space-y-4">
+            <div className="relative">
+              <Search className="w-4 h-4 text-[#64748B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={busquedaIdioma}
+                onChange={(e) => setBusquedaIdioma(e.target.value)}
+                placeholder="Buscar idioma o país..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#0B1120] border border-[#2A3A54] text-sm text-[#F8FAFC] placeholder-[#64748B] focus:outline-none focus:border-[#3B82F6]"
+              />
+            </div>
+
+            <div data-sin-traducir="true" className="space-y-2">
+              {IDIOMAS_MUNDO.filter((item) => {
+                const q = busquedaIdioma.trim().toLowerCase();
+                if (!q) return true;
+                return item.nativo.toLowerCase().includes(q) || item.espanol.toLowerCase().includes(q) || item.region.toLowerCase().includes(q);
+              }).map((item) => {
+                const seleccionado = idiomaTemp === item.codigo;
+                return (
+                  <button
+                    key={item.codigo}
+                    type="button"
+                    onClick={() => setIdiomaTemp(item.codigo)}
+                    className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between text-left transition cursor-pointer ${
+                      seleccionado
+                        ? "bg-gradient-to-r from-[#2563EB]/20 to-[#FF6B00]/20 border-[#3B82F6] text-[#F8FAFC]"
+                        : "bg-[#0B1120]/80 border-[#2A3A54] text-[#CBD5E1] hover:border-[#475569]"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-sm font-extrabold text-[#F8FAFC]">{item.nativo}</p>
+                      <p className="text-[11px] text-[#94A3B8]">{item.espanol} • {item.region}</p>
+                    </div>
+                    {seleccionado && (
+                      <span className="w-6 h-6 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setIdiomaActivo(idiomaTemp);
+                localStorage.setItem("rutf_idioma", idiomaTemp);
+                aplicarIdiomaPlataforma(idiomaTemp);
+                setModalIdioma(false);
+              }}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-sm font-black shadow-lg transition cursor-pointer"
+            >
+              Confirmar idioma
+            </button>
+          </div>
+        </div>
+      )}
+      {modalInfoCanal && (
         <div className="fixed inset-0 z-50 bg-[#162032] overflow-y-auto flex flex-col">
           <div className="sticky top-0 z-10 bg-[#0B1120]/95 backdrop-blur-md border-b border-[#2A3A54] px-4 py-3 flex items-center justify-between">
             <button
@@ -1103,6 +1202,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

@@ -1,4 +1,5 @@
-﻿"use client";
+﻿import { aplicarIdiomaPlataforma } from "../idiomas";
+"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Play, Video, ThumbsUp, ThumbsDown, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, SlidersHorizontal, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
@@ -141,6 +142,16 @@ const ejecutarBusqueda = (e?: React.FormEvent) => {
 };
 
   const [usuario, setUsuario] = useState<PerfilCanal | null>(null);
+  useEffect(() => {
+    const idm = localStorage.getItem("rutf_idioma") || "es";
+    aplicarIdiomaPlataforma(idm);
+    const obs = new MutationObserver(() => {
+      const actualIdm = localStorage.getItem("rutf_idioma") || "es";
+      if (actualIdm !== "es") aplicarIdiomaPlataforma(actualIdm);
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, []);
     useEffect(() => {
     if (usuario?.username?.toLowerCase() === "@rutftalentico") {
       supabase
@@ -2007,6 +2018,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

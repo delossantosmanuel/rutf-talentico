@@ -456,7 +456,7 @@ onToggleFan,
           )}
 
           <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
-            {(() => { const txt = (bio || "Creador oficial en RUTF Talentico.").trim(); return txt.length > 68 ? (<>{txt.slice(0, 68).trim()}... <button type="button" onClick={() => setModalInfoCanal(true)} className="text-[#3B82F6] font-bold hover:underline ml-1 cursor-pointer">más</button></>) : txt; })()}
+            {(() => { const txt = (bio || (!soloLectura ? "Agrega tu descripción y haz destacar tu talento." : "Este canal aún no ha agregado una descripción.")).trim(); return txt.length > 68 ? (<>{txt.slice(0, 68).trim()}... <button type="button" onClick={() => setModalInfoCanal(true)} className="text-[#3B82F6] font-bold hover:underline ml-1 cursor-pointer">más</button></>) : txt; })()}
           </p>
 
           {editorAbierto && !soloLectura && (
@@ -652,7 +652,7 @@ onToggleFan,
             <div className="w-16" />
           </div>
 
-          <div className="w-full max-w-md mx-auto px-6 sm:px-8 py-6 pb-28 flex-1 space-y-5">
+          <div className="w-full max-w-md mx-auto px-8 sm:px-10 py-6 pb-28 flex-1 space-y-5">
             <div>
               <h3 className="text-xl font-black text-[#F8FAFC]">
                 {nombreCanal || perfil.username}
@@ -676,9 +676,9 @@ onToggleFan,
             </div>
 
             <div className="space-y-3 text-sm text-[#CBD5E1]">
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <div className="flex items-center justify-between py-2 border-b border-[#2A3A54] px-1">
                 <span className="text-[#94A3B8] font-semibold">Fecha de creación</span>
-                <span className="font-extrabold text-[#F8FAFC] text-right">
+                <span className="font-extrabold text-[#F8FAFC] text-right tabular-nums pr-2">
                   {perfil.username.toLowerCase() === "@rutftalentico"
                     ? "Miembro fundador"
                     : `Se unió el ${new Date(
@@ -691,16 +691,16 @@ onToggleFan,
                 </span>
               </div>
 
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <div className="flex items-center justify-between py-2 border-b border-[#2A3A54] px-1">
                 <span className="text-[#94A3B8] font-semibold">Fans totales</span>
-                <span className="font-extrabold text-[#F8FAFC]" tabular-nums text-right pl-4>
+                <span className="font-extrabold text-[#F8FAFC] text-right tabular-nums pr-2" tabular-nums text-right pl-4>
                   {seguidores.toLocaleString()}
                 </span>
               </div>
 
               <div className="flex items-center justify-between py-2">
                 <span className="text-[#94A3B8] font-semibold">Alcance histórico</span>
-                <span className="font-extrabold text-[#F8FAFC]" tabular-nums text-right pl-4>
+                <span className="font-extrabold text-[#F8FAFC] text-right tabular-nums pr-2" tabular-nums text-right pl-4>
                   {vistasTotales.toLocaleString()}
                 </span>
               </div>
@@ -801,7 +801,7 @@ onToggleFan,
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-lg bg-[#162032] rounded-[18px] border border-[#2A3A54] text-[#F8FAFC] shadow-2xl p-5 sm:p-6 space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-[#2A3A54] px-1 pb-3">
               <h3 className="text-base font-black text-[#F8FAFC]">Vista previa del banner</h3>
               <button
                 type="button"
@@ -1016,7 +1016,7 @@ export function ModalCompartir({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md bg-[#162032] rounded-[18px] border border-[#2A3A54] text-[#F8FAFC] shadow-2xl p-6 space-y-4"
       >
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex items-center justify-between border-b border-[#2A3A54] px-1 pb-3">
           <h3 className="text-base font-black text-[#F8FAFC]">Compartir talento</h3>
           <button
             type="button"
@@ -1104,6 +1104,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

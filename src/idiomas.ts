@@ -1,4 +1,4 @@
-export interface IdiomaOpcion {
+﻿export interface IdiomaOpcion {
   codigo: string;
   nativo: string;
   espanol: string;
@@ -33,102 +33,56 @@ export const IDIOMAS_MUNDO: IdiomaOpcion[] = [
   { codigo: "ca", nativo: "Català", espanol: "Catalán", region: "Cataluña / Andorra" }
 ];
 
-const DICCIONARIO_UI: Record<string, Record<string, string>> = {
-  en: {
-    "Inicio": "Home",
-    "Escenario Principal": "Main Stage",
-    "Verticales": "Verticals",
-    "Verticales / Shorts": "Verticals / Shorts",
-    "Talentos Verticales": "Vertical Talents",
-    "Crear Short": "Create Short",
-    "Ver en pantalla completa": "Watch full screen",
-    "Subir": "Upload",
-    "Subir Video": "Upload Video",
-    "Monetización": "Monetization",
-    "Fundación": "Foundation",
-    "Buscar talento, título o @canal...": "Search talent, title or @channel...",
-    "Buscar idioma o país...": "Search language or country...",
-    "Cuenta activa": "Active account",
-    "Canales": "Channels",
-    "Ver canal →": "View channel →",
-    "Eres Fan ✓": "You're a Fan ✓",
-    "Hazte Fan": "Become a Fan",
-    "Cerrar": "Close",
-    "Cerrar sesión": "Sign out",
-    "Volver": "Back",
-    "Editar Descripción": "Edit Description",
-    "Editar canal": "Edit channel",
-    "Cerrar edición": "Close editor",
-    "Información del canal": "Channel information",
-    "Idioma del Escenario": "Stage Language",
-    "Confirmar idioma": "Confirm language",
-    "VIDEOS": "VIDEOS",
-    "FAN": "FAN",
-    "FANS": "FANS",
-    "ALCANCE TOTAL": "TOTAL REACH",
-    "Fecha de creación": "Creation date",
-    "Miembro fundador": "Founding member",
-    "Fans totales": "Total fans",
-    "Alcance histórico": "Historical reach",
-    "DESCRIPCIÓN DEL CANAL": "CHANNEL DESCRIPTION",
-    "Sube tu primer video y empieza a monetizar tu talento": "Upload your first video and start monetizing your talent",
-    "Este canal aún no ha subido ningún video": "This channel hasn't uploaded any videos yet",
-    "Agrega tu descripción y haz destacar tu talento.": "Add your description and make your talent stand out.",
-    "Este canal aún no ha agregado una descripción.": "This channel hasn't added a description yet.",
-    "Lanzar Vertical": "Launch Vertical",
-    "Publica tu talento en 9:16": "Publish your talent in 9:16",
-    "Sé el primero en comentar este video.": "Be the first to comment on this video.",
-    "Sé el primero en comentar este talento.": "Be the first to comment on this talent.",
-    "Inicia sesión primero para poder comentar": "Sign in first to comment",
-    "Comentar": "Comment",
-    "Compartir": "Share",
-    "Aportar": "Support",
-    "En escena": "On stage",
-    "Tu Canal": "Your Channel",
-    "Tu canal": "Your channel",
-    "Impulsa tu talento y monetiza tus videos": "Boost your talent and monetize your videos",
-    "¡Crea tu primer Short y hazte viral en RUTF Talentico!": "Create your first Short and go viral on RUTF Talentico!",
-    "Desliza a la derecha para más talentos": "Swipe right for more talents",
-    "más": "more",
-    "PROGRAMA DE CREADORES RUTF TALENTICO": "RUTF TALENTICO CREATOR PROGRAM",
-    "Monetiza tu talento original y genera ingresos reales": "Monetize your original talent and earn real income",
-    "Al completar los 3 requisitos del canal, activamos tus pagos directos por PayPal.": "Once you complete all 3 channel requirements, we activate your direct PayPal payouts.",
-    "ACCESO OFICIAL FUNDADOR": "OFFICIAL FOUNDER ACCESS",
-    "Solicitudes de Retiro y Pagos PayPal": "Withdrawal Requests & PayPal Payouts",
-    "Revisar Solicitudes →": "Review Requests →",
-    "Requisitos de Elegibilidad en Tiempo Real": "Real-Time Eligibility Requirements",
-    "Actualizar": "Refresh",
-    "En progreso": "In progress",
-    "Fans reales": "Real fans",
-    "Vistas calificadas (+16s)": "Qualified views (+16s)",
-    "Videos originales": "Original videos",
-    "Completa los 3 requisitos para activar tus pagos": "Complete all 3 requirements to activate your payouts",
-    "Desbloquear Monetización (Pagos vía PayPal)": "Unlock Monetization (PayPal Payouts)",
-    "Preguntas Frecuentes sobre Monetización y Pagos": "Frequently Asked Questions on Monetization & Payouts",
-    "¿Qué cuenta como una vista calificada (+16s)?": "What counts as a qualified view (+16s)?",
-    "Únicamente las reproducciones orgánicas de usuarios reales que permanecen viendo tu video de forma continua durante más de 16 segundos.": "Only organic plays from real users who watch your video continuously for more than 16 seconds.",
-    "¿Qué contenido se necesita para ser aprobado?": "What content is required for approval?",
-    "¿Cómo funcionan los pagos por PayPal?": "How do PayPal payouts work?",
-    "¿Cuánto tarda la revisión cuando cumplo los requisitos?": "How long does review take once I meet the requirements?",
-    "¿Qué ocurre si se detectan bots o contenido resubido?": "What happens if bots or re-uploaded content are detected?",
-    "Publicar en RUTF Talentico": "Publish on RUTF Talentico",
-    "Publicando como canal único protegido": "Publishing as a protected unique channel",
-    "Formato del Video": "Video Format",
-    "Video Horizontal (16:9)": "Horizontal Video (16:9)",
-    "Short Vertical (9:16)": "Vertical Short (9:16)",
-    "Título del Talent": "Talent Title",
-    "Título del Talento": "Talent Title",
-    "Historia y Contexto del Talento": "Talent Story & Context",
-    "Mínimo 20 caracteres": "Minimum 20 characters",
-    "Esencia de este Video": "Essence of this Video",
-    "Selecciona el talento principal de esta publicación": "Select the main talent of this post",
-    "Toca aquí para elegir tu video (.mp4 / .mov)": "Tap here to choose your video (.mp4 / .mov)",
-    "Miniatura / Portada del Video (Opcional)": "Video Thumbnail / Cover (Optional)",
-    "Elegir Portada de Escenario": "Choose Stage Cover",
-    "VERIFICACIÓN DE AUTORÍA OBLIGATORIA": "MANDATORY AUTHORSHIP VERIFICATION",
-    "Selecciona un video para publicar": "Select a video to publish"
+const cacheMemoria: Record<string, Record<string, string>> = {};
+const pendientes = new Set<string>();
+
+function leerCache(codigo: string): Record<string, string> {
+  if (cacheMemoria[codigo]) return cacheMemoria[codigo];
+  try {
+    const raw = localStorage.getItem("rutf_trad_" + codigo);
+    cacheMemoria[codigo] = raw ? JSON.parse(raw) : {};
+  } catch {
+    cacheMemoria[codigo] = {};
   }
-};
+  return cacheMemoria[codigo];
+}
+
+function guardarCache(codigo: string, mapa: Record<string, string>) {
+  cacheMemoria[codigo] = mapa;
+  try {
+    localStorage.setItem("rutf_trad_" + codigo, JSON.stringify(mapa));
+  } catch {}
+}
+
+async function traducirTextoReal(texto: string, codigo: string): Promise<string> {
+  const mapa = leerCache(codigo);
+  if (mapa[texto]) return mapa[texto];
+  const clave = codigo + "::" + texto;
+  if (pendientes.has(clave)) return texto;
+  pendientes.add(clave);
+  try {
+    const url = "https://googleapis.com" + encodeURIComponent(codigo) + "&dt=t&q=" + encodeURIComponent(texto);
+    const res = await fetch(url);
+    const data = await res.json();
+    const traducido = Array.isArray(data?.[0]) ? data[0].map((seg: unknown[]) => seg?.[0] || "").join("") : texto;
+    if (traducido) {
+      mapa[texto] = traducido;
+      guardarCache(codigo, mapa);
+      return traducido;
+    }
+  } catch {} finally {
+    pendientes.delete(clave);
+  }
+  return texto;
+}
+
+function esTraducible(texto: string): boolean {
+  const t = texto.trim();
+  if (t.length < 2) return false;
+  if (/^[@0-9.,:/+$%•·\-–—()✓×]+$/.test(t)) return false;
+  if (t === "RUTF TALENTICO" || t === "RUTF Talentico" || t === "RUTF Pro" || t === "RUTF Ads" || t === "PayPal") return false;
+  return true;
+}
 
 export function obtenerNombreIdioma(codigo: string): string {
   return IDIOMAS_MUNDO.find((i) => i.codigo === codigo)?.nativo || "Español";
@@ -137,7 +91,7 @@ export function obtenerNombreIdioma(codigo: string): string {
 export function aplicarIdiomaPlataforma(codigo: string) {
   if (typeof document === "undefined") return;
   document.documentElement.lang = codigo || "es";
-  const mapa = DICCIONARIO_UI[codigo] || {};
+  const mapa = codigo !== "es" ? leerCache(codigo) : {};
 
   document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[placeholder], textarea[placeholder]").forEach((el) => {
     if (el.closest("[data-sin-traducir='true']")) return;
@@ -147,6 +101,10 @@ export function aplicarIdiomaPlataforma(codigo: string) {
       el.placeholder = origPh;
     } else if (mapa[origPh]) {
       el.placeholder = mapa[origPh];
+    } else if (esTraducible(origPh)) {
+      traducirTextoReal(origPh, codigo).then((tr) => {
+        if ((localStorage.getItem("rutf_idioma") || "es") === codigo) el.placeholder = tr;
+      });
     }
   });
 
@@ -161,8 +119,17 @@ export function aplicarIdiomaPlataforma(codigo: string) {
       const limpio = base.trim();
       if (codigo === "es") {
         nodo.nodeValue = base;
-      } else if (limpio && mapa[limpio]) {
-        nodo.nodeValue = base.replace(limpio, mapa[limpio]);
+      } else if (esTraducible(limpio)) {
+        if (mapa[limpio]) {
+          nodo.nodeValue = base.replace(limpio, mapa[limpio]);
+        } else {
+          const nodoActual = nodo;
+          traducirTextoReal(limpio, codigo).then((tr) => {
+            if ((localStorage.getItem("rutf_idioma") || "es") === codigo) {
+              nodoActual.nodeValue = base.replace(limpio, tr);
+            }
+          });
+        }
       }
     }
     nodo = walker.nextNode();

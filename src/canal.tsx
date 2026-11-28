@@ -694,24 +694,41 @@ onToggleFan,
               }).map((item) => {
                 const seleccionado = idiomaTemp === item.codigo;
                 return (
-                  <button
-                    key={item.codigo}
-                    type="button"
-                    onClick={() => setIdiomaTemp(item.codigo)}
-                    className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-between text-left transition cursor-pointer ${
-                      seleccionado
-                        ? "bg-gradient-to-r from-[#2563EB]/20 to-[#FF6B00]/20 border-[#3B82F6] text-[#F8FAFC]"
-                        : "bg-[#0B1120]/80 border-[#2A3A54] text-[#CBD5E1] hover:border-[#475569]"
-                    }`}
-                  >
-                    <div>
-                      <p className="text-sm font-extrabold text-[#F8FAFC]">{item.nativo}</p>
-                      <p className="text-[11px] text-[#94A3B8]">{item.espanol} • {item.region}</p>
-                    </div>
+                  <div key={item.codigo} className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setIdiomaTemp(item.codigo)}
+                      className={`flex-1 min-w-0 px-4 py-3 rounded-2xl border flex items-center justify-between text-left transition cursor-pointer ${
+                        seleccionado
+                          ? "bg-gradient-to-r from-[#2563EB]/20 to-[#FF6B00]/20 border-[#3B82F6] text-[#F8FAFC]"
+                          : "bg-[#0B1120]/80 border-[#2A3A54] text-[#CBD5E1] hover:border-[#475569]"
+                      }`}
+                    >
+                      <div className="truncate">
+                        <p className="text-sm font-extrabold text-[#F8FAFC] truncate">{item.nativo}</p>
+                        <p className="text-[11px] text-[#94A3B8] truncate">{item.espanol} • {item.region}</p>
+                      </div>
+                      {seleccionado && (
+                        <span className="w-5 h-5 rounded-full bg-[#3B82F6] text-white flex items-center justify-center shrink-0 ml-2">
+                          <Check className="w-3 h-3" />
+                        </span>
+                      )}
+                    </button>
                     {seleccionado && (
-                      <span role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setIdiomaActivo(item.codigo); localStorage.setItem("rutf_idioma", item.codigo); aplicarIdiomaPlataforma(item.codigo); setModalIdioma(false); }} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] text-white text-xs font-black shadow-md shrink-0 cursor-pointer"><Check className="w-3.5 h-3.5" /><span>{idiomaTemp === "en" ? "Confirm" : idiomaTemp === "pt" ? "Confirmar" : idiomaTemp === "fr" ? "Confirmer" : idiomaTemp === "it" ? "Conferma" : idiomaTemp === "de" ? "Bestätigen" : "Confirmar"}</span></span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIdiomaActivo(item.codigo);
+                          localStorage.setItem("rutf_idioma", item.codigo);
+                          aplicarIdiomaPlataforma(item.codigo);
+                          setModalIdioma(false);
+                        }}
+                        className="px-4 py-3 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-lg shrink-0 transition cursor-pointer"
+                      >
+                        Confirmar
+                      </button>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -1200,6 +1217,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

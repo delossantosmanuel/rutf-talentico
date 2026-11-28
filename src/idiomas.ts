@@ -34,12 +34,12 @@ export const IDIOMAS_MUNDO: IdiomaOpcion[] = [
 ];
 
 const cacheMemoria: Record<string, Record<string, string>> = {};
-const pendientes = new Map<string, Promise<string>>();
+let enProceso = false;
 
 function leerCache(codigo: string): Record<string, string> {
   if (cacheMemoria[codigo]) return cacheMemoria[codigo];
   try {
-    const raw = localStorage.getItem("rutf_trad_v2_" + codigo);
+    const raw = localStorage.getItem("rutf_trad_v3_" + codigo);
     cacheMemoria[codigo] = raw ? JSON.parse(raw) : {};
   } catch {
     cacheMemoria[codigo] = {};
@@ -50,39 +50,8 @@ function leerCache(codigo: string): Record<string, string> {
 function guardarCache(codigo: string, mapa: Record<string, string>) {
   cacheMemoria[codigo] = mapa;
   try {
-    localStorage.setItem("rutf_trad_v2_" + codigo, JSON.stringify(mapa));
+    localStorage.setItem("rutf_trad_v3_" + codigo, JSON.stringify(mapa));
   } catch {}
-}
-
-export function traducirTextoReal(texto: string, codigo: string): Promise<string> {
-  const mapa = leerCache(codigo);
-  if (mapa[texto]) return Promise.resolve(mapa[texto]);
-  const clave = codigo + "::" + texto;
-  const enCurso = pendientes.get(clave);
-  if (enCurso) return enCurso;
-
-  const tarea = (async () => {
-    try {
-      const url = "https://googleapis.com" + encodeURIComponent(codigo) + "&dt=t&q=" + encodeURIComponent(texto);
-      const res = await fetch(url);
-      const data = await res.json();
-      const bloques = Array.isArray(data) ? data[0] : null;
-      const traducido = Array.isArray(bloques)
-        ? bloques.map((seg: unknown) => (Array.isArray(seg) ? String(seg[0] || "") : "")).join("")
-        : texto;
-      if (traducido && traducido !== texto) {
-        mapa[texto] = traducido;
-        guardarCache(codigo, mapa);
-        return traducido;
-      }
-    } catch {} finally {
-      pendientes.delete(clave);
-    }
-    return texto;
-  })();
-
-  pendientes.set(clave, tarea);
-  return tarea;
 }
 
 function esTraducible(texto: string): boolean {
@@ -101,10 +70,11 @@ export async function aplicarIdiomaPlataforma(codigo: string): Promise<void> {
   if (typeof document === "undefined") return;
   document.documentElement.lang = codigo || "es";
   const mapa = codigo !== "es" ? leerCache(codigo) : {};
-  const promesas: Promise<unknown>[] = [];
+  const faltantes = new Set<string>();
 
-  document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[placeholder], textarea[placeholder]").forEach((el) => {
-    if (el.closest("[data-sin-traducir='true']")) return;
+  const inputs = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input[placeholder], textarea[placeholder]"));
+  for (const el of inputs) {
+    if (el.closest("[data-sin-traducir='true']")) continue;
     const origPh = el.getAttribute("data-ph-orig") ?? el.placeholder;
     if (!el.hasAttribute("data-ph-orig")) el.setAttribute("data-ph-orig", origPh);
     if (codigo === "es") {
@@ -112,44 +82,58 @@ export async function aplicarIdiomaPlataforma(codigo: string): Promise<void> {
     } else if (mapa[origPh]) {
       el.placeholder = mapa[origPh];
     } else if (esTraducible(origPh)) {
-      promesas.push(
-        traducirTextoReal(origPh, codigo).then((tr) => {
-          if ((localStorage.getItem("rutf_idioma") || "es") === codigo) el.placeholder = tr;
-        })
-      );
+      faltantes.add(origPh);
     }
-  });
+  }
 
+  const nodos: { nodo: Text; base: string; limpio: string }[] = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-  let nodo = walker.nextNode();
-  while (nodo) {
-    const padre = nodo.parentElement;
+  let actual = walker.nextNode();
+  while (actual) {
+    const padre = actual.parentElement;
     if (padre && !padre.closest("[data-sin-traducir='true']")) {
-      const ref = nodo as unknown as { _rutfOrig?: string };
-      if (ref._rutfOrig === undefined) ref._rutfOrig = nodo.nodeValue || "";
+      const ref = actual as unknown as { _rutfOrig?: string };
+      if (ref._rutfOrig === undefined) ref._rutfOrig = actual.nodeValue || "";
       const base = ref._rutfOrig;
       const limpio = base.trim();
       if (codigo === "es") {
-        nodo.nodeValue = base;
+        actual.nodeValue = base;
       } else if (esTraducible(limpio)) {
         if (mapa[limpio]) {
-          nodo.nodeValue = base.replace(limpio, mapa[limpio]);
+          actual.nodeValue = base.replace(limpio, mapa[limpio]);
         } else {
-          const nodoActual = nodo;
-          promesas.push(
-            traducirTextoReal(limpio, codigo).then((tr) => {
-              if ((localStorage.getItem("rutf_idioma") || "es") === codigo) {
-                nodoActual.nodeValue = base.replace(limpio, tr);
-              }
-            })
-          );
+          faltantes.add(limpio);
+          nodos.push({ nodo: actual as Text, base, limpio });
         }
       }
     }
-    nodo = walker.nextNode();
+    actual = walker.nextNode();
   }
 
-  if (promesas.length > 0) {
-    await Promise.allSettled(promesas);
+  if (codigo !== "es" && faltantes.size > 0 && !enProceso) {
+    enProceso = true;
+    try {
+      const res = await fetch("/api/traducir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ textos: Array.from(faltantes), destino: codigo })
+      });
+      const json = await res.json();
+      const nuevas: Record<string, string> = json?.traducciones || {};
+      Object.assign(mapa, nuevas);
+      guardarCache(codigo, mapa);
+
+      for (const el of inputs) {
+        const origPh = el.getAttribute("data-ph-orig") || "";
+        if (origPh && mapa[origPh]) el.placeholder = mapa[origPh];
+      }
+      for (const item of nodos) {
+        if (mapa[item.limpio]) {
+          item.nodo.nodeValue = item.base.replace(item.limpio, mapa[item.limpio]);
+        }
+      }
+    } catch {} finally {
+      enProceso = false;
+    }
   }
 }

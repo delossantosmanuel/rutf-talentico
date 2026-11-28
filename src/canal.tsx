@@ -720,27 +720,14 @@ onToggleFan,
                         type="button"
                         disabled={aplicandoIdioma} onClick={async () => { setAplicandoIdioma(true); setIdiomaActivo(item.codigo); localStorage.setItem("rutf_idioma", item.codigo); await Promise.all([aplicarIdiomaPlataforma(item.codigo), new Promise((r) => setTimeout(r, 2800))]); await aplicarIdiomaPlataforma(item.codigo); setAplicandoIdioma(false); setModalIdioma(false); }}
                         className="px-4 py-3 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-xs font-black shadow-lg shrink-0 transition cursor-pointer"
-                      >
-                        Confirmar
-                      </button>
+                      >{aplicandoIdioma ? "Aplicando..." : "Confirmar"}</button>
                     )}
                   </div>
                 );
               })}
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setIdiomaActivo(idiomaTemp);
-                localStorage.setItem("rutf_idioma", idiomaTemp);
-                aplicarIdiomaPlataforma(idiomaTemp);
-                setModalIdioma(false);
-              }}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#FF6B00] hover:opacity-95 text-white text-sm font-black shadow-lg transition cursor-pointer"
-            >
-              Confirmar idioma
-            </button>
+            
           </div>
         </div>
       )}
@@ -1213,6 +1200,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

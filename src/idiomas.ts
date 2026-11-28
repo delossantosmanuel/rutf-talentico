@@ -1,4 +1,4 @@
-export interface IdiomaOpcion { codigo: string; nativo: string; espanol: string; region: string; }
+﻿export interface IdiomaOpcion { codigo: string; nativo: string; espanol: string; region: string; }
 export const IDIOMAS_MUNDO: IdiomaOpcion[] = [
   { codigo: "es", nativo: "Español", espanol: "Español", region: "Global" },
   { codigo: "en", nativo: "English", espanol: "Inglés", region: "Global" },
@@ -92,13 +92,30 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
   },
   pt: {
     "Inicio": "Início", "Escenario Principal": "Palco Principal", "Verticales": "Verticais",
-    "Verticales / Shorts": "Verticais / Shorts", "Subir": "Enviar", "Subir Video": "Enviar Vídeo",
-    "Monetización": "Monetização", "Fundación": "Fundação", "Volver": "Voltar",
-    "Editar Descripción": "Editar Descrição", "Editar canal": "Editar canal",
-    "Información del canal": "Informações do canal", "Idioma del Escenario": "Idioma do Palco",
-    "Confirmar": "Confirmar", "Aplicando...": "Aplicando...", "Cerrar sesión": "Sair",
+    "Verticales / Shorts": "Verticais / Shorts", "Talentos Verticales": "Talentos Verticais",
+    "Crear Short": "Criar Short", "Ver en pantalla completa": "Ver em tela cheia",
+    "Subir": "Enviar", "Subir Video": "Enviar Vídeo", "Monetización": "Monetização",
+    "Fundación": "Fundação", "Volver": "Voltar", "Editar Descripción": "Editar Descrição",
+    "Editar canal": "Editar canal", "Información del canal": "Informações do canal",
+    "Idioma del Escenario": "Idioma do Palco", "Confirmar": "Confirmar", "Aplicando...": "Aplicando...",
+    "Cerrar sesión": "Sair", "Alcance Total": "Alcance Total", "Define tu Esencia": "Defina sua Essência",
+    "Sube tu primer video y empieza a monetizar tu talento": "Envie seu primeiro vídeo e comece a monetizar seu talento",
+    "Este canal aún no ha subido ningún video": "Este canal ainda não enviou nenhum vídeo",
+    "PROGRAMA DE CREADORES RUTF TALENTICO": "PROGRAMA DE CRIADORES RUTF TALENTICO",
+    "Monetiza tu talento original y genera ingresos reales": "Monetize seu talento original e gere renda real",
+    "Requisitos de Elegibilidad en Tiempo Real": "Requisitos de Elegibilidade em Tempo Real",
+    "Actualizar": "Atualizar", "En progreso": "Em andamento", "Fans reales": "Fãs reais",
+    "Vistas calificadas (+16s)": "Visualizações qualificadas (+16s)", "Videos originales": "Vídeos originais",
+    "Completa los 3 requisitos para activar tus pagos": "Complete os 3 requisitos para ativar seus pagamentos",
+    "Desbloquear Monetización (Pagos vía PayPal)": "Desbloquear Monetização (Pagamentos via PayPal)",
     "Preguntas Frecuentes sobre Monetización y Pagos": "Perguntas Frequentes sobre Monetização e Pagamentos",
-    "Publicar en RUTF Talentico": "Publicar no RUTF Talentico", "Selecciona un video para publicar": "Selecione um vídeo para publicar"
+    "Publicar en RUTF Talentico": "Publicar no RUTF Talentico",
+    "Formato del Video": "Formato do Vídeo", "Video Horizontal (16:9)": "Vídeo Horizontal (16:9)",
+    "Short Vertical (9:16)": "Short Vertical (9:16)", "Título del Talento": "Título do Talento",
+    "Historia y Contexto del Talento": "História e Contexto do Talento",
+    "Esencia de este Video": "Essência deste Vídeo",
+    "Toca aquí para elegir tu video (.mp4 / .mov)": "Toque aqui para escolher seu vídeo (.mp4 / .mov)",
+    "Selecciona un video para publicar": "Selecione um vídeo para publicar"
   },
   fr: {
     "Inicio": "Accueil", "Escenario Principal": "Scène Principale", "Verticales": "Verticaux",
@@ -107,8 +124,22 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Editar Descripción": "Modifier la description", "Editar canal": "Modifier la chaîne",
     "Información del canal": "Informations sur la chaîne", "Idioma del Escenario": "Langue de la Scène",
     "Confirmar": "Confirmer", "Aplicando...": "Application...", "Cerrar sesión": "Déconnexion",
+    "Define tu Esencia": "Définissez votre Essence",
+    "Sube tu primer video y empieza a monetizar tu talento": "Publiez votre première vidéo et monétisez votre talent",
+    "PROGRAMA DE CREADORES RUTF TALENTICO": "PROGRAMME CRÉATEURS RUTF TALENTICO",
+    "Monetiza tu talento original y genera ingresos reales": "Monétisez votre talent original et gagnez de vrais revenus",
+    "Requisitos de Elegibilidad en Tiempo Real": "Conditions d'éligibilité en temps réel",
+    "Actualizar": "Actualiser", "En progreso": "En cours", "Fans reales": "Vrais fans",
+    "Vistas calificadas (+16s)": "Vues qualifiées (+16s)", "Videos originales": "Vidéos originales",
+    "Completa los 3 requisitos para activar tus pagos": "Remplissez les 3 conditions pour activer vos paiements",
+    "Desbloquear Monetización (Pagos vía PayPal)": "Débloquer la monétisation (Paiements PayPal)",
     "Preguntas Frecuentes sobre Monetización y Pagos": "Questions Fréquentes sur la Monétisation et les Paiements",
-    "Publicar en RUTF Talentico": "Publier sur RUTF Talentico", "Selecciona un video para publicar": "Sélectionnez une vidéo à publier"
+    "Publicar en RUTF Talentico": "Publier sur RUTF Talentico",
+    "Formato del Video": "Format de la vidéo", "Título del Talento": "Titre du talent",
+    "Historia y Contexto del Talento": "Histoire et contexte du talent",
+    "Esencia de este Video": "Essence de cette vidéo",
+    "Toca aquí para elegir tu video (.mp4 / .mov)": "Appuyez ici pour choisir votre vidéo (.mp4 / .mov)",
+    "Selecciona un video para publicar": "Sélectionnez une vidéo à publier"
   },
   it: {
     "Inicio": "Home", "Escenario Principal": "Palco Principale", "Verticales": "Verticali",
@@ -116,7 +147,11 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Fundación": "Fondazione", "Volver": "Indietro", "Editar Descripción": "Modifica Descrizione",
     "Editar canal": "Modifica canale", "Información del canal": "Informazioni sul canale",
     "Idioma del Escenario": "Lingua del Palco", "Confirmar": "Conferma", "Aplicando...": "Applicazione...",
-    "Cerrar sesión": "Disconnetti"
+    "Cerrar sesión": "Disconnetti", "Requisitos de Elegibilidad en Tiempo Real": "Requisiti di idoneità in tempo reale",
+    "Actualizar": "Aggiorna", "En progreso": "In corso", "Fans reales": "Fan reali",
+    "Vistas calificadas (+16s)": "Visualizzazioni qualificate (+16s)", "Videos originales": "Video originali",
+    "Preguntas Frecuentes sobre Monetización y Pagos": "Domande Frequenti su Monetizzazione e Pagamenti",
+    "Publicar en RUTF Talentico": "Pubblica su RUTF Talentico", "Selecciona un video para publicar": "Seleziona un video da pubblicare"
   },
   de: {
     "Inicio": "Startseite", "Escenario Principal": "Hauptbühne", "Verticales": "Vertikale",
@@ -124,7 +159,11 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Fundación": "Stiftung", "Volver": "Zurück", "Editar Descripción": "Beschreibung bearbeiten",
     "Editar canal": "Kanal bearbeiten", "Información del canal": "Kanalinformationen",
     "Idioma del Escenario": "Bühnensprache", "Confirmar": "Bestätigen", "Aplicando...": "Wird angewendet...",
-    "Cerrar sesión": "Abmelden"
+    "Cerrar sesión": "Abmelden", "Requisitos de Elegibilidad en Tiempo Real": "Teilnahmevoraussetzungen in Echtzeit",
+    "Actualizar": "Aktualisieren", "En progreso": "In Bearbeitung", "Fans reales": "Echte Fans",
+    "Vistas calificadas (+16s)": "Qualifizierte Aufrufe (+16s)", "Videos originales": "Originalvideos",
+    "Preguntas Frecuentes sobre Monetización y Pagos": "Häufig gestellte Fragen zu Monetarisierung und Auszahlungen",
+    "Publicar en RUTF Talentico": "Auf RUTF Talentico veröffentlichen", "Selecciona un video para publicar": "Video zum Veröffentlichen auswählen"
   },
   ar: {
     "Inicio": "الرئيسية", "Escenario Principal": "المسرح الرئيسي", "Verticales": "فيديوهات عمودية",
@@ -133,6 +172,9 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Editar Descripción": "تعديل الوصف", "Editar canal": "تعديل القناة",
     "Información del canal": "معلومات القناة", "Idioma del Escenario": "لغة المنصة",
     "Confirmar": "تأكيد", "Aplicando...": "جارٍ التطبيق...", "Cerrar sesión": "تسجيل الخروج",
+    "Requisitos de Elegibilidad en Tiempo Real": "متطلبات الأهلية في الوقت الفعلي",
+    "Actualizar": "تحديث", "En progreso": "قيد التقدم", "Fans reales": "معجبون حقيقيون",
+    "Vistas calificadas (+16s)": "مشاهدات مؤهلة (+16 ثانية)", "Videos originales": "فيديوهات أصلية",
     "Preguntas Frecuentes sobre Monetización y Pagos": "الأسئلة الشائعة حول تحقيق الدخل والمدفوعات",
     "Publicar en RUTF Talentico": "النشر في RUTF Talentico", "Selecciona un video para publicar": "اختر فيديو للنشر"
   },
@@ -142,7 +184,11 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Fundación": "फाउंडेशन", "Volver": "वापस", "Editar Descripción": "विवरण संपादित करें",
     "Editar canal": "चैनल संपादित करें", "Información del canal": "चैनल की जानकारी",
     "Idioma del Escenario": "मंच की भाषा", "Confirmar": "पुष्टि करें", "Aplicando...": "लागू हो रहा है...",
-    "Cerrar sesión": "लॉग आउट"
+    "Cerrar sesión": "लॉग आउट", "Requisitos de Elegibilidad en Tiempo Real": "रीयल-टाइम पात्रता आवश्यकताएँ",
+    "Actualizar": "रिफ्रेश", "En progreso": "प्रगति पर", "Fans reales": "असली प्रशंसक",
+    "Vistas calificadas (+16s)": "योग्य दृश्य (+16s)", "Videos originales": "मूल वीडियो",
+    "Preguntas Frecuentes sobre Monetización y Pagos": "मुद्रीकरण और भुगतान पर अक्सर पूछे जाने वाले प्रश्न",
+    "Publicar en RUTF Talentico": "RUTF Talentico पर प्रकाशित करें", "Selecciona un video para publicar": "प्रकाशित करने के लिए वीडियो चुनें"
   },
   zh: {
     "Inicio": "首页", "Escenario Principal": "主舞台", "Verticales": "竖屏短视频",
@@ -151,7 +197,9 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Editar Descripción": "编辑简介", "Editar canal": "编辑频道",
     "Información del canal": "频道信息", "Idioma del Escenario": "舞台语言",
     "Confirmar": "确认", "Aplicando...": "应用中...", "Cerrar sesión": "退出登录",
-    "Preguntas Frecuentes sobre Monetización y Pagos": "关于变现与支付的常见问题",
+    "Requisitos de Elegibilidad en Tiempo Real": "实时资格要求", "Actualizar": "刷新",
+    "En progreso": "进行中", "Fans reales": "真实粉丝", "Vistas calificadas (+16s)": "有效观看 (+16秒)",
+    "Videos originales": "原创视频", "Preguntas Frecuentes sobre Monetización y Pagos": "关于变现与支付的常见问题",
     "Publicar en RUTF Talentico": "发布到 RUTF Talentico", "Selecciona un video para publicar": "选择要发布的视频"
   },
   ja: {
@@ -161,7 +209,9 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Editar Descripción": "説明を編集", "Editar canal": "チャンネルを編集",
     "Información del canal": "チャンネル情報", "Idioma del Escenario": "ステージの言語",
     "Confirmar": "確定", "Aplicando...": "適用中...", "Cerrar sesión": "ログアウト",
-    "Preguntas Frecuentes sobre Monetización y Pagos": "収益化とお支払いに関するよくある質問",
+    "Requisitos de Elegibilidad en Tiempo Real": "リアルタイム資格要件", "Actualizar": "更新",
+    "En progreso": "進行中", "Fans reales": "リアルファン", "Vistas calificadas (+16s)": "有効再生回数 (+16秒)",
+    "Videos originales": "オリジナル動画", "Preguntas Frecuentes sobre Monetización y Pagos": "収益化とお支払いに関するよくある質問",
     "Publicar en RUTF Talentico": "RUTF Talentico に投稿", "Selecciona un video para publicar": "投稿する動画を選択"
   },
   ko: {
@@ -170,7 +220,11 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Fundación": "재단", "Volver": "뒤로", "Editar Descripción": "설명 수정",
     "Editar canal": "채널 수정", "Información del canal": "채널 정보",
     "Idioma del Escenario": "무대 언어", "Confirmar": "확인", "Aplicando...": "적용 중...",
-    "Cerrar sesión": "로그아웃"
+    "Cerrar sesión": "로그아웃", "Requisitos de Elegibilidad en Tiempo Real": "실시간 자격 요건",
+    "Actualizar": "새로고침", "En progreso": "진행 중", "Fans reales": "실제 팬",
+    "Vistas calificadas (+16s)": "유효 조회수 (+16초)", "Videos originales": "오리지널 동영상",
+    "Preguntas Frecuentes sobre Monetización y Pagos": "수익 창출 및 결제에 관한 자주 묻는 질문",
+    "Publicar en RUTF Talentico": "RUTF Talentico에 게시", "Selecciona un video para publicar": "게시할 동영상 선택"
   },
   ru: {
     "Inicio": "Главная", "Escenario Principal": "Главная сцена", "Verticales": "Вертикальные",
@@ -178,7 +232,11 @@ const DICCIONARIO_UI: Record<string, Record<string, string>> = {
     "Fundación": "Фонд", "Volver": "Назад", "Editar Descripción": "Изменить описание",
     "Editar canal": "Изменить канал", "Información del canal": "Информация о канале",
     "Idioma del Escenario": "Язык сцены", "Confirmar": "Подтвердить", "Aplicando...": "Применение...",
-    "Cerrar sesión": "Выйти"
+    "Cerrar sesión": "Выйти", "Requisitos de Elegibilidad en Tiempo Real": "Требования в реальном времени",
+    "Actualizar": "Обновить", "En progreso": "В процессе", "Fans reales": "Реальные фанаты",
+    "Vistas calificadas (+16s)": "Засчитанные просмотры (+16с)", "Videos originales": "Оригинальные видео",
+    "Preguntas Frecuentes sobre Monetización y Pagos": "Часто задаваемые вопросы о монетизации и выплатах",
+    "Publicar en RUTF Talentico": "Опубликовать в RUTF Talentico", "Selecciona un video para publicar": "Выберите видео для публикации"
   }
 };
 export function obtenerNombreIdioma(codigo: string): string {
@@ -231,3 +289,4 @@ export async function aplicarIdiomaPlataforma(codigo: string): Promise<void> {
     nodo = walker.nextNode();
   }
 }
+

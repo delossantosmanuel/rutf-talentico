@@ -457,7 +457,7 @@ onToggleFan,
           )}
 
           <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
-            {bio || "Creador oficial en RUTF Talentico."}
+            {(() => { const txt = (bio || "Creador oficial en RUTF Talentico.").trim(); return txt.length > 68 ? (<>{txt.slice(0, 68).trim()}... <button type="button" onClick={() => setModalInfoCanal(true)} className="text-[#3B82F6] font-bold hover:underline ml-1 cursor-pointer">más</button></>) : txt; })()}
           </p>
 
           {editorAbierto && !soloLectura && (
@@ -527,13 +527,13 @@ onToggleFan,
 
       <div className="bg-[#162032] border border-[#2A3A54] text-[#F8FAFC] rounded-[18px] p-5 sm:p-6 shadow-sm space-y-4">
         <h3 className="text-base font-black text-[#F8FAFC]">
-          {soloLectura ? "Videos Publicados (" + videos.length + ")" : "Mis Videos Publicados (" + videos.length + ")"}
+          {(!soloLectura || videos.length > 0) && (soloLectura ? "Videos Publicados (" + videos.length + ")" : "Mis Videos Publicados (" + videos.length + ")")}
         </h3>
 
         {videos.length === 0 ? (
               <div className="py-3 flex flex-col items-center text-center gap-2.5">
                 <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed max-w-sm">
-                  {!soloLectura ? "Sube tu primer video y empieza a monetizar tu talento" : "Este canal aún no ha subido ningún video"}
+                  {!soloLectura ? "Sube tu primer video y empieza a monetizar tu talento" : (<span className="inline-flex flex-col items-center gap-2"><span className="w-11 h-11 rounded-full bg-[#0B1120] border border-[#2A3A54] flex items-center justify-center text-[#3B82F6]"><Video className="w-5 h-5" /></span><span>Este canal aún no ha subido ningún video</span></span>)}
                 </p>
                 {!soloLectura && onAbrirSubir && (
                   <button
@@ -1105,6 +1105,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

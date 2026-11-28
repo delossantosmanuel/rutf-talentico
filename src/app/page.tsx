@@ -57,7 +57,7 @@ useEffect(() => {
   supabase
     .from("usuarios_rutf")
     .select("id,username,nombre_canal,bio,avatar_url,banner_url,creado_en")
-    .ilike("username", canalVisitado)
+    .or(`username.ilike.${canalVisitado},username.ilike.${canalVisitado.startsWith("@") ? canalVisitado.slice(1) : "@" + canalVisitado}`)
     .maybeSingle()
     .then(({ data }) => setPerfilVisitadoData(data || null));
 }, [canalVisitado]);
@@ -2011,6 +2011,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

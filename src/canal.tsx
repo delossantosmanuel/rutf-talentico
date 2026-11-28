@@ -533,7 +533,7 @@ onToggleFan,
         {videos.length === 0 ? (
               <div className="py-3 flex flex-col items-center text-center gap-2.5">
                 <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed max-w-sm">
-                  Sube tu primer video y empieza a monetizar tu talento
+                  {!soloLectura ? "Sube tu primer video y empieza a monetizar tu talento" : "Este canal aún no ha subido ningún video"}
                 </p>
                 {!soloLectura && onAbrirSubir && (
                   <button
@@ -1105,6 +1105,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

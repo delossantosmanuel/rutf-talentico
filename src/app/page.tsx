@@ -1720,9 +1720,9 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                         }}
                         className="flex items-center gap-2 text-left max-w-full cursor-pointer group"
                       >
-                        {(avataresCreadores[actual.creador.toLowerCase()] || (esMiCanal(actual.creador) ? usuario?.avatar_url : "")) ? (
+                        {(avataresCreadores[actual.creador.toLowerCase()] || (esMiCanal(actual.creador) ? usuario?.avatar_url : "") || (actual.creador.toLowerCase() === "@rutftalentico" ? "/icon.png" : "")) ? (
                           <img
-                            src={avataresCreadores[actual.creador.toLowerCase()] || usuario?.avatar_url}
+                            src={avataresCreadores[actual.creador.toLowerCase()] || (esMiCanal(actual.creador) ? usuario?.avatar_url : "") || "/icon.png"}
                             alt={actual.creador}
                             className="w-7 h-7 rounded-full object-cover border border-white/50 shrink-0"
                           />
@@ -1949,7 +1949,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             perfil={usuario}
             videos={lista.filter((v) => v.creador.toLowerCase() === usuario.username.toLowerCase())}
             seguidores={conteoSeguidores[usuario.username] || 0}
-            onActualizarPerfil={(u) => setUsuario(u)}
+            onActualizarPerfil={(u) => { setUsuario(u); setAvataresCreadores((prev) => ({ ...prev, [u.username.toLowerCase()]: u.avatar_url || "" })); }}
             onAbrirVideo={(v) => {
               const completo = lista.find((item) => item.id === v.id);
               setTab("inicio");
@@ -2007,6 +2007,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

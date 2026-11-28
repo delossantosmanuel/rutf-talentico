@@ -709,9 +709,7 @@ onToggleFan,
                       <p className="text-[11px] text-[#94A3B8]">{item.espanol} • {item.region}</p>
                     </div>
                     {seleccionado && (
-                      <span className="w-6 h-6 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0">
-                        <Check className="w-3.5 h-3.5" />
-                      </span>
+                      <span role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setIdiomaActivo(item.codigo); localStorage.setItem("rutf_idioma", item.codigo); aplicarIdiomaPlataforma(item.codigo); setModalIdioma(false); }} className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#2563EB] to-[#FF6B00] text-white text-xs font-black shadow-md shrink-0 cursor-pointer"><Check className="w-3.5 h-3.5" /><span>{idiomaTemp === "en" ? "Confirm" : idiomaTemp === "pt" ? "Confirmar" : idiomaTemp === "fr" ? "Confirmer" : idiomaTemp === "it" ? "Conferma" : idiomaTemp === "de" ? "Bestätigen" : "Confirmar"}</span></span>
                     )}
                   </button>
                 );
@@ -1202,6 +1200,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

@@ -60,7 +60,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
           .maybeSingle();
 
         if (!perfilDb && emailNorm) {
-          const baseHandle = "@" + emailNorm.split("@").replace(/[^a-z0-9_]/g, "").slice(0, 14) + "_" + (authData?.user?.id || "rutf").replace(/-/g, "").slice(0, 4);
+          const baseHandle = "@" + emailNorm.split("@")[0].replace(/[^a-z0-9_]/g, "").slice(0, 14) + "_" + (authData?.user?.id || "rutf").replace(/-/g, "").slice(0, 4);
           const { data: creado, error: insErr } = await supabase
             .from("usuarios_rutf")
             .insert([{
@@ -373,6 +373,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     </div>
   );
 }
+
 
 
 

@@ -1,5 +1,5 @@
-﻿import { IDIOMAS_MUNDO, obtenerNombreIdioma, aplicarIdiomaPlataforma } from "./idiomas";
-"use client";
+﻿"use client";
+import { IDIOMAS_MUNDO, obtenerNombreIdioma, aplicarIdiomaPlataforma } from "./idiomas";
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -1202,6 +1202,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

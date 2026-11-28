@@ -1,5 +1,5 @@
-﻿import { aplicarIdiomaPlataforma } from "../idiomas";
-"use client";
+﻿"use client";
+import { aplicarIdiomaPlataforma } from "../idiomas";
 import React, { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { Play, Video, ThumbsUp, ThumbsDown, Flame, PlusCircle, Award, Users, Eye, DollarSign, CheckCircle2, Sparkles, SlidersHorizontal, ShieldAlert, MessageSquare, Send, Hash, Search, Share2, Scissors, UserPlus, Settings, Check, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
@@ -2018,6 +2018,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

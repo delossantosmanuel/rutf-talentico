@@ -346,15 +346,13 @@ onToggleFan,
                 className={"relative w-24 h-24 sm:w-28 sm:h-28 aspect-square rounded-full p-[3px] bg-gradient-to-tr from-[#2563EB] to-[#FF6B00] shadow-lg " + (!soloLectura ? "cursor-pointer group" : "")}
               >
                 <div className="w-full h-full rounded-full overflow-hidden bg-[#0B1120] text-[#F8FAFC] font-black text-2xl flex items-center justify-center relative">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
+                  {(avatarUrl || (perfil.username.toLowerCase() === "@rutftalentico" ? "/icon.png" : "")) ? (<img src={avatarUrl || "/icon.png"}
                       alt=""
                       onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                       className="w-full h-full object-cover"
                     />
                   ) : null}
-                  <span>{inicialesCanal}</span>
+                  {!avatarUrl && perfil.username.toLowerCase() !== "@rutftalentico" && <span>{inicialesCanal}</span>}
                   {!soloLectura && (
                     <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
                       <Camera className="w-5 h-5 text-white" />
@@ -362,7 +360,7 @@ onToggleFan,
                   )}
                 </div>
               </div>
-              {(Boolean(perfil.es_fundador) && (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
+              {(Boolean(perfil.es_fundador) || (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
                 <span className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#0B1120] border border-[#2A3A54] flex items-center justify-center shadow-md">
                   <CheckCircle2 className="w-4 h-4 text-[#2563EB] fill-[#2563EB]/20" />
                 </span>
@@ -388,7 +386,7 @@ onToggleFan,
                   <h2 className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight truncate">
                     {nombreCanal}
                   </h2>
-                  {(Boolean(perfil.es_fundador) && (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
+                  {(Boolean(perfil.es_fundador) || (perfil.username.toLowerCase() === "@rutftalentico" || (seguidores >= 1000 && videos.reduce((acc, item) => acc + (item.vistas || 0), 0) >= 10000))) && (
                     <span className="px-2 py-0.5 rounded-full bg-[#2563EB]/20 border border-[#2563EB]/40 text-[#60A5FA] text-[10px] font-black uppercase tracking-wider">
                       Oficial
                     </span>
@@ -1105,6 +1103,7 @@ export function ModalCompartir({
     </div>
   );
 }
+
 
 
 

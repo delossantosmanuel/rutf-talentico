@@ -135,3 +135,4 @@ export function aplicarIdiomaPlataforma(codigo: string) {
     nodo = walker.nextNode();
   }
 }
+

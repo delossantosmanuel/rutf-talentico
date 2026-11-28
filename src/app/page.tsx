@@ -377,7 +377,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
       if (videoActivo) {
         await notificarInteraccionComentario(
           c.usuario,
-          `${nuevo === "like" ? "👍" : "👎"} ${usuario.username} reaccionó a tu comentario en "$<span data-sin-traducir="true">{videoActivo.titulo}</span>"`,
+          `${nuevo === "like" ? "👍" : "👎"} ${usuario.username} reaccionó a tu comentario en "$<span data-sin-traducir="true"><span data-sin-traducir="true">{videoActivo.titulo}</span></span>"`,
           videoActivo
         );
       }
@@ -410,7 +410,7 @@ const [menuCuenta, setMenuCuenta] = useState(false);
       setRespondiendoA(null);
       await notificarInteraccionComentario(
         cPadre.usuario,
-        `💬 ${usuario.username} respondió a tu comentario en "$<span data-sin-traducir="true">{videoActivo.titulo}</span>"`,
+        `💬 ${usuario.username} respondió a tu comentario en "$<span data-sin-traducir="true"><span data-sin-traducir="true">{videoActivo.titulo}</span></span>"`,
         videoActivo
       );
     }
@@ -1286,7 +1286,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
             <div className="p-5 sm:p-6 space-y-4">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div className="space-y-2">
-                  <h2 className="font-black text-lg sm:text-xl text-[#F8FAFC]"><span data-sin-traducir="true">{videoActivo.titulo}</span></h2>
+                  <h2 className="font-black text-lg sm:text-xl text-[#F8FAFC]"><span data-sin-traducir="true"><span data-sin-traducir="true">{videoActivo.titulo}</span></span></h2>
                   <div className="flex flex-wrap items-center gap-2.5 text-xs">
                     {renderCreador(videoActivo.creador)}
                                         <span className="text-[#94A3B8] font-bold">• {conteoSeguidores[videoActivo.creador] || 0} {(conteoSeguidores[videoActivo.creador] || 0) === 1 ? "Fan" : "Fans"} • {videoActivo.vistas || 0} {(videoActivo.vistas || 0) === 1 ? "vista calificada" : "vistas calificadas"}</span>
@@ -1746,7 +1746,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
                           {actual.creador} • {conteoSeguidores[actual.creador] || 0} {(conteoSeguidores[actual.creador] || 0) === 1 ? "Fan" : "Fans"}
                         </span>
                       </button>
-                      <p className="text-sm font-black line-clamp-2 leading-snug mt-1"><span data-sin-traducir="true">{actual.titulo}</span></p>
+                      <p className="text-sm font-black line-clamp-2 leading-snug mt-1"><span data-sin-traducir="true"><span data-sin-traducir="true">{actual.titulo}</span></span></p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       {!esMiCanal(actual.creador) && (
@@ -2018,6 +2018,7 @@ const esVerticalAuto = (v: Video) => v.tipo === "vertical" || v.titulo?.toLowerC
     </div>
   );
 }
+
 
 
 

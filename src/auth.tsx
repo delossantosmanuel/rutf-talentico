@@ -41,7 +41,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     if (esNativo) {
       try {
         const { SocialLogin } = await import("@capgo/capacitor-social-login");
-        await SocialLogin.initialize({ google: { webClientId: "://googleusercontent.com" } });
+        await SocialLogin.initialize({ google: { webClientId: "420582228055-jq2vilevkq7h8vo0mtcj39dd5u2005rk.apps.googleusercontent.com" } });
         const res = await SocialLogin.login({ provider: "google", options: { scopes: ["email", "profile"] } }); const rData = res?.result as { idToken?: string; profile?: { email?: string; imageUrl?: string } } | undefined; const idToken = rData?.idToken;
         if (!idToken) {
           throw new Error("No se recibió el token de Google. Intenta de nuevo.");
@@ -373,6 +373,7 @@ export default function AuthModal({ supabase, onLogin, onCerrar, googleNuevo }: 
     </div>
   );
 }
+
 
 
 
